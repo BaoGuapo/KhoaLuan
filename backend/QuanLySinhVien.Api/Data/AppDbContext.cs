@@ -66,8 +66,27 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
             entity.HasOne(x => x.User).WithMany(x => x.RefreshTokens).HasForeignKey(x => x.UserId);
         });
 
-        modelBuilder.Entity<SinhVien>(e => { e.ToTable("SinhVien"); e.HasKey(x => x.MaSinhVien); e.Property(x => x.MaSinhVien).HasMaxLength(30); e.Property(x => x.HoTen).HasMaxLength(200); e.Property(x => x.Email).HasMaxLength(256); });
-        modelBuilder.Entity<GiangVien>(e => { e.ToTable("GiangVien"); e.HasKey(x => x.MaGiangVien); e.Property(x => x.MaGiangVien).HasMaxLength(30); e.Property(x => x.HoTen).HasMaxLength(200); });
+        modelBuilder.Entity<SinhVien>(e =>
+        {
+            e.ToTable("SinhVien");
+            e.HasKey(x => x.MaSinhVien);
+            e.Property(x => x.MaSinhVien).HasMaxLength(30);
+            e.Property(x => x.MatKhauLegacy).HasColumnName("matKhau").HasMaxLength(255).IsUnicode(false).IsRequired();
+            e.Property(x => x.HoTen).HasMaxLength(200);
+            e.Property(x => x.Email).HasMaxLength(256);
+            e.HasIndex(x => x.UserId).IsUnique().HasFilter("[UserId] IS NOT NULL");
+            e.HasOne<User>().WithOne().HasForeignKey<SinhVien>(x => x.UserId).OnDelete(DeleteBehavior.SetNull);
+        });
+        modelBuilder.Entity<GiangVien>(e =>
+        {
+            e.ToTable("GiangVien");
+            e.HasKey(x => x.MaGiangVien);
+            e.Property(x => x.MaGiangVien).HasMaxLength(30);
+            e.Property(x => x.MatKhauLegacy).HasColumnName("matKhau").HasMaxLength(255).IsUnicode(false).IsRequired();
+            e.Property(x => x.HoTen).HasMaxLength(200);
+            e.HasIndex(x => x.UserId).IsUnique().HasFilter("[UserId] IS NOT NULL");
+            e.HasOne<User>().WithOne().HasForeignKey<GiangVien>(x => x.UserId).OnDelete(DeleteBehavior.SetNull);
+        });
         modelBuilder.Entity<MonHoc>(e => { e.ToTable("MonHoc"); e.HasKey(x => x.MaMonHoc); e.Property(x => x.MaMonHoc).HasMaxLength(30); e.Property(x => x.TenMonHoc).HasMaxLength(200); });
         modelBuilder.Entity<HocKyThucTe>(e => { e.ToTable("HocKyThucTe"); e.HasKey(x => x.MaHocKy); e.Property(x => x.MaHocKy).HasMaxLength(30); });
         modelBuilder.Entity<PhongHoc>(e => { e.ToTable("PhongHoc"); e.HasKey(x => x.MaPhong); e.Property(x => x.MaPhong).HasMaxLength(30); });

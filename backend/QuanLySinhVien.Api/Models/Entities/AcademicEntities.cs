@@ -1,8 +1,13 @@
+using System.Text.Json.Serialization;
+
 namespace QuanLySinhVien.Api.Models.Entities;
 
 public sealed class SinhVien
 {
     public string MaSinhVien { get; set; } = string.Empty;
+    public Guid? UserId { get; set; }
+    [JsonIgnore]
+    public string MatKhauLegacy { get; set; } = string.Empty;
     public string HoTen { get; set; } = string.Empty;
     public string? SoDienThoai { get; set; }
     public string Email { get; set; } = string.Empty;
@@ -14,6 +19,9 @@ public sealed class SinhVien
 public sealed class GiangVien
 {
     public string MaGiangVien { get; set; } = string.Empty;
+    public Guid? UserId { get; set; }
+    [JsonIgnore]
+    public string MatKhauLegacy { get; set; } = string.Empty;
     public string HoTen { get; set; } = string.Empty;
     public bool TrangThaiTaiKhoan { get; set; } = true;
 }

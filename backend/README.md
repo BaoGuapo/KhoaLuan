@@ -63,3 +63,23 @@ Không dùng các tài khoản/mật khẩu này ngoài Development; hãy đổi
 - `POST /api/auth/logout` (JWT bắt buộc)
 
 `GET /api/admin/ping` là endpoint kiểm thử phân quyền và chỉ role `Admin` được gọi.
+
+## Quy trình cấp tài khoản sinh viên/giảng viên
+
+Hồ sơ nghiệp vụ phải tồn tại trước khi cấp tài khoản đăng nhập. Không tạo trực tiếp
+`User` có role `SinhVien` hoặc `GiangVien` khi chưa có bản ghi tương ứng.
+
+Các endpoint dành cho `Admin` hoặc `CanBoQuanLy`:
+
+- `POST /api/v1/sinh-vien`: tạo hồ sơ sinh viên, chưa tạo tài khoản.
+- `POST /api/v1/giang-vien`: tạo hồ sơ giảng viên, chưa tạo tài khoản.
+- `POST /api/v1/sinh-vien/{maSinhVien}/tai-khoan`: cấp tài khoản từ hồ sơ sinh viên đã có.
+- `POST /api/v1/giang-vien/{maGiangVien}/tai-khoan`: cấp tài khoản từ hồ sơ giảng viên đã có.
+
+Khi cấp tài khoản, backend thực hiện trong transaction: kiểm tra hồ sơ, tạo `User`,
+hash mật khẩu, gán `UserRole`, rồi cập nhật `SinhVien.UserId` hoặc `GiangVien.UserId`.
+Nếu hồ sơ không tồn tại API trả `404`; nếu hồ sơ đã có tài khoản API trả `409`.
+
+Hai cột `matKhau` cũ trong bảng nghiệp vụ chỉ được ánh xạ để tương thích schema và
+không được sử dụng hay trả về API. Mật khẩu đăng nhập chỉ được lưu tại
+`Users.PasswordHash` bằng ASP.NET Core `PasswordHasher`.
