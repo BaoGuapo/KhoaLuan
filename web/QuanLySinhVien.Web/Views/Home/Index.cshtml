@@ -1,0 +1,2 @@
+@{ ViewData["Title"] = "Trang chủ"; }
+<h1>Hệ thống quản lý sinh viên</h1><p>Đăng nhập thành công với tài khoản <strong>@User.Identity?.Name</strong>.</p><p>Vai trò: @string.Join(", ", User.Claims.Where(x => x.Type == System.Security.Claims.ClaimTypes.Role).Select(x => x.Value))</p>

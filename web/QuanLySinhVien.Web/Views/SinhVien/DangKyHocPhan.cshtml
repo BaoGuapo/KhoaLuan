@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng ký học phần</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <style>
+        body { background-color: #f8f9fa; }
+        .card-custom { border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .table-hover tbody tr:hover { cursor: pointer; background-color: #f1f8ff; }
+        .expanded-row { background-color: #f8f9fa; border-left: 4px solid #0d6efd; }
+        
+        /* Hiệu ứng chọn panel bên phải */
+        .detail-panel { transition: all 0.3s ease; }
+        .detail-panel.empty-state { display: flex; align-items: center; justify-content: center; height: 100%; color: #adb5bd; border: 2px dashed #dee2e6; border-radius: 12px; }
+    </style>
+</head>
+<body>
+
+<!-- MÃ KIỂM TRA ĐĂNG NHẬP -->
+<script>
+    // Giả lập kiểm tra token: Nếu chưa đăng nhập, tự động đẩy về trang Login
+    const token = localStorage.getItem('studentToken');
+    // Bỏ comment dòng dưới để test logic chặn:
+    // if (!token) { window.location.href = '/login.html'; }
+</script>
+
+<div class="container-fluid py-4 px-4">
+    <h3 class="fw-bold text-primary mb-4">Đăng ký học phần</h3>
+
+    <!-- KHỐI 1: THÔNG TIN SINH VIÊN & CHƯƠNG TRÌNH ĐÀO TẠO -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card card-custom p-3 bg-white">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                        <i class="bi bi-person-fill fs-3"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-1">Đỗ Gia Bảo</h5>
+                        <p class="mb-1 text-muted small">Mã SV: 2001234567 | Khóa: K15 (2023 - 2027)</p>
+                        <p class="mb-0 text-muted small">Ngành: Công nghệ thông tin - Hệ Chính quy</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- KHỐI 2: LỰA CHỌN LOẠI ĐĂNG KÝ -->
+    <div class="card card-custom p-3 mb-4">
+        <h6 class="fw-bold mb-3">Loại học phần:</h6>
+        <div class="d-flex gap-4">
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="loaiDangKy" id="hocMoi" value="moi" checked onchange="loadDanhSachMon()">
+                <label class="form-check-label" for="hocMoi">Học mới</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="loaiDangKy" id="hocLai" value="lai" onchange="loadDanhSachMon()">
+                <label class="form-check-label text-warning" for="hocLai">Học lại (Khóa sau)</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="loaiDangKy" id="caiThien" value="caithien" onchange="loadDanhSachMon()">
+                <label class="form-check-label text-info" for="caiThien">Cải thiện (Khóa sau)</label>
+            </div>
+        </div>
+        <small class="text-muted mt-2" id="loaiDangKyGhiChu">Đang hiển thị các môn học theo tiến độ chuẩn của khóa K15.</small>
+    </div>
+
+    <!-- KHỐI 3: DANH SÁCH MÔN HỌC CHỜ ĐĂNG KÝ (EXPANDABLE) -->
+    <div class="card card-custom p-0 mb-4 overflow-hidden">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 50px;"></th>
+                    <th>Mã Học Phần</th>
+                    <th>Tên Môn Học</th>
+                    <th class="text-center">Số TC</th>
+                </tr>
+            </thead>
+            <tbody id="danhSachMonHoc">
+                <!-- Môn 1 -->
+                <tr data-bs-toggle="collapse" data-bs-target="#lopHocPhan_IT01">
+                    <td class="text-center text-primary"><i class="bi bi-chevron-down"></i></td>
+                    <td class="fw-bold">IT01</td>
+                    <td>Lập trình Web ASP.NET</td>
+                    <td class="text-center">3</td>
+                </tr>
+                <tr class="collapse" id="lopHocPhan_IT01">
+                    <td colspan="4" class="expanded-row p-3">
+                        <div class="ps-4">
+                            <h6 class="fw-bold text-secondary mb-3"><i class="bi bi-list-task"></i> Chọn lớp học phần:</h6>
+                            <table class="table table-sm table-bordered bg-white">
+                                <thead class="table-secondary">
+                                    <tr>
+                                        <th>Chọn</th>
+                                        <th>Mã Lớp</th>
+                                        <th>Giảng Viên</th>
+                                        <th>Sĩ Số</th>
+                                        <th>Lịch Học</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="text-center"><input type="radio" name="chonLop_IT01"></td>
+                                        <td>IT01_HK1_01</td>
+                                        <td>Nguyễn Văn A</td>
+                                        <td>45/70</td>
+                                        <td>Thứ 2 (Tiết 1-3) - P. C101</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-center"><input type="radio" name="chonLop_IT01"></td>
+                                        <td>IT01_HK1_02</td>
+                                        <td>Trần Thị B</td>
+                                        <td>60/70</td>
+                                        <td>Thứ 4 (Tiết 7-9) - P. B302</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <button class="btn btn-primary btn-sm mt-2"><i class="bi bi-plus-circle"></i> Xác nhận đăng ký lớp này</button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- KHỐI 4: KẾT QUẢ ĐÃ ĐĂNG KÝ (SPLIT VIEW) -->
+    <h5 class="fw-bold text-success mb-3"><i class="bi bi-check-circle-fill"></i> Học phần đã đăng ký</h5>
+    <div class="row">
+        
+        <!-- BÊN TRÁI: Bảng danh sách đã đăng ký -->
+        <div class="col-md-7">
+            <div class="card card-custom p-0 overflow-hidden">
+                <table class="table mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Mã HP</th>
+                            <th>Tên Môn Học</th>
+                            <th class="text-center">Số TC</th>
+                            <th>Ngày ĐK</th>
+                            <th class="text-center">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="fw-bold">IT02</td>
+                            <td>Cấu trúc dữ liệu & giải thuật</td>
+                            <td class="text-center">3</td>
+                            <td>12/08/2026</td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-info me-1" onclick="xemChiTietDaDangKy('IT02')">Xem</button>
+                                <button class="btn btn-sm btn-outline-danger">Hủy</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- BÊN PHẢI: Panel hiển thị chi tiết và Sửa lịch học -->
+        <div class="col-md-5">
+            <!-- Trạng thái trống khi chưa bấm "Xem" -->
+            <div id="emptyDetailState" class="detail-panel empty-state p-4">
+                <div class="text-center">
+                    <i class="bi bi-layout-sidebar-inset fs-1"></i>
+                    <p class="mt-2 mb-0">Bấm "Xem" ở danh sách bên trái để hiển thị chi tiết lớp học.</p>
+                </div>
+            </div>
+
+            <!-- Khối chi tiết (Mặc định ẩn) -->
+            <div id="courseDetailCard" class="card card-custom p-4 d-none border-top border-4 border-info">
+                <h5 class="fw-bold mb-3" id="detail_TenMon">Tên môn học</h5>
+                <ul class="list-unstyled mb-4">
+                    <li class="mb-2"><strong>Mã HP:</strong> <span id="detail_MaHP" class="text-primary fw-bold"></span></li>
+                    <li class="mb-2"><strong>Loại môn:</strong> <span id="detail_LoaiMon">Bắt buộc</span></li>
+                    <li class="mb-2"><strong>Số TC:</strong> <span id="detail_SoTC"></span></li>
+                    <li class="mb-2"><strong>Sĩ số hiện tại:</strong> <span id="detail_SiSo"></span></li>
+                    <li class="mb-2">
+                        <strong>Lịch học dự kiến:</strong> 
+                        <div class="alert alert-primary p-2 mt-2 mb-0" id="detail_LichHoc">
+                            <!-- Lịch học render ở đây -->
+                        </div>
+                    </li>
+                </ul>
+                <hr>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-muted small">Cần đổi giờ học?</span>
+                    <button class="btn btn-warning fw-bold text-dark" onclick="moPopupDoiLich()"><i class="bi bi-arrow-left-right"></i> Đổi Lịch / Chuyển Lớp</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Logic thay đổi Ghi chú dựa vào lựa chọn "Học mới / Học lại / Cải thiện"
+    function loadDanhSachMon() {
+        const loai = document.querySelector('input[name="loaiDangKy"]:checked').value;
+        const ghiChu = document.getElementById('loaiDangKyGhiChu');
+        
+        if(loai === 'moi') {
+            ghiChu.innerHTML = "Đang hiển thị các môn học theo tiến độ chuẩn của khóa <strong>K15</strong>.";
+        } else {
+            ghiChu.innerHTML = "Đang hiển thị các môn học để học lại/cải thiện. Bạn sẽ được xếp lớp cùng chương trình đào tạo của khóa <strong>K16 (Khóa sau)</strong>.";
+            // GỌI API: Fetch danh sách môn và lớp học phần của khóa sau (K16) ở đây
+        }
+    }
+
+    // Logic xử lý khi bấm nút "Xem" ở bảng bên trái
+    function xemChiTietDaDangKy(maHP) {
+        // Ẩn panel empty, hiện panel chi tiết
+        document.getElementById('emptyDetailState').classList.add('d-none');
+        document.getElementById('courseDetailCard').classList.remove('d-none');
+
+        // Giả lập load dữ liệu chi tiết
+        if(maHP === 'IT02') {
+            document.getElementById('detail_MaHP').innerText = "IT02";
+            document.getElementById('detail_TenMon').innerText = "Cấu trúc dữ liệu & giải thuật";
+            document.getElementById('detail_SoTC').innerText = "3";
+            document.getElementById('detail_SiSo').innerText = "65/80 (Còn trống)";
+            document.getElementById('detail_LichHoc').innerHTML = "<i class='bi bi-clock'></i> Thứ 4 (Tiết 7-9) <br> <i class='bi bi-geo-alt'></i> Phòng B302";
+        }
+    }
+
+    function moPopupDoiLich() {
+        alert("Tính năng Đổi lịch: Tại đây sẽ bật lên Modal hiển thị các Lớp học phần khác (có giờ học khác) của môn này để sinh viên ấn 'Chuyển lớp'.");
+    }
+</script>
+</body>
+</html>

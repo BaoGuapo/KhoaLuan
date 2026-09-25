@@ -1,0 +1,257 @@
+@{
+    ViewData["Title"] = "Lịch giảng dạy & Quản lý lớp";
+}
+
+<div class="container-fluid py-4 px-4">
+    <h3 class="fw-bold text-primary mb-4">Lịch giảng dạy tuần</h3>
+
+    <!-- BẢNG LỊCH DẠY -->
+    <div class="card border-0 shadow-sm rounded-3 overflow-hidden mb-4">
+        <div class="table-responsive">
+            <table class="table table-bordered text-center align-middle schedule-table mb-0">
+                <thead>
+                    <tr class="bg-light">
+                        <th class="shift-col text-primary">Ca dạy</th>
+                        <th class="text-primary">Thứ 2</th>
+                        <th class="text-primary">Thứ 3</th>
+                        <th class="text-primary">Thứ 4</th>
+                        <th class="text-primary">Thứ 5</th>
+                        <th class="text-primary">Thứ 6</th>
+                        <th class="text-primary">Thứ 7</th>
+                    </tr>
+                </thead>
+                <tbody class="grid-bg">
+                    <tr>
+                        <td class="fw-bold shift-col bg-shift">Sáng</td>
+                        <!-- Mockup môn dạy thứ 2 -->
+                        <td class="p-2 align-top">
+                            <div class="schedule-card card-teacher text-start p-2" onclick="moQuanLyLop('IT01_HK1_01')">
+                                <div class="fw-bold mb-1">Lập trình Web ASP.NET</div>
+                                <div>Mã lớp: IT01_HK1_01</div>
+                                <div>Tiết: 1 - 3 | P. C101</div>
+                                <div class="mt-2 text-warning fw-bold"><i class="bi bi-people-fill"></i> Sĩ số: 45/70</div>
+                            </div>
+                        </td>
+                        <td></td><td></td><td></td><td></td><td></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL QUẢN LÝ LỚP HỌC PHẦN (Hiển thị khi click vào lịch) -->
+<div class="modal fade" id="modalQuanLyLop" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold" id="modalLopTitle">Quản lý lớp: IT01_HK1_01 - Lập trình Web ASP.NET</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <!-- Tabs điều hướng -->
+                <ul class="nav nav-tabs bg-light px-3 pt-2" id="quanLyTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active fw-bold" id="danhsach-tab" data-bs-toggle="tab" data-bs-target="#danhsach" type="button" role="tab">Danh sách & Học tập</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link fw-bold" id="chuyencan-tab" data-bs-toggle="tab" data-bs-target="#chuyencan" type="button" role="tab">Tình trạng chuyên cần</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link fw-bold" id="thongtin-tab" data-bs-toggle="tab" data-bs-target="#thongtin" type="button" role="tab">Cấu hình lớp học</button>
+                    </li>
+                </ul>
+
+                <!-- Nội dung Tabs -->
+                <div class="tab-content p-4" id="quanLyTabsContent">
+                    
+                    <!-- TAB 1: Danh sách sinh viên -->
+                    <div class="tab-pane fade show active" id="danhsach" role="tabpanel">
+                        <div class="d-flex justify-content-between mb-3">
+                            <h6 class="fw-bold"><i class="bi bi-list-ol"></i> Danh sách sinh viên (45/70)</h6>
+                            <button class="btn btn-sm btn-success"><i class="bi bi-file-earmark-excel"></i> Xuất Excel</button>
+                        </div>
+                        <table class="table table-hover table-bordered align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Mã SV</th>
+                                    <th>Họ Tên</th>
+                                    <th>Email</th>
+                                    <th class="text-center">Kết quả / Quá trình</th>
+                                    <th class="text-center">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyDanhSachSinhVien">
+                                <!-- Dữ liệu JS đổ vào đây -->
+                                <tr>
+                                    <td>1</td>
+                                    <td class="fw-bold">2001230048</td>
+                                    <td>Đỗ Gia Bảo</td>
+                                    <td>baodo@huit.edu.vn</td>
+                                    <td class="text-center"><span class="badge bg-success">Đạt yêu cầu</span></td>
+                                    <td class="text-center">
+                                        <button class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i> Xem QT</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- TAB 2: Chuyên cần -->
+                    <div class="tab-pane fade" id="chuyencan" role="tabpanel">
+                        <h6 class="fw-bold mb-3"><i class="bi bi-calendar-check"></i> Cảnh báo vắng học</h6>
+                        <table class="table table-bordered align-middle">
+                            <thead class="table-warning">
+                                <tr>
+                                    <th>Mã SV</th>
+                                    <th>Họ Tên</th>
+                                    <th class="text-center">Tổng số buổi vắng</th>
+                                    <th class="text-center">Trạng thái cảnh báo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="fw-bold">2001230048</td>
+                                    <td>Đỗ Gia Bảo</td>
+                                    <td class="text-center text-danger fw-bold">3</td>
+                                    <td class="text-center"><span class="badge bg-danger">Cấm thi (Quá 20%)</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <button class="btn btn-primary mt-2"><i class="bi bi-qr-code-scan"></i> Bật phiên điểm danh khuôn mặt hôm nay</button>
+                    </div>
+
+                    <!-- TAB 3: Thông tin chung -->
+                    <div class="tab-pane fade" id="thongtin" role="tabpanel">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ul class="list-group">
+                                    <li class="list-group-item"><strong>Môn học:</strong> Lập trình Web ASP.NET</li>
+                                    <li class="list-group-item"><strong>Phòng học:</strong> C101 - Cơ sở chính</li>
+                                    <li class="list-group-item"><strong>Trạng thái lớp:</strong> Đang giảng dạy</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .schedule-table th, .schedule-table td { border-color: #dee2e6; min-width: 130px; }
+    .shift-col { width: 80px; min-width: 80px !important; vertical-align: middle; }
+    .bg-shift { background-color: #fdfbf7; }
+    .grid-bg {
+        background-size: 20px 20px;
+        background-image: linear-gradient(to right, #f1f1f1 1px, transparent 1px), linear-gradient(to bottom, #f1f1f1 1px, transparent 1px);
+    }
+    .schedule-card {
+        border-radius: 6px; font-size: 13px; cursor: pointer; transition: transform 0.2s;
+    }
+    .schedule-card:hover { transform: scale(1.03); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    .card-teacher { background-color: #0d6efd; color: white; border: none; }
+</style>
+
+<script>
+    async function moQuanLyLop(maLopHocPhan) {
+        // 1. Mở Modal giao diện lên
+        const modalElement = document.getElementById('modalQuanLyLop');
+        const myModal = new bootstrap.Modal(modalElement);
+        myModal.show();
+
+        // 2. Lấy Token đăng nhập của Giảng viên từ LocalStorage hoặc Cookie
+        const token = localStorage.getItem('accessToken') || localStorage.getItem('authToken');
+
+        // Hiển thị trạng thái đang tải dữ liệu
+        document.getElementById('modalLopTitle').innerText = `Đang tải thông tin lớp: ${maLopHocPhan}...`;
+        const tbodyDanhSach = document.getElementById('tbodyDanhSachSinhVien');
+        tbodyDanhSach.innerHTML = `<tr><td colspan="6" class="text-center py-4"><div class="spinner-border text-primary"></div><p class="mt-2 mb-0">Đang tải danh sách sinh viên...</p></td></tr>`;
+
+        try {
+            // 3. Gọi API lấy chi tiết lớp học phần
+            const response = await fetch(`/api/v1/giang-vien/lop-hoc-phan/${maLopHocPhan}/chi-tiet`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Không thể lấy dữ liệu lớp học phần.');
+            }
+
+            const data = await response.json();
+
+            // 4. Cập nhật tiêu đề Modal
+            document.getElementById('modalLopTitle').innerText = `Quản lý lớp: ${data.maLopHocPhan} - ${data.tenMonHoc}`;
+
+            // 5. Đổ dữ liệu vào Tab "Danh sách & Học tập"
+            if (!data.danhSachSinhVien || data.danhSachSinhVien.length === 0) {
+                tbodyDanhSach.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-3">Lớp học phần này chưa có sinh viên đăng ký.</td></tr>`;
+            } else {
+                let htmlDanhSach = '';
+                let htmlChuyenCan = '';
+
+                data.danhSachSinhVien.forEach((sv, index) => {
+                    // Render Tab 1: Danh sách sinh viên
+                    htmlDanhSach += `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td class="fw-bold">${sv.maSinhVien}</td>
+                            <td>${sv.hoTen}</td>
+                            <td>${sv.email || 'Chưa cập nhật'}</td>
+                            <td class="text-center">
+                                ${sv.tongSoBuoiVang >= 3 
+                                    ? '<span class="badge bg-danger">Cảnh báo vắng</span>' 
+                                    : '<span class="badge bg-success">Đạt yêu cầu</span>'}
+                            </td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-primary" onclick="xemQuatTrinhHoc('${sv.maSinhVien}')">
+                                    <i class="bi bi-eye"></i> Xem QT
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+
+                    // Render Tab 2: Chuyên cần
+                    let badgeCanhBao = '<span class="badge bg-success">Bình thường</span>';
+                    if (sv.tongSoBuoiVang === 1 || sv.tongSoBuoiVang === 2) {
+                        badgeCanhBao = '<span class="badge bg-warning text-dark">Cảnh báo vắng</span>';
+                    } else if (sv.tongSoBuoiVang >= 3) {
+                        badgeCanhBao = '<span class="badge bg-danger">Cấm thi (Quá 20%)</span>';
+                    }
+
+                    htmlChuyenCan += `
+                        <tr>
+                            <td class="fw-bold">${sv.maSinhVien}</td>
+                            <td>${sv.hoTen}</td>
+                            <td class="text-center text-danger fw-bold">${sv.tongSoBuoiVang}</td>
+                            <td class="text-center">${badgeCanhBao}</td>
+                        </tr>
+                    `;
+                });
+
+                tbodyDanhSach.innerHTML = htmlDanhSach;
+
+                // Đổ vào Tab 2 (Bảng Chuyên cần)
+                const tbodyChuyenCan = document.querySelector('#chuyencan table tbody');
+                if (tbodyChuyenCan) {
+                    tbodyChuyenCan.innerHTML = htmlChuyenCan;
+                }
+            }
+
+        } catch (error) {
+            console.error('Lỗi khi tải dữ liệu lớp:', error);
+            tbodyDanhSach.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-3">Lỗi: ${error.message}</td></tr>`;
+        }
+    }
+
+    function xemQuatTrinhHoc(maSinhVien) {
+        alert("Xem chi tiết quá trình học của sinh viên: " + maSinhVien);
+    }
+</script>
