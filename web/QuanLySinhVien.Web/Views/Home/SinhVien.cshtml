@@ -2,38 +2,38 @@
 <section class="dashboard-heading"><p class="eyebrow blue">SINH VIÊN</p><h1>Cổng thông tin sinh viên</h1><p>Chào @User.Identity?.Name. Phiên đăng nhập đã được xác thực đúng role sinh viên.</p></section>
 <div class="role-grid"><article><h2>Phạm vi quyền</h2><p>Hồ sơ, đăng ký môn học, lịch học và chuyên cần thuộc các tuần triển khai tiếp theo.</p></article><article><h2>Bảo mật tài khoản</h2><a asp-controller="Account" asp-action="ChangePassword">Đổi mật khẩu</a></article></div>
 
-<!-- Cột chứa Card Đăng ký học phần -->
-<div class="col-md-6 mb-4">
-    <div class="card h-100 border-0 shadow-sm" style="border-radius: 8px; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='translateY(0)'" onclick="window.location.href='/SinhVien/DangKyHocPhan'">
-        <div class="card-body p-4">
-            <div class="d-flex align-items-center mb-3">
-                <i class="bi bi-journal-bookmark-fill fs-3 text-primary me-3"></i>
-                <h5 class="card-title text-primary fw-bold mb-0">Đăng ký học phần</h5>
+<div class="row g-4 mb-4">
+    <!-- Thẻ Đăng ký học phần -->
+    <div class="col-md-6">
+        <div class="card h-100" style="border: 1px solid #dbe4ec; border-radius: 8px; box-shadow: none; background-color: #fff;">
+            <div class="card-body" style="padding: 1.5rem;">
+                <h5 class="fw-bold" style="color: #006699; margin-bottom: 1rem; font-size: 1.15rem;">
+                    Đăng ký học phần
+                </h5>
+                <p class="card-text" style="color: #333; margin-bottom: 1.5rem; font-size: 0.95rem; line-height: 1.5;">
+                    Thực hiện đăng ký môn học mới, học lại, cải thiện và xem danh sách lớp học phần theo chương trình đào tạo.
+                </p>
+                <a href="/SinhVien/DangKyHocPhan" class="fw-bold" style="color: #006699; text-decoration: underline; font-size: 0.95rem;">
+                    Truy cập ngay
+                </a>
             </div>
-            <p class="card-text text-muted small">
-                Thực hiện đăng ký môn học mới, học lại, cải thiện và xem danh sách lớp học phần theo chương trình đào tạo.
-            </p>
-            <a href="/SinhVien/DangKyHocPhan" class="text-decoration-none fw-bold text-primary mt-2 d-inline-block">
-                Truy cập ngay <i class="bi bi-arrow-right"></i>
-            </a>
         </div>
     </div>
-</div>
 
-<!-- Cột chứa Card Xem lịch học -->
-<div class="col-md-6 mb-4">
-    <div class="card h-100 border-0 shadow-sm" style="border-radius: 8px; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='translateY(0)'" onclick="window.location.href='/SinhVien/XemLichHoc'">
-        <div class="card-body p-4">
-            <div class="d-flex align-items-center mb-3">
-                <i class="bi bi-calendar-event-fill fs-3 text-primary me-3"></i>
-                <h5 class="card-title text-primary fw-bold mb-0">Xem lịch học</h5>
+    <!-- Thẻ Xem lịch học -->
+    <div class="col-md-6">
+        <div class="card h-100" style="border: 1px solid #dbe4ec; border-radius: 8px; box-shadow: none; background-color: #fff;">
+            <div class="card-body" style="padding: 1.5rem;">
+                <h5 class="fw-bold" style="color: #006699; margin-bottom: 1rem; font-size: 1.15rem;">
+                    Xem lịch học
+                </h5>
+                <p class="card-text" style="color: #333; margin-bottom: 1.5rem; font-size: 0.95rem; line-height: 1.5;">
+                    Tra cứu thời khóa biểu chi tiết theo tuần, ca học, phòng học và giảng viên cho các môn đã đăng ký.
+                </p>
+                <a href="/SinhVien/XemLichHoc" class="fw-bold" style="color: #006699; text-decoration: underline; font-size: 0.95rem;">
+                    Truy cập ngay
+                </a>
             </div>
-            <p class="card-text text-muted small">
-                Tra cứu thời khóa biểu chi tiết theo tuần, ca học, phòng học và giảng viên cho các môn đã đăng ký.
-            </p>
-            <a href="/SinhVien/XemLichHoc" class="text-decoration-none fw-bold text-primary mt-2 d-inline-block">
-                Truy cập ngay <i class="bi bi-arrow-right"></i>
-            </a>
         </div>
     </div>
 </div>

@@ -7,6 +7,33 @@ public sealed class SinhVien
     public string? SoDienThoai { get; set; }
     public string Email { get; set; } = string.Empty;
     public bool TrangThaiTaiKhoan { get; set; } = true;
+    public string? AnhDaiDien { get; set; }
+    public string? GioiTinh { get; set; }
+    public DateTime? NgaySinh { get; set; }
+    public string? NoiSinh { get; set; }
+    public string? DanToc { get; set; }
+    public string? TonGiao { get; set; }
+    public string? QuocTich { get; set; }
+    public string? KhuVuc { get; set; }
+    public string? SoCCCD { get; set; }
+    public DateTime? NgayCapCCCD { get; set; }
+    public string? NoiCapCCCD { get; set; }
+    public string? DiaChiLienHe { get; set; }
+    public string? HoKhauThuongTru { get; set; }
+    public string? MaHoSo { get; set; }
+    public DateTime? NgayVaoTruong { get; set; }
+    public string? LopHoc { get; set; }
+    public string? CoSo { get; set; }
+    public string? BacDaoTao { get; set; }
+    public string? LoaiHinhDaoTao { get; set; }
+    public string? Khoa { get; set; }
+    public string? Nganh { get; set; }
+    public string? ChuyenNganh { get; set; }
+    public string? KhoaHoc { get; set; }
+    public string? DoiTuong { get; set; }
+    public string? DienChinhSach { get; set; }
+    public DateTime? NgayVaoDoan { get; set; }
+    public DateTime? NgayVaoDang { get; set; }
     public ICollection<DanhSachSinhVienLop> DangKyLop { get; set; } = new List<DanhSachSinhVienLop>();
     public HoSoKhuonMat? HoSoKhuonMat { get; set; }
 }
@@ -16,6 +43,29 @@ public sealed class GiangVien
     public string MaGiangVien { get; set; } = string.Empty;
     public string HoTen { get; set; } = string.Empty;
     public bool TrangThaiTaiKhoan { get; set; } = true;
+    public string? SoDienThoai { get; set; }
+    public string? Email { get; set; }
+    public string? AnhDaiDien { get; set; }
+    public string? GioiTinh { get; set; }
+    public DateTime? NgaySinh { get; set; }
+    public string? NoiSinh { get; set; }
+    public string? DanToc { get; set; }
+    public string? TonGiao { get; set; }
+    public string? QuocTich { get; set; }
+    public string? SoCCCD { get; set; }
+    public DateTime? NgayCapCCCD { get; set; }
+    public string? NoiCapCCCD { get; set; }
+    public string? DiaChiLienHe { get; set; }
+    public string? HoKhauThuongTru { get; set; }
+
+    // --- THÔNG TIN CÔNG TÁC ---
+    public DateTime? NgayBatDauCongTac { get; set; }
+    public string? CoSo { get; set; }
+    public string? Khoa { get; set; }
+    public string? ChuyenNganh { get; set; }
+    public string? TrinhDoHocVan { get; set; }
+    public string? ChucDanh { get; set; }
+    public DateTime? NgayVaoDang { get; set; }
 }
 
 public sealed class MonHoc
