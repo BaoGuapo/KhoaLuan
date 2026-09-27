@@ -1,0 +1,196 @@
+@{
+    ViewData["Title"] = "Quản lý sinh viên lớp học phần";
+}
+
+<style>
+    :root {
+        --huit-blue: #005b9f;
+        --huit-blue-hover: #00467a;
+        --huit-light: #eaf3fa;
+    }
+    
+    /* Thiết kế Tabs nằm ngang (Sửa lỗi hình của bạn) */
+    .nav-pills { display: flex; flex-direction: row; gap: 10px; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; }
+    .nav-pills .nav-link {
+        border-radius: 50rem; 
+        color: #64748b;
+        font-weight: 600;
+        padding: 10px 24px;
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        transition: all 0.3s ease;
+    }
+    .nav-pills .nav-link:hover { background-color: #e2e8f0; color: var(--huit-blue); }
+    .nav-pills .nav-link.active { background-color: var(--huit-blue); color: white; border-color: var(--huit-blue); box-shadow: 0 4px 10px rgba(0,91,159,0.25); }
+
+    /* Bảng dữ liệu */
+    .table-wrapper { border-radius: 12px; overflow: hidden; border: 1px solid #dbe4ec; }
+    .table-custom th { background-color: var(--huit-light); color: var(--huit-blue); font-weight: 600; padding: 15px 12px; text-align: center; vertical-align: middle; border-bottom: 2px solid #cce0f0;}
+    .table-custom td { padding: 12px; vertical-align: middle; text-align: center; border-bottom: 1px solid #f1f5f9;}
+    
+    /* Hộp thông tin lớp */
+    .info-box { background: linear-gradient(to right, #f8fafc, #ffffff); border-left: 4px solid var(--huit-blue); border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+</style>
+
+<div class="container-fluid py-4">
+    <!-- Nút quay lại và Tiêu đề -->
+    <div class="mb-4 d-flex align-items-center">
+        <a href="/GiangVien/LichGiangDay" class="btn btn-light border rounded-circle p-2 me-3 shadow-sm" title="Quay lại lịch dạy">
+            <i class="bi bi-arrow-left fs-5 text-dark"></i>
+        </a>
+        <div>
+            <h3 class="fw-bold text-dark mb-1">Quản lý lớp: @ViewBag.MaLop</h3>
+            <p class="text-muted mb-0">Học kỳ 1 - Năm học 2026-2027</p>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+
+        <!-- Nội dung Tabs -->
+        <div class="tab-content" id="quanLyTabsContent">
+            
+            <!-- TAB 1: DANH SÁCH & ĐIỂM DANH HÔM NAY -->
+            <div class="tab-pane fade show active" id="danhsach" role="tabpanel">
+                
+                <!-- Thông tin chi tiết lớp học (Đưa lên đầu Tab 1) -->
+                <div class="info-box p-3 mb-4 border">
+                    <div class="row align-items-center">
+                        <div class="col-md-3"><strong>Môn học:</strong> Lập trình Web ASP.NET</div>
+                        <div class="col-md-3"><strong>Phòng học:</strong> C101 - Cơ sở chính</div>
+                        <div class="col-md-3"><strong>Ca dạy:</strong> Sáng (Tiết 1-3)</div>
+                        <div class="col-md-3"><strong>Sĩ số:</strong> 45/70</div>
+                    </div>
+                </div>
+
+                <!-- Thanh công cụ: Xuất Excel & Bật QR -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <button class="btn btn-outline-success rounded-pill px-4 fw-medium"><i class="bi bi-file-earmark-excel me-2"></i>Xuất danh sách</button>
+                    
+                    <button class="btn text-white rounded-pill px-4 py-2 fw-bold shadow" style="background-color: var(--huit-blue);" onclick="batDiemDanhQR()">
+                        <i class="bi bi-qr-code-scan me-2"></i>Bật phiên điểm danh khuôn mặt
+                    </button>
+                </div>
+
+                <!-- Bảng danh sách sinh viên -->
+                <div class="table-wrapper mb-3">
+                    <table class="table table-hover table-custom mb-0">
+                        <thead>
+                            <tr>
+                                <th width="5%">STT</th>
+                                <th width="15%">Mã SV</th>
+                                <th width="25%" class="text-start">Họ Tên</th>
+                                <th width="25%" class="text-start">Email</th>
+                                <th width="20%">Trạng thái hôm nay</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Dòng 1: Đã điểm danh -->
+                            <tr>
+                                <td class="text-muted">1</td>
+                                <td class="fw-bold" style="color: var(--huit-blue);">2001230048</td>
+                                <td class="text-start fw-medium">Đỗ Gia Bảo</td>
+                                <td class="text-start text-muted">baodo@huit.edu.vn</td>
+                                <td><span class="badge bg-success rounded-pill px-3 py-2"><i class="bi bi-check-circle me-1"></i>Có mặt</span></td>
+                            </tr>
+                            <!-- Dòng 2: Chưa điểm danh -->
+                            <tr>
+                                <td class="text-muted">2</td>
+                                <td class="fw-bold" style="color: var(--huit-blue);">2001230101</td>
+                                <td class="text-start fw-medium">Nguyễn Văn A</td>
+                                <td class="text-start text-muted">nva@huit.edu.vn</td>
+                                <td><span class="badge bg-secondary bg-opacity-25 text-dark rounded-pill px-3 py-2"><i class="bi bi-dash-circle me-1"></i>Chưa quét</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Nút Chốt điểm danh -->
+                <div class="text-end">
+                    <button class="btn btn-success px-5 py-2 fw-bold rounded-pill shadow-sm" onclick="chotDiemDanh()">
+                        <i class="bi bi-check2-all me-2"></i>Chốt điểm danh buổi học
+                    </button>
+                </div>
+            </div>
+
+            <!-- TAB 2: TÌNH TRẠNG CHUYÊN CẦN TỔNG HỢP -->
+            <div class="tab-pane fade" id="chuyencan" role="tabpanel">
+                <div class="d-flex justify-content-between align-items-center mb-3 mt-2">
+                    <h5 class="fw-bold text-dark mb-0">Theo dõi chuyên cần & Cảnh báo</h5>
+                    <span class="text-danger fw-medium"><i class="bi bi-exclamation-triangle-fill me-1"></i>Quy định: Vắng quá 3 buổi sẽ cấm thi</span>
+                </div>
+                
+                <div class="table-wrapper">
+                    <table class="table table-hover table-custom mb-0">
+                        <thead>
+                            <tr>
+                                <th width="5%">STT</th>
+                                <th width="15%">Mã SV</th>
+                                <th width="30%" class="text-start">Họ Tên</th>
+                                <th width="15%">Số buổi vắng</th>
+                                <th width="15%">Đánh giá</th>
+                                <th width="20%">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Dòng 1: Bình thường (0 vắng) -->
+                            <tr>
+                                <td class="text-muted">1</td>
+                                <td class="fw-bold text-dark">2001230048</td>
+                                <td class="text-start fw-medium">Đỗ Gia Bảo</td>
+                                <td><span class="fw-bold text-success fs-5">0/3</span></td>
+                                <td><span class="badge bg-success rounded-pill px-3">Bình thường</span></td>
+                                <td>-</td>
+                            </tr>
+                            
+                            <!-- Dòng 2: Vắng 1 buổi -->
+                            <tr>
+                                <td class="text-muted">2</td>
+                                <td class="fw-bold text-dark">2001230101</td>
+                                <td class="text-start fw-medium">Nguyễn Văn A</td>
+                                <td><span class="fw-bold text-warning fs-5">1/3</span></td>
+                                <td><span class="badge bg-warning text-dark rounded-pill px-3">Cảnh báo nhẹ</span></td>
+                                <td>-</td>
+                            </tr>
+
+                            <!-- Dòng 3: Vắng vượt mức (4/3) -> Bôi đỏ & Hiện nút Gửi SMS -->
+                            <tr class="table-danger bg-opacity-10">
+                                <td class="text-danger fw-bold">3</td>
+                                <td class="fw-bold text-danger">2001230102</td>
+                                <td class="text-start fw-bold text-danger">Trần Thị B</td>
+                                <td><span class="fw-bold text-danger fs-5">4/3</span></td>
+                                <td><span class="badge bg-danger rounded-pill px-3"><i class="bi bi-x-circle me-1"></i>Cấm thi</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-danger rounded-pill px-3 shadow-sm fw-medium" onclick="guiSMS('2001230102', 'Trần Thị B')">
+                                        <i class="bi bi-chat-dots-fill me-1"></i>Gửi SMS
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    function batDiemDanhQR() {
+        // Thực tế sẽ gọi API mở Camera hoặc tạo mã QR trên màn hình
+        alert("Đang khởi tạo Camera nhận diện khuôn mặt cho buổi học hôm nay...");
+    }
+
+    function chotDiemDanh() {
+        if(confirm("Bạn có chắc chắn muốn CHỐT điểm danh? Các sinh viên chưa quét mặt sẽ bị tính là VẮNG.")) {
+            alert("Đã lưu kết quả điểm danh thành công!");
+            // Gọi API Update trạng thái về DB ở đây
+        }
+    }
+
+    function guiSMS(maSV, hoTen) {
+        if(confirm(`Bạn sẽ gửi tin nhắn SMS cảnh báo cấm thi đến sinh viên ${hoTen} (${maSV}). Tiếp tục?`)) {
+            // Gọi API gửi SMS (Twilio, Stringee, etc...)
+            alert(`Đã gửi SMS thành công đến số điện thoại của SV ${hoTen}.`);
+        }
+    }
+</script>

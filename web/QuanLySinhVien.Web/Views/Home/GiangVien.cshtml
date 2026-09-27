@@ -1,3 +1,57 @@
-@{ ViewData["Title"] = "Giảng viên"; }
-<section class="dashboard-heading"><p class="eyebrow blue">GIẢNG VIÊN</p><h1>Cổng thông tin giảng viên</h1><p>Chào @User.Identity?.Name. Phiên đăng nhập đã được xác thực đúng role giảng viên.</p></section>
-<div class="role-grid"><article><h2>Phạm vi quyền</h2><p>Lớp phụ trách, lịch học, điểm danh và chuyên cần thuộc các tuần triển khai tiếp theo.</p></article><article><h2>Bảo mật tài khoản</h2><a asp-controller="Account" asp-action="ChangePassword">Đổi mật khẩu</a></article></div>
+@{ 
+    ViewData["Title"] = "Cổng thông tin Giảng viên"; 
+}
+
+<section class="dashboard-heading mb-4">
+    <p class="eyebrow fw-bold mb-1" style="color: #006699;">GIẢNG VIÊN</p>
+    <h1 class="fw-bold">Cổng thông tin giảng viên</h1>
+    <p class="text-muted">Chào @User.Identity?.Name. Phiên đăng nhập đã được xác thực đúng role giảng viên.</p>
+</section>
+
+<!-- Hàng 1: Thông tin chung (Phạm vi quyền & Bảo mật) -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card h-100" style="border: 1px solid #dbe4ec; border-radius: 8px; box-shadow: none; background-color: #fff;">
+            <div class="card-body" style="padding: 1.5rem;">
+                <h5 class="fw-bold" style="color: #006699; margin-bottom: 1rem; font-size: 1.15rem;">
+                    Phạm vi quyền
+                </h5>
+                <p class="card-text" style="color: #333; font-size: 0.95rem; line-height: 1.5;">
+                    Lớp phụ trách, lịch học, điểm danh và chuyên cần thuộc các tuần triển khai tiếp theo.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card h-100" style="border: 1px solid #dbe4ec; border-radius: 8px; box-shadow: none; background-color: #fff;">
+            <div class="card-body" style="padding: 1.5rem;">
+                <h5 class="fw-bold" style="color: #006699; margin-bottom: 1rem; font-size: 1.15rem;">
+                    Bảo mật tài khoản
+                </h5>
+                <a asp-controller="Account" asp-action="ChangePassword" class="fw-bold" style="color: #006699; text-decoration: underline; font-size: 0.95rem;">
+                    Đổi mật khẩu
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hàng 2: Các chức năng nghiệp vụ của Giảng viên -->
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card h-100" style="border: 1px solid #dbe4ec; border-radius: 8px; box-shadow: none; background-color: #fff;">
+            <div class="card-body" style="padding: 1.5rem;">
+                <h5 class="fw-bold" style="color: #006699; margin-bottom: 1rem; font-size: 1.15rem;">
+                    Lịch giảng dạy & Quản lý lớp
+                </h5>
+                <p class="card-text" style="color: #333; margin-bottom: 1.5rem; font-size: 0.95rem; line-height: 1.5;">
+                    Quản lý danh sách sinh viên, xem thời khóa biểu giảng dạy, theo dõi kết quả học tập và tình trạng chuyên cần của lớp học.
+                </p>
+                <a asp-controller="GiangVien" asp-action="LichGiangDay" class="fw-bold" style="color: #006699; text-decoration: underline; font-size: 0.95rem;">
+                    Xem lịch dạy
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

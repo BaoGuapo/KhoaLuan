@@ -8,7 +8,12 @@ namespace QuanLySinhVien.Web.Controllers
     {
         public IActionResult LichGiangDay()
         {
-            return View(); 
+            return View();
+        }
+        public IActionResult QuanLyLop(string maLop)
+        {
+            ViewBag.MaLop = maLop;
+            return View();
         }
     }
 }
