@@ -1,0 +1,193 @@
+@{
+    ViewData["Title"] = "Quản lý Danh mục Môn học";
+}
+
+<style>
+    :root {
+        --huit-blue: #005b9f;
+        --huit-light: #eaf3fa;
+    }
+    .table-custom th { background-color: var(--huit-light); color: var(--huit-blue); font-weight: 600; text-align: center; border-bottom: 2px solid #cce0f0; padding: 12px; }
+    .table-custom td { padding: 12px; vertical-align: middle; text-align: center; border-bottom: 1px solid #f1f5f9; }
+    .modal-content { border-radius: 12px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
+    .modal-header { background-color: var(--huit-blue); color: white; border-top-left-radius: 12px; border-top-right-radius: 12px; }
+</style>
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-dark mb-1">Quản lý Danh mục Môn học</h3>
+            <p class="text-muted mb-0">Cấu hình thông tin môn học, tín chỉ và tiết học.</p>
+        </div>
+        <button class="btn text-white rounded-pill px-4 shadow-sm fw-medium" style="background-color: var(--huit-blue);" onclick="moModalThem()">
+            <i class="bi bi-plus-circle me-2"></i>Thêm môn học mới
+        </button>
+    </div>
+
+    <!-- Bảng dữ liệu -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden p-3">
+        <div class="table-responsive">
+            <table class="table table-hover table-custom mb-0">
+                <thead>
+                    <tr>
+                        <th width="5%">STT</th>
+                        <th width="12%">Mã môn</th>
+                        <th width="25%" class="text-start">Tên môn học</th>
+                        <th width="20%">Ngành đào tạo</th>
+                        <th width="8%">Số TC</th>
+                        <th width="8%">Tiết LT</th>
+                        <th width="8%">Tiết TH</th>
+                        <th width="14%">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyMonHoc">
+                    <!-- Dữ liệu mẫu (sẽ được thay thế bằng JS Fetch API) -->
+                    <tr>
+                        <td class="text-muted">1</td>
+                        <td class="fw-bold text-dark">IT01</td>
+                        <td class="text-start fw-medium">Lập trình Web ASP.NET</td>
+                        <td>Công nghệ thông tin</td>
+                        <td class="fw-bold" style="color: var(--huit-blue);">3</td>
+                        <td>30</td>
+                        <td>30</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary rounded-circle p-2 me-1" onclick="moModalSua('IT01')" title="Sửa"><i class="bi bi-pencil"></i></button>
+                            <button class="btn btn-sm btn-outline-danger rounded-circle p-2" onclick="xoaMonHoc('IT01')" title="Xóa"><i class="bi bi-trash"></i></button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">2</td>
+                        <td class="fw-bold text-dark">IT02</td>
+                        <td class="text-start fw-medium">Cơ sở dữ liệu nâng cao</td>
+                        <td>Hệ thống thông tin</td>
+                        <td class="fw-bold" style="color: var(--huit-blue);">4</td>
+                        <td>45</td>
+                        <td>30</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary rounded-circle p-2 me-1" onclick="moModalSua('IT02')" title="Sửa"><i class="bi bi-pencil"></i></button>
+                            <button class="btn btn-sm btn-outline-danger rounded-circle p-2" onclick="xoaMonHoc('IT02')" title="Xóa"><i class="bi bi-trash"></i></button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL THÊM / SỬA MÔN HỌC -->
+<div class="modal fade" id="modalMonHoc" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="modalTitle">Thêm môn học mới</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="formMonHoc">
+                    <input type="hidden" id="actionType" value="add"> <!-- add hoặc edit -->
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Mã môn học</label>
+                        <input type="text" class="form-control" id="maMonHoc" placeholder="Ví dụ: IT03" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Tên môn học</label>
+                        <input type="text" class="form-control" id="tenMonHoc" placeholder="Nhập tên môn..." required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-medium">Ngành đào tạo</label>
+                        <select class="form-select" id="nganhDaoTao" required>
+                            <option value="" disabled selected>-- Chọn ngành --</option>
+                            <option value="CNTT">Công nghệ thông tin</option>
+                            <option value="HTTT">Hệ thống thông tin</option>
+                            <option value="KTPM">Kỹ thuật phần mềm</option>
+                        </select>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-4">
+                            <label class="form-label fw-medium">Số Tín chỉ</label>
+                            <input type="number" class="form-control text-center" id="soTinChi" min="1" value="3" required>
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label fw-medium">Tiết LT</label>
+                            <input type="number" class="form-control text-center" id="tietLT" min="0" value="30" required>
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label fw-medium">Tiết TH</label>
+                            <input type="number" class="form-control text-center" id="tietTH" min="0" value="30" required>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0 bg-light rounded-bottom-3">
+                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn text-white rounded-pill px-4" style="background-color: var(--huit-blue);" onclick="luuMonHoc()">Lưu dữ liệu</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Logic Khởi tạo Modal
+    const modalMonHoc = new bootstrap.Modal(document.getElementById('modalMonHoc'));
+
+    function moModalThem() {
+        document.getElementById('modalTitle').innerText = "Thêm môn học mới";
+        document.getElementById('actionType').value = "add";
+        document.getElementById('formMonHoc').reset();
+        document.getElementById('maMonHoc').disabled = false; // Cho phép nhập mã khi thêm mới
+        modalMonHoc.show();
+    }
+
+    function moModalSua(maMon) {
+        document.getElementById('modalTitle').innerText = "Cập nhật môn học: " + maMon;
+        document.getElementById('actionType').value = "edit";
+        
+        // TODO: Gọi API fetch dữ liệu môn học theo mã để điền vào form
+        // Ví dụ mock data:
+        document.getElementById('maMonHoc').value = maMon;
+        document.getElementById('maMonHoc').disabled = true; // Không cho sửa khóa chính
+        document.getElementById('tenMonHoc').value = "Tên môn giả lập";
+        document.getElementById('nganhDaoTao').value = "CNTT";
+        document.getElementById('soTinChi').value = 3;
+        
+        modalMonHoc.show();
+    }
+
+    function luuMonHoc() {
+        const type = document.getElementById('actionType').value;
+        const data = {
+            maMonHoc: document.getElementById('maMonHoc').value,
+            tenMonHoc: document.getElementById('tenMonHoc').value,
+            nganhDaoTao: document.getElementById('nganhDaoTao').value,
+            soTinChi: parseInt(document.getElementById('soTinChi').value),
+            tietLT: parseInt(document.getElementById('tietLT').value),
+            tietTH: parseInt(document.getElementById('tietTH').value)
+        };
+
+        if(!data.maMonHoc || !data.tenMonHoc || !data.nganhDaoTao) {
+            alert("Vui lòng điền đầy đủ thông tin!"); return;\
+            }
+
+        fetch('/api/v1/mon-hoc', {
+            method: type === 'add' ? 'POST' : 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        }).then(...);
+
+
+        alert((type === 'add' ? 'Thêm mới' : 'Cập nhật') + " môn học thành công!");
+        modalMonHoc.hide();
+    }
+
+    function xoaMonHoc(maMon) {
+        if(confirm("Bạn có chắc chắn muốn xóa môn học " + maMon + "? Mọi dữ liệu liên quan sẽ bị ảnh hưởng.")) {
+            // TODO: Gọi API DELETE
+            alert("Đã xóa môn học: " + maMon);
+        }
+    }
+</script>

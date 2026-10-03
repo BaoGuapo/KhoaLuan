@@ -1,0 +1,169 @@
+@{
+    ViewData["Title"] = "Phân công Giảng viên & Thời khóa biểu";
+}
+
+<style>
+    :root {
+        --huit-blue: #005b9f;
+        --huit-light: #eaf3fa;
+        --huit-border: #dbe4ec;
+    }
+    .card-custom { border-radius: 12px; border: 1px solid var(--huit-border); box-shadow: 0 4px 12px rgba(0,0,0,0.03); background: #fff; }
+    .table-custom th { background-color: var(--huit-light); color: var(--huit-blue); font-weight: 600; text-align: center; border-bottom: 2px solid #cce0f0; padding: 12px; }
+    .table-custom td { padding: 12px; vertical-align: middle; text-align: center; border-bottom: 1px solid #f1f5f9; }
+    .form-label { font-weight: 600; color: #333; }
+</style>
+
+<div class="container-fluid py-4">
+    <!-- Nút quay lại và Tiêu đề -->
+    <div class="mb-4 d-flex align-items-center">
+        <a href="/CanBoQuanLy/Index" class="btn btn-light border rounded-circle p-2 me-3 shadow-sm" title="Về trang chủ">
+            <i class="bi bi-arrow-left fs-5 text-dark"></i>
+        </a>
+        <div>
+            <h3 class="fw-bold text-dark mb-1">Điều phối: Phân công Lịch dạy</h3>
+            <p class="text-muted mb-0">Gán Giảng viên vào Lớp học phần và xếp thời khóa biểu.</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Cột trái: Form Phân công -->
+        <div class="col-lg-4">
+            <div class="card-custom p-4">
+                <h5 class="fw-bold mb-4" style="color: var(--huit-blue);"><i class="bi bi-calendar-plus me-2"></i>Tạo Lịch Dạy Mới</h5>
+                
+                <form id="formPhanCong">
+                    <!-- Chọn Lớp -->
+                    <div class="mb-3">
+                        <label class="form-label">1. Chọn Lớp học phần (Đang chờ)</label>
+                        <select class="form-select" id="maLopHocPhan" required>
+                            <option value="" disabled selected>-- Chọn lớp --</option>
+                            <option value="IT01_HK1_01">IT01_HK1_01 - Lập trình Web ASP.NET</option>
+                            <option value="IT02_HK1_01">IT02_HK1_01 - CSDL Nâng cao</option>
+                        </select>
+                    </div>
+
+                    <!-- Chọn Giảng viên -->
+                    <div class="mb-3">
+                        <label class="form-label">2. Phân công Giảng viên</label>
+                        <select class="form-select" id="maGiangVien" required>
+                            <option value="" disabled selected>-- Chọn giảng viên --</option>
+                            <option value="GV001">GV001 - ThS. Nguyễn Văn A (CNTT)</option>
+                            <option value="GV002">GV002 - TS. Trần Thị B (CNTT)</option>
+                        </select>
+                    </div>
+
+                    <!-- Chọn Thời gian -->
+                    <div class="mb-3">
+                        <label class="form-label">3. Thời gian & Địa điểm</label>
+                        <div class="row g-2 mb-2">
+                            <div class="col-6">
+                                <select class="form-select" id="thuHoc" required>
+                                    <option value="" disabled selected>-- Thứ --</option>
+                                    <option value="2">Thứ 2</option>
+                                    <option value="3">Thứ 3</option>
+                                    <option value="4">Thứ 4</option>
+                                    <option value="5">Thứ 5</option>
+                                    <option value="6">Thứ 6</option>
+                                    <option value="7">Thứ 7</option>
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <select class="form-select" id="caHoc" required>
+                                    <option value="" disabled selected>-- Ca --</option>
+                                    <option value="Sáng">Sáng</option>
+                                    <option value="Chiều">Chiều</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <select class="form-select" id="tietHoc" required>
+                                    <option value="" disabled selected>-- Tiết --</option>
+                                    <option value="1-3">Tiết 1 - 3</option>
+                                    <option value="4-5">Tiết 4 - 5</option>
+                                    <option value="7-9">Tiết 7 - 9</option>
+                                    <option value="10-12">Tiết 10 - 12</option>
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <input type="text" class="form-control" id="phongHoc" placeholder="Phòng (VD: C101)" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn text-white w-100 fw-bold py-2 mt-2 shadow-sm" style="background-color: var(--huit-blue);" onclick="luuPhanCong()">
+                        <i class="bi bi-save me-2"></i>Lưu phân công
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Cột phải: Danh sách đã phân công -->
+        <div class="col-lg-8">
+            <div class="card-custom p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-card-list me-2"></i>Danh sách phân công hiện tại</h5>
+                    <div class="input-group" style="width: 250px;">
+                        <input type="text" class="form-control" placeholder="Tìm mã lớp/giảng viên...">
+                        <button class="btn btn-outline-secondary"><i class="bi bi-search"></i></button>
+                    </div>
+                </div>
+
+                <div class="table-responsive rounded-3 border">
+                    <table class="table table-hover table-custom mb-0">
+                        <thead>
+                            <tr>
+                                <th width="15%">Mã Lớp HP</th>
+                                <th width="30%" class="text-start">Giảng viên</th>
+                                <th width="35%">Lịch học (Thứ - Tiết - Phòng)</th>
+                                <th width="20%">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Dữ liệu mẫu -->
+                            <tr>
+                                <td class="fw-bold" style="color: var(--huit-blue);">IT01_HK1_01</td>
+                                <td class="text-start fw-medium">ThS. Nguyễn Văn A</td>
+                                <td><span class="badge bg-light text-dark border"><i class="bi bi-clock me-1"></i>Thứ 2 | Tiết 1-3 | C101</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-danger rounded-circle p-2" title="Hủy phân công" onclick="huyPhanCong('IT01_HK1_01')"><i class="bi bi-x-lg"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function luuPhanCong() {
+        const data = {
+            maLopHocPhan: document.getElementById('maLopHocPhan').value,
+            maGiangVien: document.getElementById('maGiangVien').value,
+            thu: document.getElementById('thuHoc').value,
+            ca: document.getElementById('caHoc').value,
+            tiet: document.getElementById('tietHoc').value,
+            phong: document.getElementById('phongHoc').value
+        };
+
+        if(!data.maLopHocPhan || !data.maGiangVien || !data.thu || !data.ca || !data.tiet || !data.phong) {
+            alert("Vui lòng nhập đầy đủ thông tin phân công!");
+            return;
+        }
+
+        // TODO: Viết API POST lưu xuống Database
+        // Khi lưu thành công, lớp này sẽ tự động xuất hiện bên trang Lịch Dạy của Giảng viên tương ứng.
+        alert(`Đã phân công thành công Lớp ${data.maLopHocPhan} cho Giảng viên ${data.maGiangVien}.`);
+        document.getElementById('formPhanCong').reset();
+    }
+
+    function huyPhanCong(maLop) {
+        if(confirm(`Bạn có chắc muốn hủy phân công của lớp ${maLop}?`)) {
+            // TODO: Gọi API DELETE xóa thời khóa biểu của lớp này
+            alert(`Đã hủy lịch dạy của lớp ${maLop}`);
+        }
+    }
+</script>

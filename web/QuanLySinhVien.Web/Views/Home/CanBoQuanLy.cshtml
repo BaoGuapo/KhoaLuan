@@ -1,3 +1,105 @@
-@{ ViewData["Title"] = "Cán bộ quản lý"; }
-<section class="dashboard-heading"><p class="eyebrow blue">CÁN BỘ QUẢN LÝ</p><h1>Cổng quản lý đào tạo</h1><p>Chào @User.Identity?.Name. Phiên đăng nhập đã được xác thực đúng role cán bộ quản lý.</p></section>
-<div class="role-grid"><article><h2>Phạm vi quyền</h2><p>Quản lý hồ sơ, môn học, lớp học và báo cáo thuộc các tuần triển khai chức năng website tiếp theo.</p></article><article><h2>Bảo mật tài khoản</h2><a asp-controller="Account" asp-action="ChangePassword">Đổi mật khẩu</a></article></div>
+@{ 
+    ViewData["Title"] = "Cán bộ quản lý"; 
+}
+
+<style>
+    :root {
+        --huit-blue: #005b9f;
+        --huit-blue-hover: #00467a;
+        --huit-light: #eaf3fa;
+        --huit-border: #dbe4ec;
+    }
+    .text-huit { color: var(--huit-blue) !important; }
+    
+    .card-custom {
+        border-radius: 12px;
+        border: 1px solid var(--huit-border);
+        background-color: #fff;
+        transition: all 0.25s ease;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        height: 100%;
+    }
+    .card-custom:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0, 91, 159, 0.1);
+        border-color: #b3d4ec;
+    }
+    .icon-box {
+        width: 45px; height: 45px; border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.25rem; margin-bottom: 1rem;
+    }
+</style>
+
+<div class="container-fluid py-4">
+    <!-- TIÊU ĐỀ THEO CODE GỐC CỦA BẠN -->
+    <section class="dashboard-heading mb-4">
+        <p class="eyebrow fw-bold mb-1 text-huit">CÁN BỘ QUẢN LÝ</p>
+        <h1 class="fw-bold">Cổng quản lý đào tạo</h1>
+        <p class="text-muted">Chào @User.Identity?.Name. Phiên đăng nhập đã được xác thực đúng role cán bộ quản lý.</p>
+    </section>
+
+    <!-- HÀNG 1: THÔNG TIN TÀI KHOẢN -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card-custom p-4">
+                <h5 class="fw-bold text-huit mb-3">Phạm vi quyền</h5>
+                <p class="text-muted mb-0" style="line-height: 1.6;">
+                    Quản lý hồ sơ, môn học, lớp học và báo cáo thuộc các tuần triển khai chức năng website tiếp theo.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card-custom p-4">
+                <h5 class="fw-bold text-huit mb-3">Bảo mật tài khoản</h5>
+                <a asp-controller="Account" asp-action="ChangePassword" class="fw-bold text-huit text-decoration-underline">Đổi mật khẩu</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- HÀNG 2: QUẢN LÝ DANH MỤC CƠ SỞ -->
+    <h5 class="fw-bold text-dark mb-3 mt-4"><i class="bi bi-hdd-stack me-2 text-huit"></i>Dữ liệu & Danh mục</h5>
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card-custom p-4 d-flex flex-column">
+                <div class="icon-box bg-light text-huit"><i class="bi bi-journal-bookmark-fill"></i></div>
+                <h5 class="fw-bold text-dark mb-2">Quản lý môn học</h5>
+                <p class="text-muted mb-4 fs-6">Danh mục môn học theo ngành, tín chỉ, tiết lý thuyết & thực hành.</p>
+                <a href="/CanBoQuanLy/QuanLyMonHoc" class="fw-bold text-huit text-decoration-underline mt-auto">Truy cập ngay</a>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card-custom p-4 d-flex flex-column">
+                <div class="icon-box bg-light text-huit"><i class="bi bi-grid-1x2-fill"></i></div>
+                <h5 class="fw-bold text-dark mb-2">Tạo lớp học phần</h5>
+                <p class="text-muted mb-4 fs-6">Thiết lập lớp học phần, mã lớp, sĩ số tối đa chờ phân công giảng dạy.</p>
+                <a href="#" class="fw-bold text-huit text-decoration-underline mt-auto">Truy cập ngay</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- HÀNG 3: ĐIỀU PHỐI GIẢNG VIÊN & SINH VIÊN -->
+    <h5 class="fw-bold text-dark mb-3 mt-4"><i class="bi bi-diagram-3 me-2 text-huit"></i>Điều phối Đào tạo</h5>
+    <div class="row g-4 mb-4">
+        <!-- Phân công Giảng viên -->
+        <div class="col-md-6">
+            <div class="card-custom p-4" style="border-left: 4px solid #f59e0b;">
+                <h5 class="fw-bold text-dark mb-2">Giảng viên (Phân công lịch)</h5>
+                <p class="text-muted mb-3 fs-6">Gán Giảng viên vào Lớp học phần, xếp TKB theo tuần, lưu vào CSDL.</p>
+                <a href="#" class="btn btn-sm btn-outline-warning text-dark fw-bold rounded-pill px-3 shadow-sm border-warning">
+                    <i class="bi bi-calendar-plus me-1"></i>Xếp thời khóa biểu
+                </a>
+            </div>
+        </div>
+        <!-- Mở cổng Sinh viên -->
+        <div class="col-md-6">
+            <div class="card-custom p-4" style="border-left: 4px solid #10b981;">
+                <h5 class="fw-bold text-dark mb-2">Sinh viên (Mở đăng ký)</h5>
+                <p class="text-muted mb-3 fs-6">Đưa các lớp đã có giảng viên và TKB lên cổng để sinh viên đăng ký.</p>
+                <a href="#" class="btn btn-sm btn-outline-success fw-bold rounded-pill px-3 shadow-sm">
+                    <i class="bi bi-check2-square me-1"></i>Mở cổng ĐKHP
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
