@@ -1,0 +1,141 @@
+@{
+    ViewData["Title"] = "Tổ chức Đăng ký học phần";
+}
+
+<style>
+    :root {
+        --huit-blue: #005b9f;
+        --huit-light: #eaf3fa;
+        --huit-border: #dbe4ec;
+    }
+    .card-custom { border-radius: 12px; border: 1px solid var(--huit-border); box-shadow: 0 4px 12px rgba(0,0,0,0.03); background: #fff; }
+    .table-custom th { background-color: var(--huit-light); color: var(--huit-blue); font-weight: 600; text-align: center; border-bottom: 2px solid #cce0f0; padding: 15px 12px; }
+    .table-custom td { padding: 12px; vertical-align: middle; text-align: center; border-bottom: 1px solid #f1f5f9; }
+    
+    /* Thiết kế Toggle Switch cho đẹp mắt */
+    .form-switch .form-check-input { width: 3em; height: 1.5em; cursor: pointer; }
+    .form-switch .form-check-input:checked { background-color: #10b981; border-color: #10b981; }
+    .form-switch .form-check-input:focus { box-shadow: 0 0 0 .25rem rgba(16, 185, 129, 0.25); }
+    .status-text { font-weight: 600; font-size: 0.9rem; margin-left: 8px; }
+</style>
+
+<div class="container-fluid py-4">
+    <!-- Nút quay lại và Tiêu đề -->
+    <div class="mb-4 d-flex align-items-center">
+        <!-- Đã sửa href thành /CanBoQuanLy/CanBoQuanLy theo route bạn vừa đổi -->
+        <a href="/CanBoQuanLy/CanBoQuanLy" class="btn btn-light border rounded-circle p-2 me-3 shadow-sm" title="Về trang chủ">
+            <i class="bi bi-arrow-left fs-5 text-dark"></i>
+        </a>
+        <div>
+            <h3 class="fw-bold text-dark mb-1">Mở cổng đăng ký Sinh viên</h3>
+            <p class="text-muted mb-0">Quản lý trạng thái hiển thị các lớp học phần lên cổng đăng ký của sinh viên.</p>
+        </div>
+    </div>
+
+    <!-- Thanh công cụ & Thống kê nhanh -->
+    <div class="row mb-4 g-3">
+        <div class="col-md-3">
+            <div class="card-custom p-3 bg-light border-0">
+                <div class="text-muted fw-medium mb-1">Tổng số lớp sẵn sàng</div>
+                <h3 class="fw-bold text-dark mb-0">120</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card-custom p-3" style="background-color: #ecfdf5; border: none;">
+                <div class="text-success fw-medium mb-1">Đang mở đăng ký</div>
+                <h3 class="fw-bold text-success mb-0">85</h3>
+            </div>
+        </div>
+        <div class="col-md-6 d-flex align-items-center justify-content-end">
+            <div class="input-group w-75 shadow-sm rounded-3 overflow-hidden">
+                <input type="text" class="form-control border-0 px-3" placeholder="Tìm mã lớp, tên môn...">
+                <button class="btn text-white px-4" style="background-color: var(--huit-blue);"><i class="bi bi-search"></i> Tìm kiếm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bảng danh sách lớp -->
+    <div class="card-custom p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-list-check me-2 text-huit"></i>Danh sách lớp học phần</h5>
+            <button class="btn btn-outline-success rounded-pill px-4 fw-medium shadow-sm"><i class="bi bi-check-all me-2"></i>Mở đăng ký tất cả</button>
+        </div>
+
+        <div class="table-responsive rounded-3 border">
+            <table class="table table-hover table-custom mb-0">
+                <thead>
+                    <tr>
+                        <th width="12%">Mã Lớp HP</th>
+                        <th width="20%" class="text-start">Môn học</th>
+                        <th width="20%" class="text-start">Giảng viên</th>
+                        <th width="15%">Lịch học</th>
+                        <th width="10%">Sĩ số</th>
+                        <th width="23%">Trạng thái trên Cổng SV</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dữ liệu mẫu -->
+                    <tr>
+                        <td class="fw-bold" style="color: var(--huit-blue);">IT01_HK1_01</td>
+                        <td class="text-start fw-medium">Lập trình Web ASP.NET</td>
+                        <td class="text-start">ThS. Nguyễn Văn A</td>
+                        <td><small class="bg-light border px-2 py-1 rounded text-nowrap">T2 | 1-3 | C101</small></td>
+                        <td><span class="badge bg-secondary">0 / 70</span></td>
+                        <td>
+                            <div class="form-check form-switch d-flex align-items-center justify-content-center">
+                                <input class="form-check-input" type="checkbox" id="toggle_IT01" checked onchange="thayDoiTrangThai('IT01_HK1_01', this)">
+                                <label class="form-check-label status-text text-success" for="toggle_IT01" id="lbl_IT01">Đang mở</label>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="fw-bold" style="color: var(--huit-blue);">IT02_HK1_01</td>
+                        <td class="text-start fw-medium">Cơ sở dữ liệu Nâng cao</td>
+                        <td class="text-start">TS. Trần Thị B</td>
+                        <td><small class="bg-light border px-2 py-1 rounded text-nowrap">T4 | 4-5 | C102</small></td>
+                        <td><span class="badge bg-secondary">0 / 50</span></td>
+                        <td>
+                            <div class="form-check form-switch d-flex align-items-center justify-content-center">
+                                <input class="form-check-input" type="checkbox" id="toggle_IT02" onchange="thayDoiTrangThai('IT02_HK1_01', this)">
+                                <label class="form-check-label status-text text-muted" for="toggle_IT02" id="lbl_IT02">Đang khóa</label>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    function thayDoiTrangThai(maLop, checkboxElem) {
+        const isChecked = checkboxElem.checked;
+        const lblElem = document.getElementById('lbl_' + maLop.split('_')[0]); // Lấy theo phần đầu mã lớp cho ví dụ này
+
+        // Cập nhật giao diện tạm thời
+        if (isChecked) {
+            lblElem.innerText = "Đang mở";
+            lblElem.classList.remove('text-muted');
+            lblElem.classList.add('text-success');
+        } else {
+            lblElem.innerText = "Đang khóa";
+            lblElem.classList.remove('text-success');
+            lblElem.classList.add('text-muted');
+        }
+
+
+        fetch(`/api/v1/lop-hoc-phan/${maLop}/trang-thai-dang-ky`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ isOpend: isChecked })
+        }).then(response => {
+            if(!response.ok) {
+                alert("Có lỗi xảy ra, không thể thay đổi trạng thái!");
+                checkboxElem.checked = !isChecked; // Revert nếu lỗi
+            }
+        });
+        
+        console.log(`Đã ${isChecked ? 'MỞ' : 'KHÓA'} cổng đăng ký cho lớp ${maLop}`);
+    }
+</script>
