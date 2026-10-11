@@ -1,14 +1,17 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using QuanLySinhVien.Api.Contracts.Auth;
+using QuanLySinhVien.Api.Contracts.Faces;
+using QuanLySinhVien.Api.Models.Entities;
 using QuanLySinhVien.Api.Services;
 
 namespace QuanLySinhVien.Api.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-public sealed class AuthController(IAuthService authService) : ControllerBase
+public sealed class AuthController(IAuthService authService, IFaceRecognitionService faces) : ControllerBase
 {
     [AllowAnonymous]
     [HttpPost("login")]
@@ -16,6 +19,24 @@ public sealed class AuthController(IAuthService authService) : ControllerBase
     {
         var response = await authService.LoginAsync(request, cancellationToken);
         return response is null ? Unauthorized(new { message = "Invalid credentials." }) : Ok(response);
+    }
+
+    [Authorize(Roles = RoleNames.SinhVien)]
+    [EnableRateLimiting("face-login")]
+    [RequestSizeLimit(64 * 1024)]
+    [HttpPost("verify-face")]
+    public async Task<IActionResult> VerifyFace(FaceDescriptorSamplesRequest request, CancellationToken cancellationToken)
+    {
+        var studentCode = User.Identity?.Name;
+        if (string.IsNullOrWhiteSpace(studentCode)) return Unauthorized();
+
+        var normalized = faces.NormalizeSamples(request.Descriptors);
+        if (!normalized.Succeeded)
+            return UnprocessableEntity(new { code = normalized.ErrorCode, message = normalized.ErrorMessage });
+
+        return await faces.VerifyStudentAsync(studentCode, normalized.Value!, cancellationToken)
+            ? NoContent()
+            : Unauthorized(new { code = "FaceNotMatched", message = "Khuôn mặt không khớp hồ sơ đã đăng ký." });
     }
 
     [Authorize]

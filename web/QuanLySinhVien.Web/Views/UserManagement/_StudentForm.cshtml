@@ -1,0 +1,33 @@
+@model SinhVienFormViewModel
+@{ var editing = ViewContext.RouteData.Values["action"]?.ToString() == "EditStudent"; }
+<form method="post">
+    <div asp-validation-summary="ModelOnly" class="validation summary"></div>
+    <h2>Thông tin cơ bản</h2>
+    <div class="form-grid">
+        <div><label asp-for="MaSinhVien"></label><input asp-for="MaSinhVien" readonly="@editing" /><span asp-validation-for="MaSinhVien" class="validation"></span></div>
+        <div><label asp-for="HoTen"></label><input asp-for="HoTen" /><span asp-validation-for="HoTen" class="validation"></span></div>
+        <div><label asp-for="Email"></label><input asp-for="Email" /><span asp-validation-for="Email" class="validation"></span></div>
+        <div><label asp-for="SoDienThoai"></label><input asp-for="SoDienThoai" /><span asp-validation-for="SoDienThoai" class="validation"></span></div>
+    </div>
+    <h2>Thông tin cá nhân</h2>
+    <div class="form-grid"><partial name="_PersonalAcademicFields" model="Model" /></div>
+    <h2>Thông tin đào tạo</h2>
+    <div class="form-grid">
+        <div><label asp-for="MaHoSo"></label><input asp-for="MaHoSo" /></div>
+        <div><label asp-for="NgayVaoTruong"></label><input asp-for="NgayVaoTruong" /></div>
+        <div><label asp-for="Khoa"></label><input asp-for="Khoa" /></div>
+        <div><label asp-for="Nganh"></label><input asp-for="Nganh" /></div>
+        <div><label asp-for="ChuyenNganh"></label><input asp-for="ChuyenNganh" /></div>
+        <div><label asp-for="LopHoc"></label><input asp-for="LopHoc" /></div>
+        <div><label asp-for="KhoaHoc"></label><input asp-for="KhoaHoc" /></div>
+        <div><label asp-for="CoSo"></label><input asp-for="CoSo" /></div>
+        <div><label asp-for="BacDaoTao"></label><input asp-for="BacDaoTao" /></div>
+        <div><label asp-for="LoaiHinhDaoTao"></label><input asp-for="LoaiHinhDaoTao" /></div>
+        <div><label asp-for="KhuVuc"></label><input asp-for="KhuVuc" /></div>
+        <div><label asp-for="DoiTuong"></label><input asp-for="DoiTuong" /></div>
+        <div><label asp-for="DienChinhSach"></label><input asp-for="DienChinhSach" /></div>
+        <div><label asp-for="NgayVaoDoan"></label><input asp-for="NgayVaoDoan" /></div>
+        <div><label asp-for="NgayVaoDang"></label><input asp-for="NgayVaoDang" /></div>
+    </div>
+    <div class="form-actions"><a class="button secondary" asp-action="Students">Hủy</a><button class="button primary-link" type="submit">@(editing ? "Lưu thay đổi" : "Tạo hồ sơ")</button></div>
+</form>

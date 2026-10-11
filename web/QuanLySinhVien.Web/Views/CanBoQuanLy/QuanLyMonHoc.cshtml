@@ -1,5 +1,6 @@
 @{
     ViewData["Title"] = "Quản lý Danh mục Môn học";
+    ViewData["UseBootstrap"] = true;
 }
 
 <style>
@@ -159,7 +160,6 @@
     }
 
     function luuMonHoc() {
-        const type = document.getElementById('actionType').value;
         const data = {
             maMonHoc: document.getElementById('maMonHoc').value,
             tenMonHoc: document.getElementById('tenMonHoc').value,
@@ -170,24 +170,17 @@
         };
 
         if(!data.maMonHoc || !data.tenMonHoc || !data.nganhDaoTao) {
-            alert("Vui lòng điền đầy đủ thông tin!"); return;\
-            }
+            alert("Vui lòng điền đầy đủ thông tin!");
+            return;
+        }
 
-        fetch('/api/v1/mon-hoc', {
-            method: type === 'add' ? 'POST' : 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        }).then(...);
-
-
-        alert((type === 'add' ? 'Thêm mới' : 'Cập nhật') + " môn học thành công!");
-        modalMonHoc.hide();
+        alert("Đây là giao diện mẫu; chức năng lưu môn học chưa kết nối API.");
     }
 
     function xoaMonHoc(maMon) {
         if(confirm("Bạn có chắc chắn muốn xóa môn học " + maMon + "? Mọi dữ liệu liên quan sẽ bị ảnh hưởng.")) {
             // TODO: Gọi API DELETE
-            alert("Đã xóa môn học: " + maMon);
+            alert("Đây là giao diện mẫu; chức năng xóa môn học chưa kết nối API.");
         }
     }
 </script>

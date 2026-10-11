@@ -1,0 +1,10 @@
+@model IReadOnlyCollection<SinhVienModel>
+@{ ViewData["Title"] = "Hồ sơ sinh viên"; }
+<div class="page-heading"><div><p class="eyebrow blue">HỒ SƠ</p><h1>Sinh viên</h1><p>Tạo hồ sơ trước, sau đó mới cấp tài khoản đăng nhập.</p></div><a class="button primary-link" asp-action="CreateStudent">Thêm sinh viên</a></div>
+<nav class="management-tabs" aria-label="Các mục quản lý người dùng"><a asp-action="Index">Tài khoản</a><a class="active" aria-current="page" asp-action="Students">Hồ sơ sinh viên</a><a asp-action="Lecturers">Hồ sơ giảng viên</a></nav>
+<form method="get" class="filter-bar simple-filter"><div class="filter-field"><label for="student-search">Tìm sinh viên</label><input id="student-search" name="search" value="@ViewData["Search"]" placeholder="Mã hoặc họ tên" /></div><div class="filter-actions"><button class="button primary-link" type="submit">Tìm kiếm</button><a class="button secondary" asp-action="Students">Xóa lọc</a></div></form>
+<p class="result-count" role="status">@Model.Count hồ sơ sinh viên phù hợp</p>
+<div class="table-card" role="region" aria-label="Danh sách sinh viên" tabindex="0"><table><thead><tr><th scope="col">Mã sinh viên</th><th scope="col">Họ tên</th><th scope="col">Liên hệ</th><th scope="col">Tài khoản</th><th scope="col">Thao tác</th></tr></thead><tbody>
+@foreach (var item in Model) { <tr><td><strong>@item.MaSinhVien</strong></td><td>@item.HoTen</td><td>@item.Email<small>@(item.SoDienThoai ?? "Chưa có số điện thoại")</small></td><td>@if (item.UserId.HasValue) { <span class="badge badge-success">Đã cấp</span> } else { <span class="badge badge-warning">Chưa cấp</span> }</td><td class="actions"><a asp-action="EditStudent" asp-route-code="@item.MaSinhVien">Sửa</a>@if (!item.UserId.HasValue) { <a asp-action="ProvisionStudent" asp-route-code="@item.MaSinhVien">Cấp tài khoản</a> }</td></tr> }
+@if (Model.Count == 0) { <tr><td colspan="5" class="empty-state">Không có sinh viên phù hợp. Hãy thử tìm theo mã khác hoặc thêm hồ sơ mới.</td></tr> }
+</tbody></table></div>

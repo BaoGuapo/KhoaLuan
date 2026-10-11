@@ -1,0 +1,54 @@
+@model TeachingAssignmentPageViewModel
+@{ ViewData["Title"] = "Phân công giảng dạy"; }
+<div class="page-heading">
+    <div><p class="eyebrow blue">PHÂN CÔNG GIẢNG DẠY</p><h1>@Model.Workspace.HoTen</h1><p>@Model.Workspace.MaGiangVien · @(Model.Workspace.Khoa ?? "Chưa cập nhật khoa") · @(Model.Workspace.ChuyenNganh ?? "Chưa cập nhật chuyên ngành")</p></div>
+    <a class="button secondary" asp-action="Lecturers">Quay lại danh sách</a>
+</div>
+
+<div class="detail-grid assignment-layout">
+    <section class="panel">
+        <h2>Xếp lớp và lịch dạy</h2>
+        @if (string.IsNullOrWhiteSpace(Model.Workspace.ChuyenNganh))
+        {
+            <div class="alert error">Hồ sơ giảng viên chưa có chuyên ngành. Hãy cập nhật hồ sơ trước khi phân công.</div>
+        }
+        else if (Model.Workspace.MonHocPhuHop.Count == 0)
+        {
+            <div class="alert error">Không tìm thấy môn học trong chương trình đào tạo của chuyên ngành <strong>@Model.Workspace.ChuyenNganh</strong>.</div>
+        }
+        @if (Model.Workspace.HocKy.Count == 0 || Model.Workspace.PhongHoc.Count == 0)
+        {
+            <div class="alert error">Chưa có @(Model.Workspace.HocKy.Count == 0 ? "học kỳ" : "phòng học") để xếp lịch. Hãy bổ sung dữ liệu trước khi phân công.</div>
+        }
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="validation summary"></div>
+            <input asp-for="Form.MaGiangVien" type="hidden" />
+            <div class="form-grid">
+                <div><label asp-for="Form.MaLopHocPhan"></label><input asp-for="Form.MaLopHocPhan" placeholder="Ví dụ: LHP001" required /><span asp-validation-for="Form.MaLopHocPhan" class="validation"></span></div>
+                <div><label asp-for="Form.MaMonHoc"></label><select asp-for="Form.MaMonHoc" required><option value="">Chọn môn thuộc chuyên ngành</option>@foreach (var item in Model.Workspace.MonHocPhuHop) { <option value="@item.MaMonHoc">@item.MaMonHoc - @item.TenMonHoc</option> }</select><span asp-validation-for="Form.MaMonHoc" class="validation"></span></div>
+                <div><label asp-for="Form.MaHocKy"></label><select asp-for="Form.MaHocKy" required><option value="">Chọn học kỳ</option>@foreach (var item in Model.Workspace.HocKy) { <option value="@item.Code">@item.Name</option> }</select><span asp-validation-for="Form.MaHocKy" class="validation"></span></div>
+                <div><label asp-for="Form.MaPhong"></label><select asp-for="Form.MaPhong" required><option value="">Chọn phòng</option>@foreach (var item in Model.Workspace.PhongHoc) { <option value="@item.Code">@item.Code - @item.Name</option> }</select><span asp-validation-for="Form.MaPhong" class="validation"></span></div>
+                <div><label asp-for="Form.ThuTrongTuan"></label><select asp-for="Form.ThuTrongTuan">@for (var day = 2; day <= 8; day++) { <option value="@day">@(day == 8 ? "Chủ nhật" : $"Thứ {day}")</option> }</select></div>
+                <div><label asp-for="Form.SiSoToiDa"></label><input asp-for="Form.SiSoToiDa" min="1" max="500" /><span asp-validation-for="Form.SiSoToiDa" class="validation"></span></div>
+                <div><label asp-for="Form.TietBatDau"></label><input asp-for="Form.TietBatDau" min="1" max="20" /><span asp-validation-for="Form.TietBatDau" class="validation"></span></div>
+                <div><label asp-for="Form.TietKetThuc"></label><input asp-for="Form.TietKetThuc" min="1" max="20" /><span asp-validation-for="Form.TietKetThuc" class="validation"></span></div>
+            </div>
+            <div class="form-actions">
+                @if (string.IsNullOrWhiteSpace(Model.Workspace.ChuyenNganh) || Model.Workspace.MonHocPhuHop.Count == 0 || Model.Workspace.HocKy.Count == 0 || Model.Workspace.PhongHoc.Count == 0) { <button class="button primary-link" type="button" disabled>Xác nhận phân công</button> }
+                else { <button class="button primary-link" type="submit">Xác nhận phân công</button> }
+            </div>
+        </form>
+    </section>
+    <aside class="panel assignment-help"><h2>Quy tắc xếp lịch</h2><ul><li>Môn học được lọc theo chương trình đào tạo của chuyên ngành giảng viên.</li><li>Hệ thống kiểm tra trùng lịch giảng viên và phòng học trong cùng học kỳ.</li><li>Các buổi học được tạo tự động hàng tuần từ ngày bắt đầu đến ngày kết thúc học kỳ.</li></ul></aside>
+</div>
+
+<section class="panel section-gap">
+    <h2>Phân công hiện tại</h2>
+    <div class="table-card"><table><thead><tr><th>Lớp học phần</th><th>Môn học</th><th>Học kỳ</th><th>Lịch dạy</th><th>Phòng</th><th>Sĩ số</th></tr></thead><tbody>
+    @foreach (var item in Model.Workspace.PhanCongHienTai)
+    {
+        <tr><td><strong>@item.MaLopHocPhan</strong></td><td>@item.TenMonHoc<small>@item.MaMonHoc</small></td><td>@item.TenHocKy</td><td>@(item.ThuTrongTuan == 8 ? "Chủ nhật" : $"Thứ {item.ThuTrongTuan}")<small>Tiết @item.TietBatDau - @item.TietKetThuc</small></td><td>@item.MaPhong<small>@item.TenPhong</small></td><td>@item.SiSoHienTai/@item.SiSoToiDa</td></tr>
+    }
+    @if (Model.Workspace.PhanCongHienTai.Count == 0) { <tr><td colspan="6" class="empty-state">Giảng viên chưa được phân công lớp học phần.</td></tr> }
+    </tbody></table></div>
+</section>

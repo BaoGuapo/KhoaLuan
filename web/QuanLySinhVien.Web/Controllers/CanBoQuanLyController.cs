@@ -7,10 +7,12 @@ namespace QuanLySinhVien.Web.Controllers
     [Authorize(Roles = "CanBoQuanLy")] 
     public class CanBoQuanLyController : Controller
     {
+        public IActionResult Index() => RedirectToAction("CanBoQuanLy", "Home");
+
         // 1. Trang chủ Cán bộ quản lý
         public IActionResult CanBoQuanLy()
         {
-            return View();
+            return RedirectToAction("CanBoQuanLy", "Home");
         }
 
         // 2. Trang Quản lý môn học
@@ -22,7 +24,7 @@ namespace QuanLySinhVien.Web.Controllers
         // 3. Trang Tạo lớp học phần
         public IActionResult TaoLopHocPhan()
         {
-            return View();
+            return RedirectToAction("Lecturers", "UserManagement");
         }
 
         // 4. Trang Phân công giảng viên & Thời khóa biểu

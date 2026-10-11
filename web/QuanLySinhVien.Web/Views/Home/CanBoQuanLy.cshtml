@@ -1,5 +1,6 @@
 @{ 
-    ViewData["Title"] = "Cán bộ quản lý"; 
+    ViewData["Title"] = "Cán bộ quản lý";
+    ViewData["UseBootstrap"] = true;
 }
 
 <style>
@@ -45,8 +46,9 @@
             <div class="card-custom p-4">
                 <h5 class="fw-bold text-huit mb-3">Phạm vi quyền</h5>
                 <p class="text-muted mb-0" style="line-height: 1.6;">
-                    Quản lý hồ sơ, môn học, lớp học và báo cáo thuộc các tuần triển khai chức năng website tiếp theo.
+                    Quản lý tài khoản, hồ sơ sinh viên, hồ sơ giảng viên, môn học và lớp học phần.
                 </p>
+                <a asp-controller="UserManagement" asp-action="Index" class="fw-bold text-huit text-decoration-underline">Mở quản lý người dùng</a>
             </div>
         </div>
         <div class="col-md-6">
@@ -73,7 +75,7 @@
                 <div class="icon-box bg-light text-huit"><i class="bi bi-grid-1x2-fill"></i></div>
                 <h5 class="fw-bold text-dark mb-2">Tạo lớp học phần</h5>
                 <p class="text-muted mb-4 fs-6">Thiết lập lớp học phần, mã lớp, sĩ số tối đa chờ phân công giảng dạy.</p>
-                <a href="#" class="fw-bold text-huit text-decoration-underline mt-auto">Truy cập ngay</a>
+                <a asp-controller="UserManagement" asp-action="Lecturers" class="fw-bold text-huit text-decoration-underline mt-auto">Chọn giảng viên để tạo lớp</a>
             </div>
         </div>
     </div>
@@ -85,9 +87,9 @@
         <div class="col-md-6">
             <div class="card-custom p-4" style="border-left: 4px solid #f59e0b;">
                 <h5 class="fw-bold text-dark mb-2">Giảng viên (Phân công lịch)</h5>
-                <p class="text-muted mb-3 fs-6">Gán Giảng viên vào Lớp học phần, xếp TKB theo tuần, lưu vào CSDL.</p>
-                <a href="#" class="btn btn-sm btn-outline-warning text-dark fw-bold rounded-pill px-3 shadow-sm border-warning">
-                    <i class="bi bi-calendar-plus me-1"></i>Xếp thời khóa biểu
+                <p class="text-muted mb-3 fs-6">Gán giảng viên vào lớp học phần, xếp lịch học theo tuần và lưu vào CSDL.</p>
+                <a asp-controller="UserManagement" asp-action="Lecturers" class="btn btn-sm btn-outline-warning text-dark fw-bold rounded-pill px-3 shadow-sm border-warning">
+                    <i class="bi bi-calendar-plus me-1"></i>Xếp lịch học
                 </a>
             </div>
         </div>
@@ -95,8 +97,8 @@
         <div class="col-md-6">
             <div class="card-custom p-4" style="border-left: 4px solid #10b981;">
                 <h5 class="fw-bold text-dark mb-2">Sinh viên (Mở đăng ký)</h5>
-                <p class="text-muted mb-3 fs-6">Đưa các lớp đã có giảng viên và TKB lên cổng để sinh viên đăng ký.</p>
-                <a href="#" class="btn btn-sm btn-outline-success fw-bold rounded-pill px-3 shadow-sm">
+                <p class="text-muted mb-3 fs-6">Đưa các lớp đã có giảng viên và lịch học lên cổng để sinh viên đăng ký.</p>
+                <a asp-controller="CanBoQuanLy" asp-action="MoCongDangKy" class="btn btn-sm btn-outline-success fw-bold rounded-pill px-3 shadow-sm">
                     <i class="bi bi-check2-square me-1"></i>Mở cổng ĐKHP
                 </a>
             </div>

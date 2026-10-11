@@ -1,0 +1,27 @@
+@model UserListViewModel
+@{ ViewData["Title"] = "Quản lý người dùng"; }
+
+<div class="page-heading">
+    <div><p class="eyebrow blue">QUẢN TRỊ HỆ THỐNG</p><h1>Quản lý người dùng</h1><p>Tài khoản, phân quyền, trạng thái truy cập và mật khẩu tạm.</p></div>
+    @if (User.IsInRole(RoleNames.Admin)) { <a class="button primary-link" asp-action="CreateStaff">Tạo tài khoản nội bộ</a> }
+</div>
+<nav class="management-tabs" aria-label="Các mục quản lý người dùng"><a class="active" aria-current="page" asp-action="Index">Tài khoản</a><a asp-action="Students">Hồ sơ sinh viên</a><a asp-action="Lecturers">Hồ sơ giảng viên</a></nav>
+<form method="get" class="filter-bar">
+    <div class="filter-field"><label for="user-search">Tìm kiếm</label><input id="user-search" name="search" value="@Model.Search" placeholder="Mã, họ tên hoặc email" /></div>
+    <div class="filter-field"><label for="user-role">Vai trò</label><select id="user-role" name="role">
+        <option value="">Tất cả vai trò</option>
+        @if (User.IsInRole(RoleNames.Admin)) { <option value="Admin" selected="@(Model.Role == RoleNames.Admin)">Quản trị viên</option><option value="CanBoQuanLy" selected="@(Model.Role == RoleNames.CanBoQuanLy)">Cán bộ quản lý</option> }
+        <option value="GiangVien" selected="@(Model.Role == RoleNames.GiangVien)">Giảng viên</option><option value="SinhVien" selected="@(Model.Role == RoleNames.SinhVien)">Sinh viên</option>
+    </select></div>
+    <div class="filter-field"><label for="user-status">Trạng thái</label><select id="user-status" name="isActive"><option value="">Tất cả trạng thái</option><option value="true" selected="@(Model.IsActive == true)">Đang hoạt động</option><option value="false" selected="@(Model.IsActive == false)">Đã khóa</option></select></div>
+    <div class="filter-actions"><button class="button primary-link" type="submit">Áp dụng</button><a class="button secondary" asp-action="Index">Xóa lọc</a></div>
+</form>
+<p class="result-count" role="status">@Model.Result.TotalCount tài khoản phù hợp</p>
+<div class="table-card" role="region" aria-label="Danh sách tài khoản" tabindex="0"><table><thead><tr><th scope="col">Mã tài khoản</th><th scope="col">Họ tên</th><th scope="col">Vai trò</th><th scope="col">Trạng thái</th><th scope="col">Hồ sơ</th><th scope="col">Thao tác</th></tr></thead><tbody>
+@foreach (var item in Model.Result.Items)
+{
+    <tr><td><strong>@item.UserName</strong><small>@item.Email</small></td><td>@item.FullName</td><td>@string.Join(", ", item.Roles)</td><td><span class="badge @(item.IsActive ? "badge-success" : "badge-danger")">@(item.IsActive ? "Hoạt động" : "Đã khóa")</span>@if (item.MustChangePassword) { <span class="badge badge-warning">Chờ đổi mật khẩu</span> }</td><td>@(item.ProfileCode ?? "—")</td><td class="actions"><a asp-action="Details" asp-route-id="@item.Id">Chi tiết</a></td></tr>
+}
+@if (Model.Result.Items.Count == 0) { <tr><td colspan="6" class="empty-state">Không có tài khoản phù hợp. Hãy thử xóa bộ lọc hoặc tìm theo mã khác.</td></tr> }
+</tbody></table></div>
+@if (Model.Result.TotalPages > 1) { <nav class="pagination" aria-label="Trang tài khoản">@for (var p = 1; p <= Model.Result.TotalPages; p++) { <a class="@(p == Model.Result.Page ? "active" : null)" aria-current="@(p == Model.Result.Page ? "page" : null)" aria-label="Trang @p" asp-action="Index" asp-route-page="@p" asp-route-search="@Model.Search" asp-route-role="@Model.Role" asp-route-isActive="@Model.IsActive">@p</a> }</nav> }

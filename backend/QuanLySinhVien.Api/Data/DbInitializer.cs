@@ -65,7 +65,8 @@ public static class DbInitializer
                 {
                     UserName = account.UserName,
                     Email = account.Email,
-                    FullName = account.FullName
+                    FullName = account.FullName,
+                    MustChangePassword = true
                 };
                 user.PasswordHash = passwordHasher.HashPassword(user, account.Password);
                 db.Users.Add(user);

@@ -11,13 +11,13 @@
         <p class="eyebrow blue">CỔNG THÔNG TIN</p>
         <h2>Đăng nhập hệ thống</h2>
         <p class="muted">Sử dụng mã được nhà trường cấp để tiếp tục.</p>
-        @if (TempData["Success"] is string success) { <div class="success">@success</div> }
         <form method="post" asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]">
             <div asp-validation-summary="ModelOnly" class="validation summary"></div>
             <label asp-for="MaDangNhap"></label>
             <input asp-for="MaDangNhap" autocomplete="username" placeholder="Mã sinh viên, mã giảng viên hoặc tài khoản quản trị" autofocus />
             <span asp-validation-for="MaDangNhap" class="validation"></span>
             <p class="field-help">Sinh viên dùng mã sinh viên; giảng viên dùng mã giảng viên; quản trị viên và cán bộ dùng mã tài khoản được cấp.</p>
+            <p class="field-help">Nếu tài khoản sinh viên đã đăng ký khuôn mặt, sau mật khẩu sẽ có thêm bước quét mặt trên website.</p>
             <label asp-for="Password"></label>
             <input asp-for="Password" autocomplete="current-password" placeholder="Nhập mật khẩu" />
             <span asp-validation-for="Password" class="validation"></span>

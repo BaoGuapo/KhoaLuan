@@ -1,8 +1,83 @@
 <!DOCTYPE html>
 <html lang="vi">
-<head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>@ViewData["Title"] - Quản lý sinh viên</title><link rel="stylesheet" href="~/css/site.css" asp-append-version="true" /></head>
-<body>
-<header class="topbar"><a class="brand" asp-controller="Home" asp-action="Index"><span class="brand-mark">HUIT</span><span>Quản lý sinh viên</span></a>
-@if (User.Identity?.IsAuthenticated == true) { <nav><span>@User.Identity.Name</span>@if (User.IsInRole(RoleNames.Admin)) { <a asp-controller="Home" asp-action="Admin">Quản trị</a> } else if (User.IsInRole(RoleNames.CanBoQuanLy)) { <a asp-controller="Home" asp-action="CanBoQuanLy">Cán bộ quản lý</a> } else if (User.IsInRole(RoleNames.GiangVien)) { <a asp-controller="Home" asp-action="GiangVien">Giảng viên</a> } else if (User.IsInRole(RoleNames.SinhVien)) { <a asp-controller="Home" asp-action="SinhVien">Sinh viên</a> }<a asp-controller="Account" asp-action="ChangePassword">Đổi mật khẩu</a><form asp-controller="Account" asp-action="Logout" method="post"><button type="submit">Đăng xuất</button></form></nav> }
-</header><main class="container">@RenderBody()</main>
-</body></html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - Quản lý sinh viên</title>
+    @if (ViewData["UseBootstrap"] is true)
+    {
+        <link rel="stylesheet" href="~/vendor/bootstrap/css/bootstrap.min.css" asp-append-version="true" />
+        <link rel="stylesheet" href="~/vendor/bootstrap-icons/font/bootstrap-icons.min.css" asp-append-version="true" />
+        <script src="~/vendor/bootstrap/js/bootstrap.bundle.min.js" asp-append-version="true"></script>
+    }
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @if (ViewData["StudentHome"] is true)
+    {
+        <link rel="stylesheet" href="~/css/student-home.css" asp-append-version="true" />
+    }
+</head>
+<body class="@(ViewData["StudentHome"] is true ? "student-home-page" : null)">
+<a class="skip-link" href="#main-content">Bỏ qua điều hướng</a>
+<div class="toast-region" aria-live="polite" aria-atomic="true">
+    @if (TempData["Success"] is string success)
+    {
+        <div class="toast toast-success" role="status" data-toast>
+            <span class="toast-icon" aria-hidden="true">✓</span>
+            <div><strong>Thành công</strong><p>@success</p></div>
+            <button type="button" class="toast-close" aria-label="Đóng thông báo">×</button>
+            <span class="toast-progress" aria-hidden="true"></span>
+        </div>
+    }
+    @if (TempData["Error"] is string error)
+    {
+        <div class="toast toast-error" role="alert" data-toast>
+            <span class="toast-icon" aria-hidden="true">!</span>
+            <div><strong>Không thể thực hiện</strong><p>@error</p></div>
+            <button type="button" class="toast-close" aria-label="Đóng thông báo">×</button>
+            <span class="toast-progress" aria-hidden="true"></span>
+        </div>
+    }
+</div>
+<header class="topbar">
+    <a class="brand" asp-controller="Home" asp-action="Index">
+        <span class="brand-mark">HUIT</span><span>Quản lý sinh viên</span>
+    </a>
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <button class="nav-toggle" type="button" aria-controls="primary-nav" aria-expanded="false" aria-label="Mở menu điều hướng" data-nav-toggle>Menu</button>
+        <nav id="primary-nav" aria-label="Điều hướng chính">
+            <span>@User.Identity.Name</span>
+            @if (User.IsInRole(RoleNames.Admin) || User.IsInRole(RoleNames.CanBoQuanLy))
+            {
+                <a asp-controller="UserManagement" asp-action="Index">Người dùng</a>
+            }
+            @if (User.IsInRole(RoleNames.GiangVien))
+            {
+                <a asp-controller="GiangVien" asp-action="LichGiangDay">Lớp phụ trách</a>
+            }
+            @if (User.IsInRole(RoleNames.SinhVien))
+            {
+                <a asp-controller="FaceRecognition" asp-action="Profile">Khuôn mặt</a>
+            }
+            <a asp-controller="PersonalProfile" asp-action="Index">Cá nhân</a>
+            <a asp-controller="Account" asp-action="ChangePassword">Đổi mật khẩu</a>
+            <form asp-controller="Account" asp-action="Logout" method="post">
+                <button type="submit">Đăng xuất</button>
+            </form>
+        </nav>
+    }
+</header>
+<main id="main-content" class="container" tabindex="-1">
+    @RenderBody()
+</main>
+<dialog class="confirm-dialog" data-confirm-dialog aria-labelledby="confirm-title" aria-describedby="confirm-message">
+    <h2 id="confirm-title">Xác nhận thao tác</h2>
+    <p id="confirm-message" data-confirm-message></p>
+    <div class="confirm-actions">
+        <button class="button secondary" type="button" data-confirm-cancel>Hủy</button>
+        <button class="button primary-link" type="button" data-confirm-accept>Tiếp tục</button>
+    </div>
+</dialog>
+<script src="~/js/site.js" asp-append-version="true"></script>
+</body>
+</html>

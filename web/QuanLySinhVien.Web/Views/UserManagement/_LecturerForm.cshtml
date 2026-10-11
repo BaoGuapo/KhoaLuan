@@ -1,0 +1,25 @@
+@model GiangVienFormViewModel
+@{ var editing = ViewContext.RouteData.Values["action"]?.ToString() == "EditLecturer"; }
+<form method="post">
+    <div asp-validation-summary="ModelOnly" class="validation summary"></div>
+    <h2>Thông tin cơ bản</h2>
+    <div class="form-grid">
+        <div><label asp-for="MaGiangVien"></label><input asp-for="MaGiangVien" readonly="@editing" /><span asp-validation-for="MaGiangVien" class="validation"></span></div>
+        <div><label asp-for="HoTen"></label><input asp-for="HoTen" /><span asp-validation-for="HoTen" class="validation"></span></div>
+        <div><label asp-for="Email"></label><input asp-for="Email" /><span asp-validation-for="Email" class="validation"></span></div>
+        <div><label asp-for="SoDienThoai"></label><input asp-for="SoDienThoai" /></div>
+    </div>
+    <h2>Thông tin cá nhân</h2>
+    <div class="form-grid"><partial name="_PersonalAcademicFields" model="Model" /></div>
+    <h2>Thông tin công tác và chuyên môn</h2>
+    <div class="form-grid">
+        <div><label asp-for="NgayBatDauCongTac"></label><input asp-for="NgayBatDauCongTac" /></div>
+        <div><label asp-for="CoSo"></label><input asp-for="CoSo" /></div>
+        <div><label asp-for="Khoa"></label><input asp-for="Khoa" /></div>
+        <div><label asp-for="ChuyenNganh"></label><input asp-for="ChuyenNganh" /><p class="field-help">Nhập mã ngành hoặc tên ngành đúng như chương trình đào tạo để lọc môn phân công.</p></div>
+        <div><label asp-for="TrinhDoHocVan"></label><input asp-for="TrinhDoHocVan" /></div>
+        <div><label asp-for="ChucDanh"></label><input asp-for="ChucDanh" /></div>
+        <div><label asp-for="NgayVaoDang"></label><input asp-for="NgayVaoDang" /></div>
+    </div>
+    <div class="form-actions"><a class="button secondary" asp-action="Lecturers">Hủy</a><button class="button primary-link" type="submit">@(editing ? "Lưu thay đổi" : "Tạo hồ sơ")</button></div>
+</form>

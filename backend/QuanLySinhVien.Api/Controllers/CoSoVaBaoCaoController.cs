@@ -30,6 +30,10 @@ public sealed class CoSoVaBaoCaoController(AppDbContext db) : ControllerBase
     [Authorize(Roles = RoleNames.Admin + "," + RoleNames.CanBoQuanLy + "," + RoleNames.GiangVien)]
     public async Task<ActionResult<object>> ChuyenCan(string maLopHocPhan, CancellationToken ct)
     {
+        if (User.IsInRole(RoleNames.GiangVien)
+            && !await db.LopHocPhans.AnyAsync(x => x.MaLopHocPhan == maLopHocPhan
+                && x.MaGiangVien == User.Identity!.Name, ct))
+            return Forbid();
         var rows = await db.DanhSachSinhVienLops.AsNoTracking().Where(x => x.MaLopHocPhan == maLopHocPhan)
             .Select(x => new { x.MaSinhVien, x.SinhVien.HoTen, CoMat = db.ChiTietDiemDanhs.Count(d => d.MaSinhVien == x.MaSinhVien && d.BuoiHoc.LichHoc.MaLopHocPhan == maLopHocPhan && d.TrangThai == "CoMat"), Vang = db.ChiTietDiemDanhs.Count(d => d.MaSinhVien == x.MaSinhVien && d.BuoiHoc.LichHoc.MaLopHocPhan == maLopHocPhan && d.TrangThai == "Vang") }).ToListAsync(ct);
         return Ok(rows);

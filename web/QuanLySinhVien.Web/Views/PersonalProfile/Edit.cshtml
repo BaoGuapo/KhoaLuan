@@ -1,0 +1,27 @@
+@model PersonalProfileEditViewModel
+@{ ViewData["Title"] = "Cập nhật thông tin cá nhân"; }
+<section class="form-card">
+    <div class="form-heading"><p class="eyebrow blue">HỒ SƠ CÁ NHÂN</p><h1>Cập nhật thông tin</h1><p>Mã tài khoản <strong>@Model.UserName</strong> không thể thay đổi.</p></div>
+    <form method="post">
+        <input asp-for="UserName" type="hidden" /><input asp-for="ProfileType" type="hidden" />
+        <div asp-validation-summary="ModelOnly" class="validation summary"></div>
+        <div class="form-grid">
+            <div><label asp-for="FullName"></label><input asp-for="FullName" /><span asp-validation-for="FullName" class="validation"></span></div>
+            <div><label asp-for="Email"></label><input asp-for="Email" /><span asp-validation-for="Email" class="validation"></span></div>
+            @if (Model.ProfileType is "SinhVien" or "GiangVien")
+            {
+                <div><label asp-for="PhoneNumber"></label><input asp-for="PhoneNumber" /></div>
+                <div><label asp-for="AnhDaiDien"></label><input asp-for="AnhDaiDien" /></div>
+                <div><label asp-for="GioiTinh"></label><select asp-for="GioiTinh"><option value="">-- Chọn --</option><option value="Nam">Nam</option><option value="Nữ">Nữ</option><option value="Khác">Khác</option></select></div>
+                <div><label asp-for="NgaySinh"></label><input asp-for="NgaySinh" /></div>
+                <div><label asp-for="NoiSinh"></label><input asp-for="NoiSinh" /></div>
+                <div><label asp-for="DanToc"></label><input asp-for="DanToc" /></div>
+                <div><label asp-for="TonGiao"></label><input asp-for="TonGiao" /></div>
+                <div><label asp-for="QuocTich"></label><input asp-for="QuocTich" /></div>
+                <div class="full"><label asp-for="DiaChiLienHe"></label><input asp-for="DiaChiLienHe" /></div>
+                <div class="full"><label asp-for="HoKhauThuongTru"></label><input asp-for="HoKhauThuongTru" /></div>
+            }
+        </div>
+        <div class="form-actions"><a class="button secondary" asp-action="Index">Hủy</a><button class="button primary-link" type="submit">Lưu thay đổi</button></div>
+    </form>
+</section>

@@ -1,5 +1,6 @@
 @{
     ViewData["Title"] = "Cổng thông tin Giảng viên";
+    ViewData["UseBootstrap"] = true;
 }
 
 <section class="dashboard-heading mb-4">
@@ -17,8 +18,11 @@
                     Phạm vi quyền
                 </h5>
                 <p class="card-text" style="color: #333; font-size: 0.95rem; line-height: 1.5;">
-                    Lớp phụ trách, lịch học, điểm danh và chuyên cần thuộc các tuần triển khai tiếp theo.
+                    Xem các lớp được phân công, lịch giảng dạy, cập nhật điểm danh và theo dõi chuyên cần của sinh viên trong từng lớp học phần.
                 </p>
+                <a asp-controller="GiangVien" asp-action="LichGiangDay" class="fw-bold" style="color: #006699; text-decoration: underline; font-size: 0.95rem;">
+                    Mở lớp phụ trách
+                </a>
             </div>
         </div>
     </div>
@@ -46,7 +50,7 @@
                     Lịch giảng dạy & Quản lý lớp
                 </h5>
                 <p class="card-text" style="color: #333; margin-bottom: 1.5rem; font-size: 0.95rem; line-height: 1.5;">
-                    Quản lý danh sách sinh viên, xem thời khóa biểu giảng dạy, theo dõi kết quả học tập và tình trạng chuyên cần của lớp học.
+                    Quản lý danh sách sinh viên, xem lịch giảng dạy, điểm danh theo buổi và tổng hợp tình trạng chuyên cần của lớp học.
                 </p>
                 <a asp-controller="GiangVien" asp-action="LichGiangDay" class="fw-bold" style="color: #006699; text-decoration: underline; font-size: 0.95rem;">
                     Xem lịch dạy

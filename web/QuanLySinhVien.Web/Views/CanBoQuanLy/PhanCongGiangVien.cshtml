@@ -1,5 +1,6 @@
 @{
-    ViewData["Title"] = "Phân công Giảng viên & Thời khóa biểu";
+    ViewData["Title"] = "Phân công giảng viên và lịch học";
+    ViewData["UseBootstrap"] = true;
 }
 
 <style>
@@ -22,7 +23,7 @@
         </a>
         <div>
             <h3 class="fw-bold text-dark mb-1">Điều phối: Phân công Lịch dạy</h3>
-            <p class="text-muted mb-0">Gán Giảng viên vào Lớp học phần và xếp thời khóa biểu.</p>
+            <p class="text-muted mb-0">Gán giảng viên vào lớp học phần và xếp lịch học.</p>
         </div>
     </div>
 
@@ -162,7 +163,7 @@
 
     function huyPhanCong(maLop) {
         if(confirm(`Bạn có chắc muốn hủy phân công của lớp ${maLop}?`)) {
-            // TODO: Gọi API DELETE xóa thời khóa biểu của lớp này
+            // TODO: Gọi API DELETE xóa lịch học của lớp này
             alert(`Đã hủy lịch dạy của lớp ${maLop}`);
         }
     }

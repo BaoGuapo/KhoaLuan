@@ -119,10 +119,23 @@ Các địa chỉ mặc định:
 
 - Website: [https://localhost:7082](https://localhost:7082)
 - Trang đăng nhập: [https://localhost:7082/tai-khoan/dang-nhap](https://localhost:7082/tai-khoan/dang-nhap)
+- Quản lý người dùng: [https://localhost:7082/quan-ly-nguoi-dung](https://localhost:7082/quan-ly-nguoi-dung)
+- Thông tin cá nhân: [https://localhost:7082/thong-tin-ca-nhan](https://localhost:7082/thong-tin-ca-nhan)
 - Swagger API: [https://localhost:7081/swagger](https://localhost:7081/swagger)
 - Backend API: `https://localhost:7081`
 
 Luôn chạy backend trước website. Dừng một server bằng `Ctrl+C` trong cửa sổ đang chạy server đó.
+
+Ứng dụng Flutter nằm trong `mobile/quan_ly_sinh_vien_app`. Sau khi cài Flutter SDK,
+sinh platform Android/iOS lần đầu và chạy trên Android Emulator:
+
+```powershell
+.\mobile\quan_ly_sinh_vien_app\tool\bootstrap_platforms.ps1
+cd mobile/quan_ly_sinh_vien_app
+flutter run --dart-define=API_BASE_URL=http://10.0.2.2:5081/
+```
+
+Xem hướng dẫn thiết bị thật và cấu hình HTTPS production tại `mobile/README.md`.
 
 ## 7. Tài khoản kiểm thử Development
 
@@ -137,11 +150,18 @@ Sau khi migration hoàn tất, lần chạy backend đầu tiên trong môi trư
 
 Các mật khẩu này chỉ dành cho Development, không sử dụng khi triển khai thật.
 
+Tài khoản sinh viên/giảng viên được Admin hoặc Cán bộ quản lý cấp mới sẽ phải đổi
+mật khẩu tạm ngay trong lần đăng nhập đầu tiên. Sau khi đổi thành công, hệ thống thu
+hồi phiên cũ và yêu cầu đăng nhập lại bằng mật khẩu mới.
+
 ## 8. Kiểm tra trước khi commit hoặc push
 
 ```powershell
 dotnet build backend/QuanLySinhVien.Api
 dotnet build web/QuanLySinhVien.Web
+cd mobile/quan_ly_sinh_vien_app
+flutter analyze
+flutter test
 git status
 ```
 

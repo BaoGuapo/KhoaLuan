@@ -24,6 +24,10 @@ Từ thư mục gốc repository, chạy:
 
 Script không ghi đè dự án đã tồn tại. Nó tạo solution, Web API, MVC và ứng dụng Flutter theo đúng cấu trúc đã quy ước.
 
+Nếu source Flutter đã có nhưng chưa có thư mục platform, script sẽ gọi
+`mobile/quan_ly_sinh_vien_app/tool/bootstrap_platforms.ps1` để sinh Android
+(và iOS khi chạy trên macOS) mà vẫn giữ nguyên source trong `lib/`.
+
 ## Cấu hình bí mật backend
 
 Sau khi chạy script, sao chép `backend/QuanLySinhVien.Api/appsettings.example.json` thành `appsettings.Development.json`, hoặc ưu tiên dùng User Secrets. Không commit các giá trị thật.
