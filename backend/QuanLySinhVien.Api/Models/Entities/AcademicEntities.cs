@@ -86,9 +86,9 @@ public sealed class HocKyThucTe
 {
     public string MaHocKy { get; set; } = string.Empty;
     public string TenHocKy { get; set; } = string.Empty;
-    public string LoaiHocKy { get; set; } = string.Empty;
-    public DateTime NgayBatDau { get; set; }
-    public DateTime NgayKetThuc { get; set; }
+    public string LoaiHocKy { get; set; } = "0";
+    public DateTime? NgayBatDau { get; set; }
+    public DateTime? NgayKetThuc { get; set; }
 }
 
 public sealed class PhongHoc
@@ -106,7 +106,7 @@ public sealed class LopHocPhan
     public string MaHocKy { get; set; } = string.Empty;
     public string MaGiangVien { get; set; } = string.Empty;
     public int SiSoToiDa { get; set; }
-    public string TrangThai { get; set; } = string.Empty;
+    public string TrangThai { get; set; } = "1";
     public MonHoc MonHoc { get; set; } = null!;
     public GiangVien GiangVien { get; set; } = null!;
     public ICollection<LichHoc> LichHocs { get; set; } = new List<LichHoc>();

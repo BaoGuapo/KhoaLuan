@@ -90,6 +90,7 @@ public static class DbInitializer
         }
 
         await db.SaveChangesAsync();
+        await DevelopmentTrainingSeed.SeedAsync(db, scope.ServiceProvider.GetRequiredService<IHostEnvironment>());
     }
 
     private sealed record DevelopmentAccount(

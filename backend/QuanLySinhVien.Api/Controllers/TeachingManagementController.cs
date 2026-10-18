@@ -70,6 +70,8 @@ public sealed class TeachingManagementController(AppDbContext db) : ControllerBa
         var semester = await db.HocKys.AsNoTracking()
             .SingleOrDefaultAsync(x => x.MaHocKy == request.MaHocKy, ct);
         if (semester is null) return NotFound(new { message = "Không tìm thấy học kỳ." });
+        if (semester.NgayBatDau is null || semester.NgayKetThuc is null || semester.NgayKetThuc < semester.NgayBatDau || (semester.NgayKetThuc.Value - semester.NgayBatDau.Value).TotalDays > 366)
+            return BadRequest(new { message = "Khoảng ngày học kỳ không hợp lệ." });
         if (!await db.PhongHocs.AnyAsync(x => x.MaPhong == request.MaPhong, ct))
             return NotFound(new { message = "Không tìm thấy phòng học." });
 
@@ -114,7 +116,7 @@ public sealed class TeachingManagementController(AppDbContext db) : ControllerBa
             TietKetThuc = request.TietKetThuc
         });
 
-        foreach (var date in DatesForWeekday(semester.NgayBatDau, semester.NgayKetThuc, request.ThuTrongTuan))
+        foreach (var date in DatesForWeekday(semester.NgayBatDau.Value, semester.NgayKetThuc.Value, request.ThuTrongTuan))
         {
             db.BuoiHocs.Add(new BuoiHoc
             {
@@ -294,6 +296,12 @@ public sealed class TeachingManagementController(AppDbContext db) : ControllerBa
     {
         if (string.IsNullOrWhiteSpace(specialization)) return [];
         var value = specialization.Trim();
+        var majorCodes = await db.Database.SqlQuery<string>($"SELECT maNganh AS Value FROM NganhHoc WHERE maNganh={value} OR tenNganh={value}").ToListAsync(ct);
+        var planCourses = await db.MonKeHoachDaoTaos.AsNoTracking()
+            .Where(x => majorCodes.Contains(x.KeHoach.MaNganh))
+            .Select(x => new EligibleCourseResponse(x.MaMonHoc, x.MonHoc.TenMonHoc,
+                x.MonHoc.SoTinChiLyThuyet, x.MonHoc.SoTinChiThucHanh, x.KeHoach.MaNganh, x.KeHoach.MaNganh))
+            .Distinct().ToListAsync(ct);
         var rows = await db.Database.SqlQuery<EligibleCourseRow>(
             $"""
             SELECT DISTINCT
@@ -319,7 +327,7 @@ public sealed class TeachingManagementController(AppDbContext db) : ControllerBa
                 x.SoTinChiThucHanh,
                 x.MaNganh,
                 x.TenNganh))
-            .ToList();
+            .Concat(planCourses).DistinctBy(x => x.MaMonHoc).ToList();
     }
 
     private async Task<List<TeachingAssignmentResponse>> GetAssignmentsAsync(

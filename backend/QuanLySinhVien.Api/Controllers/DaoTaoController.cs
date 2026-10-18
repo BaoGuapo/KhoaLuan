@@ -3,12 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QuanLySinhVien.Api.Data;
 using QuanLySinhVien.Api.Models.Entities;
+using QuanLySinhVien.Api.Services;
 
 namespace QuanLySinhVien.Api.Controllers;
 
 [ApiController]
 [Route("api/v1")]
-public sealed class DaoTaoController(AppDbContext db) : ControllerBase
+public sealed class DaoTaoController(AppDbContext db, TrainingEnrollmentService enrollment) : ControllerBase
 {
     [HttpGet("mon-hoc")]
     [Authorize]
@@ -44,27 +45,8 @@ public sealed class DaoTaoController(AppDbContext db) : ControllerBase
     [Authorize(Roles = RoleNames.Admin + "," + RoleNames.CanBoQuanLy)]
     public async Task<IActionResult> DangKy(string maLopHocPhan, DangKyRequest request, CancellationToken ct)
     {
-        var lop = await db.LopHocPhans
-            .Include(x => x.DanhSachSinhVien)
-            .SingleOrDefaultAsync(x => x.MaLopHocPhan == maLopHocPhan, ct);
-
-        if (lop is null) return NotFound();
-        if (lop.DanhSachSinhVien.Count >= lop.SiSoToiDa)
-            return Conflict(new { message = "Lớp đã đủ sĩ số." });
-        if (await db.DanhSachSinhVienLops.AnyAsync(
-                x => x.MaLopHocPhan == maLopHocPhan && x.MaSinhVien == request.MaSinhVien, ct))
-            return Conflict(new { message = "Sinh viên đã đăng ký lớp này." });
-        if (!await db.SinhViens.AnyAsync(x => x.MaSinhVien == request.MaSinhVien, ct))
-            return NotFound(new { message = "Không tìm thấy sinh viên." });
-
-        db.DanhSachSinhVienLops.Add(new DanhSachSinhVienLop
-        {
-            MaLopHocPhan = maLopHocPhan,
-            MaSinhVien = request.MaSinhVien,
-            ThoiGianDangKy = DateTime.UtcNow
-        });
-        await db.SaveChangesAsync(ct);
-        return NoContent();
+        var result = await enrollment.EnrollAsync(request.MaSinhVien, maLopHocPhan, ct);
+        return StatusCode(result.StatusCode, new { message = result.Message });
     }
 
     [HttpGet("sinh-vien/{maSinhVien}/lich-hoc")]
@@ -117,16 +99,24 @@ public sealed class DaoTaoController(AppDbContext db) : ControllerBase
             || !await db.SinhViens.AnyAsync(x => x.MaSinhVien == maSinhVien && x.TrangThaiTaiKhoan, ct))
             return Unauthorized();
 
+        var student = await db.SinhViens.AsNoTracking().SingleAsync(x => x.MaSinhVien == maSinhVien, ct);
+        var majorValue = student.Nganh?.Trim() ?? "";
+        var intakeValue = student.KhoaHoc?.Trim() ?? "";
+        var eligibleMajors = await db.Database.SqlQuery<string>($"SELECT maNganh AS Value FROM NganhHoc WHERE maNganh={majorValue} OR tenNganh={majorValue}").ToListAsync(ct);
+        var eligibleIntakes = await db.Database.SqlQuery<string>($"SELECT maKhoa AS Value FROM KhoaTuyenSinh WHERE maKhoa={intakeValue} OR CONVERT(nvarchar(10),namBatDau)={intakeValue}").ToListAsync(ct);
+        var eligibleApplications = db.ApDungHocKys.Where(x => eligibleMajors.Contains(x.KeHoach.MaNganh) && eligibleIntakes.Contains(x.KeHoach.MaKhoa)).Select(x => x.Id);
         var lopHocPhans = await db.LopHocPhans
             .AsNoTracking()
-            .Where(x => x.TrangThai == "0")
+            .Where(x => x.TrangThai == "0" && x.LichHocs.Any())
+            .Where(x => !db.LopHocPhanDuKiens.Any(p => p.MaLopHocPhan == x.MaLopHocPhan)
+                || db.LopHocPhanDuKiens.Any(p => p.MaLopHocPhan == x.MaLopHocPhan && eligibleApplications.Contains(p.ApDungHocKyId)))
             .Select(x => new
             {
                 x.MaLopHocPhan,
                 x.MaMonHoc,
                 x.MonHoc.TenMonHoc,
-                x.MonHoc.SoTinChiLyThuyet,
-                x.MonHoc.SoTinChiThucHanh,
+                SoTinChiLyThuyet = (int?)x.MonHoc.SoTinChiLyThuyet ?? 0,
+                SoTinChiThucHanh = (int?)x.MonHoc.SoTinChiThucHanh ?? 0,
                 x.MaHocKy,
                 x.GiangVien.HoTen,
                 x.SiSoToiDa,
@@ -156,28 +146,26 @@ public sealed class DaoTaoController(AppDbContext db) : ControllerBase
             || !await db.SinhViens.AnyAsync(x => x.MaSinhVien == maSinhVien && x.TrangThaiTaiKhoan, ct))
             return Unauthorized();
 
-        var lop = await db.LopHocPhans
-            .Include(x => x.DanhSachSinhVien)
-            .SingleOrDefaultAsync(x => x.MaLopHocPhan == maLopHocPhan, ct);
+        var result = await enrollment.EnrollAsync(maSinhVien, maLopHocPhan, ct);
+        return StatusCode(result.StatusCode, new { message = result.Message });
+    }
 
-        if (lop is null)
-            return NotFound(new { message = "Không tìm thấy lớp học phần." });
-        if (lop.TrangThai != "0")
-            return Conflict(new { message = "Lớp học phần hiện không mở đăng ký." });
-        if (lop.DanhSachSinhVien.Count >= lop.SiSoToiDa)
-            return Conflict(new { message = "Lớp đã đủ sĩ số." });
-        if (lop.DanhSachSinhVien.Any(x => x.MaSinhVien == maSinhVien))
-            return Conflict(new { message = "Bạn đã đăng ký lớp học phần này." });
-
-        db.DanhSachSinhVienLops.Add(new DanhSachSinhVienLop
-        {
-            MaLopHocPhan = maLopHocPhan,
-            MaSinhVien = maSinhVien,
-            ThoiGianDangKy = DateTime.UtcNow,
-            TrangThaiCanhBao = "0"
-        });
-        await db.SaveChangesAsync(ct);
-        return Ok(new { message = "Đăng ký học phần thành công." });
+    [Authorize(Roles = RoleNames.SinhVien)]
+    [HttpGet("dang-ky-hoc-phan/da-dang-ky")]
+    public async Task<IActionResult> MyEnrollments(CancellationToken ct)
+    {
+        var code = User.Identity?.Name;
+        if (string.IsNullOrWhiteSpace(code)) return Unauthorized();
+        return Ok(await db.DanhSachSinhVienLops.AsNoTracking().Where(x => x.MaSinhVien == code)
+            .OrderBy(x => x.LopHocPhan.MaHocKy).ThenBy(x => x.LopHocPhan.MaMonHoc)
+            .Select(x => new
+            {
+                x.MaLopHocPhan, x.LopHocPhan.MaMonHoc, x.LopHocPhan.MonHoc.TenMonHoc,
+                SoTinChiLyThuyet = (int?)x.LopHocPhan.MonHoc.SoTinChiLyThuyet ?? 0, SoTinChiThucHanh = (int?)x.LopHocPhan.MonHoc.SoTinChiThucHanh ?? 0,
+                x.LopHocPhan.MaHocKy, HoTen = x.LopHocPhan.GiangVien.HoTen, ThoiGianDangKy = (DateTime?)x.ThoiGianDangKy,
+                LichHoc = x.LopHocPhan.LichHocs.Select(l => new
+                    { l.ThuTrongTuan, l.TietBatDau, l.TietKetThuc, l.PhongHoc.TenPhong })
+            }).ToListAsync(ct));
     }
 
     [HttpGet("giang-vien/lich-giang-day")]

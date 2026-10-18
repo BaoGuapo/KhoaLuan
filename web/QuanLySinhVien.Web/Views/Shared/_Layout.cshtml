@@ -1,3 +1,5 @@
+@{ var studentPortal = User.Identity?.IsAuthenticated == true && User.IsInRole(RoleNames.SinhVien)
+    && !User.IsInRole(RoleNames.Admin) && !User.IsInRole(RoleNames.CanBoQuanLy) && !User.IsInRole(RoleNames.GiangVien); }
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -11,12 +13,12 @@
         <script src="~/vendor/bootstrap/js/bootstrap.bundle.min.js" asp-append-version="true"></script>
     }
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    @if (ViewData["StudentHome"] is true)
+    @if (studentPortal)
     {
-        <link rel="stylesheet" href="~/css/student-home.css" asp-append-version="true" />
+        <link rel="stylesheet" href="~/css/student-portal.css" asp-append-version="true" />
     }
 </head>
-<body class="@(ViewData["StudentHome"] is true ? "student-home-page" : null)">
+<body class="@(studentPortal ? "student-portal" : null)">
 <a class="skip-link" href="#main-content">Bỏ qua điều hướng</a>
 <div class="toast-region" aria-live="polite" aria-atomic="true">
     @if (TempData["Success"] is string success)
@@ -50,26 +52,34 @@
             @if (User.IsInRole(RoleNames.Admin) || User.IsInRole(RoleNames.CanBoQuanLy))
             {
                 <a asp-controller="UserManagement" asp-action="Index">Người dùng</a>
+                <a asp-controller="TrainingWorkflow" asp-action="Index">Đào tạo</a>
             }
             @if (User.IsInRole(RoleNames.GiangVien))
             {
                 <a asp-controller="GiangVien" asp-action="LichGiangDay">Lớp phụ trách</a>
             }
-            @if (User.IsInRole(RoleNames.SinhVien))
+            @if (!studentPortal)
             {
-                <a asp-controller="FaceRecognition" asp-action="Profile">Khuôn mặt</a>
+                <a asp-controller="PersonalProfile" asp-action="Index">Cá nhân</a>
+                <a asp-controller="Account" asp-action="ChangePassword">Đổi mật khẩu</a>
             }
-            <a asp-controller="PersonalProfile" asp-action="Index">Cá nhân</a>
-            <a asp-controller="Account" asp-action="ChangePassword">Đổi mật khẩu</a>
             <form asp-controller="Account" asp-action="Logout" method="post">
                 <button type="submit">Đăng xuất</button>
             </form>
         </nav>
     }
 </header>
-<main id="main-content" class="container" tabindex="-1">
-    @RenderBody()
-</main>
+@if (studentPortal)
+{
+    <div class="sv-shell">
+        <partial name="_StudentNavigation" />
+        <main id="main-content" class="sv-content" tabindex="-1">@RenderBody()</main>
+    </div>
+}
+else
+{
+    <main id="main-content" class="container" tabindex="-1">@RenderBody()</main>
+}
 <dialog class="confirm-dialog" data-confirm-dialog aria-labelledby="confirm-title" aria-describedby="confirm-message">
     <h2 id="confirm-title">Xác nhận thao tác</h2>
     <p id="confirm-message" data-confirm-message></p>

@@ -24,19 +24,19 @@ namespace QuanLySinhVien.Web.Controllers
         // 3. Trang Tạo lớp học phần
         public IActionResult TaoLopHocPhan()
         {
-            return RedirectToAction("Lecturers", "UserManagement");
+            return RedirectToAction("Index", "TrainingWorkflow");
         }
 
         // 4. Trang Phân công giảng viên & Thời khóa biểu
         public IActionResult PhanCongGiangVien()
         {
-            return View();
+            return RedirectToAction("Index", "TrainingWorkflow");
         }
 
         // 5. Trang Mở cổng đăng ký cho Sinh viên
         public IActionResult MoCongDangKy()
         {
-            return View();
+            return RedirectToAction("Index", "TrainingWorkflow");
         }
     }
 }

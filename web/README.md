@@ -85,3 +85,9 @@ Các tài khoản này chỉ được backend seed khi chạy môi trường `De
 | SinhVien | `2001230048` | `SinhVien@123` |
 
 Không sử dụng các mật khẩu này ngoài môi trường phát triển.
+
+## Chương trình đào tạo, mở lớp và phân công
+
+Admin/CanBoQuanLy chọn **Đào tạo** hoặc vào `/dao-tao`. Luồng: nhập chương trình (form hoặc Excel xem trước) → áp dụng học kỳ → mở nhiều lớp cùng môn → phân công giảng viên/lịch học → mở đăng ký. Hướng dẫn đầy đủ và migration tại [backend/TRAINING-WORKFLOW.md](../backend/TRAINING-WORKFLOW.md).
+
+Development có sẵn ngành `DEMO-CNTT`, khóa `DEMO-K2026`, chương trình HK1 và 8 lớp cùng môn `DEMO-LTCB-01`…`-08`. Lớp 01 mở đăng ký, lớp 02 đã phân công nhưng đóng đăng ký, lớp 03–08 chờ phân công. Tài khoản `DEMO-GV01` và `DEMO-SV01` dùng mật khẩu ban đầu `Demo@12345`, bắt buộc đổi lần đầu; seed không reset mật khẩu đã đổi. Xem kịch bản chi tiết trong hướng dẫn trên.

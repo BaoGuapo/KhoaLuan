@@ -169,3 +169,7 @@ cần dùng kho khóa Data Protection chung và bền vững để đọc đư�
 Theo lựa chọn hiện tại của nhóm, backend không lưu ảnh khuôn mặt gốc hoặc ảnh đã căn chỉnh.
 Ngưỡng mẫu nằm trong mục `FaceRecognition` của `appsettings.example.json` và cần hiệu chỉnh
 trên ảnh thử nghiệm của lớp trước khi dùng thực tế.
+
+## Luồng đào tạo và mở nhiều lớp cùng môn
+
+API và web đã bổ sung nhập chương trình bằng form/Excel, áp dụng học kỳ, mở nhiều lớp học phần cùng môn, phân công giảng viên/lịch học và mở đăng ký. Xem [hướng dẫn và API](TRAINING-WORKFLOW.md). Màn hình web: `/dao-tao` (Admin/CanBoQuanLy).

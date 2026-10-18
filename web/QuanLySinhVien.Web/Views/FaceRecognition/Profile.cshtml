@@ -5,8 +5,8 @@
 
 <div class="page-heading">
     <div>
-        <p class="eyebrow blue">SINH VIÊN</p>
-        <h1>Đăng ký khuôn mặt</h1>
+        <p class="eyebrow blue">Tài khoản / Hồ sơ khuôn mặt</p>
+        <h1>Hồ sơ khuôn mặt</h1>
         <p>Mã sinh viên: <strong>@(Model.Profile.MaSinhVien.Length > 0 ? Model.Profile.MaSinhVien : User.Identity?.Name)</strong></p>
     </div>
     <a class="button secondary" asp-controller="Home" asp-action="SinhVien">Quay lại</a>
@@ -39,13 +39,14 @@
     </div>
 
     <aside class="panel face-help">
-        <h2>Hướng dẫn</h2>
+        <h2>Trước khi chụp</h2>
         <ol>
             <li>Cho phép trình duyệt sử dụng camera.</li>
             <li>Chỉ để một khuôn mặt trong khung, nhìn thẳng và giữ đủ sáng.</li>
-            <li>Hệ thống lấy ba mẫu liên tiếp và chỉ gửi vector MobileNetV2 512 chiều về backend.</li>
+            <li>Giữ yên trong lúc lấy 3 mẫu. Đợi thông báo thành công trước khi rời trang.</li>
         </ol>
-        <p>Ảnh camera không được lưu. Vector nhận diện được mã hóa trước khi ghi vào cơ sở dữ liệu.</p>
+        <p>Ảnh camera không được lưu. Hệ thống chỉ lưu mẫu đặc trưng đã mã hóa để đối chiếu khi đăng nhập và điểm danh.</p>
+        @if (Model.Profile.DaDangKy) { <p>Cập nhật sẽ thay thế mẫu cũ. Nên chụp lại khi ánh sáng tốt và không che khuôn mặt.</p> }
     </aside>
 </section>
 

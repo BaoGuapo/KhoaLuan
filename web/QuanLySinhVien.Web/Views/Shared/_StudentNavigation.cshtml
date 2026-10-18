@@ -1,0 +1,23 @@
+@{
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+    var items = new[] {
+        ("Home", "SinhVien", "Trang chủ", "⌂"),
+        ("SinhVien", "DangKyHocPhan", "Đăng ký học phần", "+"),
+        ("SinhVien", "XemLichHoc", "Lịch học", "▦"),
+        ("PersonalProfile", "Index", "Thông tin cá nhân", "○"),
+        ("FaceRecognition", "Profile", "Hồ sơ khuôn mặt", "◎"),
+        ("Account", "ChangePassword", "Đổi mật khẩu", "↳")
+    };
+}
+<aside class="sv-sidebar">
+    <div class="sv-sidebar-title">CỔNG SINH VIÊN</div>
+    <nav aria-label="Chức năng sinh viên">
+    @foreach (var item in items)
+    {
+        var active = controller == item.Item1 && (action == item.Item2 || controller == "PersonalProfile");
+        <a asp-controller="@item.Item1" asp-action="@item.Item2" class="@(active ? "is-current" : null)" aria-current="@(active ? "page" : null)"><span aria-hidden="true">@item.Item4</span>@item.Item3</a>
+    }
+    </nav>
+    <div class="sv-sidebar-note">Tài khoản sinh viên<br /><strong>@User.Identity?.Name</strong></div>
+</aside>

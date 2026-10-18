@@ -1,218 +1,77 @@
-@{
-    ViewData["Title"] = "Đăng ký học phần";
-    ViewData["UseBootstrap"] = true;
+@model StudentAcademicWorkspace
+@{ ViewData["Title"] = "Đăng ký học phần"; var selected = Model.Selected; var enrolled = Model.SemesterRegistered.ToList(); }
+<header class="sv-heading"><div><p class="sv-breadcrumb">Học tập / Đăng ký học phần</p><h1>Đăng ký học phần</h1><p>Chọn môn để xem các lớp đang mở. Kiểm tra lịch học trước khi đăng ký.</p></div><a class="sv-link" asp-action="XemLichHoc" asp-route-hocKy="@Model.Semester">Xem lịch đã đăng ký →</a></header>
+@if (Model.Error is not null)
+{
+    <section class="sv-empty sv-error" role="alert"><h2>Chưa tải được danh sách</h2><p>@Model.Error</p><a class="button" asp-action="DangKyHocPhan">Thử lại</a></section>
 }
-
-    <style>
-        .course-registration { background-color: #f8f9fa; border-radius: 16px; }
-        .card-custom { border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .table-hover tbody tr:hover { cursor: pointer; background-color: #f1f8ff; }
-        .expanded-row { background-color: #f8f9fa; border-left: 4px solid #0d6efd; }
-
-        /* Hiệu ứng chọn panel bên phải */
-        .detail-panel { transition: all 0.3s ease; }
-        .detail-panel.empty-state { display: flex; align-items: center; justify-content: center; height: 100%; color: #adb5bd; border: 2px dashed #dee2e6; border-radius: 12px; }
-    </style>
-
-<div class="container-fluid course-registration py-4 px-4">
-    <h3 class="fw-bold text-primary mb-4">Đăng ký học phần</h3>
-
-    <!-- KHỐI 1: THÔNG TIN SINH VIÊN & CHƯƠNG TRÌNH ĐÀO TẠO -->
-    <div class="row mb-4">
-        <div class="col-md-6">
-            <div class="card card-custom p-3 bg-white">
-                <div class="d-flex align-items-start gap-3">
-                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
-                        <i class="bi bi-person-fill fs-3"></i>
-                    </div>
-                    <div>
-                        <h5 class="fw-bold mb-1">Đỗ Gia Bảo</h5>
-                        <p class="mb-1 text-muted small">Mã SV: 2001234567 | Khóa: K15 (2023 - 2027)</p>
-                        <p class="mb-0 text-muted small">Ngành: Công nghệ thông tin - Hệ Chính quy</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- KHỐI 2: LỰA CHỌN LOẠI ĐĂNG KÝ -->
-    <div class="card card-custom p-3 mb-4">
-        <h6 class="fw-bold mb-3">Loại học phần:</h6>
-        <div class="d-flex gap-4">
-            <div class="form-check">
-                <input class="form-check-input" type="radio" name="loaiDangKy" id="hocMoi" value="moi" checked onchange="loadDanhSachMon()">
-                <label class="form-check-label" for="hocMoi">Học mới</label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="radio" name="loaiDangKy" id="hocLai" value="lai" onchange="loadDanhSachMon()">
-                <label class="form-check-label text-warning" for="hocLai">Học lại (Khóa sau)</label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="radio" name="loaiDangKy" id="caiThien" value="caithien" onchange="loadDanhSachMon()">
-                <label class="form-check-label text-info" for="caiThien">Cải thiện (Khóa sau)</label>
-            </div>
-        </div>
-        <small class="text-muted mt-2" id="loaiDangKyGhiChu">Đang hiển thị các môn học theo tiến độ chuẩn của khóa K15.</small>
-    </div>
-
-    <!-- KHỐI 3: DANH SÁCH MÔN HỌC CHỜ ĐĂNG KÝ (EXPANDABLE) -->
-    <div class="card card-custom p-0 mb-4 overflow-hidden">
-        <table class="table table-hover mb-0">
-            <thead class="table-light">
-                <tr>
-                    <th style="width: 50px;"></th>
-                    <th>Mã Học Phần</th>
-                    <th>Tên Môn Học</th>
-                    <th class="text-center">Số TC</th>
-                </tr>
-            </thead>
-            <tbody id="danhSachMonHoc">
-                <!-- Môn 1 -->
-                <tr data-bs-toggle="collapse" data-bs-target="#lopHocPhan_IT01">
-                    <td class="text-center text-primary"><i class="bi bi-chevron-down"></i></td>
-                    <td class="fw-bold">IT01</td>
-                    <td>Lập trình Web ASP.NET</td>
-                    <td class="text-center">3</td>
-                </tr>
-                <tr class="collapse" id="lopHocPhan_IT01">
-                    <td colspan="4" class="expanded-row p-3">
-                        <div class="ps-4">
-                            <h6 class="fw-bold text-secondary mb-3"><i class="bi bi-list-task"></i> Chọn lớp học phần:</h6>
-                            <table class="table table-sm table-bordered bg-white">
-                                <thead class="table-secondary">
-                                    <tr>
-                                        <th>Chọn</th>
-                                        <th>Mã Lớp</th>
-                                        <th>Giảng Viên</th>
-                                        <th>Sĩ Số</th>
-                                        <th>Lịch Học</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td class="text-center"><input type="radio" name="chonLop_IT01"></td>
-                                        <td>IT01_HK1_01</td>
-                                        <td>Nguyễn Văn A</td>
-                                        <td>45/70</td>
-                                        <td>Thứ 2 (Tiết 1-3) - P. C101</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="text-center"><input type="radio" name="chonLop_IT01"></td>
-                                        <td>IT01_HK1_02</td>
-                                        <td>Trần Thị B</td>
-                                        <td>60/70</td>
-                                        <td>Thứ 4 (Tiết 7-9) - P. B302</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                            <button class="btn btn-primary btn-sm mt-2"><i class="bi bi-plus-circle"></i> Xác nhận đăng ký lớp này</button>
-                        </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
-    <!-- KHỐI 4: KẾT QUẢ ĐÃ ĐĂNG KÝ (SPLIT VIEW) -->
-    <h5 class="fw-bold text-success mb-3"><i class="bi bi-check-circle-fill"></i> Học phần đã đăng ký</h5>
-    <div class="row">
-
-        <!-- BÊN TRÁI: Bảng danh sách đã đăng ký -->
-        <div class="col-md-7">
-            <div class="card card-custom p-0 overflow-hidden">
-                <table class="table mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Mã HP</th>
-                            <th>Tên Môn Học</th>
-                            <th class="text-center">Số TC</th>
-                            <th>Ngày ĐK</th>
-                            <th class="text-center">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="fw-bold">IT02</td>
-                            <td>Cấu trúc dữ liệu & giải thuật</td>
-                            <td class="text-center">3</td>
-                            <td>12/08/2026</td>
-                            <td class="text-center">
-                                <button class="btn btn-sm btn-outline-info me-1" onclick="xemChiTietDaDangKy('IT02')">Xem</button>
-                                <button class="btn btn-sm btn-outline-danger">Hủy</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- BÊN PHẢI: Panel hiển thị chi tiết và Sửa lịch học -->
-        <div class="col-md-5">
-            <!-- Trạng thái trống khi chưa bấm "Xem" -->
-            <div id="emptyDetailState" class="detail-panel empty-state p-4">
-                <div class="text-center">
-                    <i class="bi bi-layout-sidebar-inset fs-1"></i>
-                    <p class="mt-2 mb-0">Bấm "Xem" ở danh sách bên trái để hiển thị chi tiết lớp học.</p>
-                </div>
-            </div>
-
-            <!-- Khối chi tiết (Mặc định ẩn) -->
-            <div id="courseDetailCard" class="card card-custom p-4 d-none border-top border-4 border-info">
-                <h5 class="fw-bold mb-3" id="detail_TenMon">Tên môn học</h5>
-                <ul class="list-unstyled mb-4">
-                    <li class="mb-2"><strong>Mã HP:</strong> <span id="detail_MaHP" class="text-primary fw-bold"></span></li>
-                    <li class="mb-2"><strong>Loại môn:</strong> <span id="detail_LoaiMon">Bắt buộc</span></li>
-                    <li class="mb-2"><strong>Số TC:</strong> <span id="detail_SoTC"></span></li>
-                    <li class="mb-2"><strong>Sĩ số hiện tại:</strong> <span id="detail_SiSo"></span></li>
-                    <li class="mb-2">
-                        <strong>Lịch học dự kiến:</strong>
-                        <div class="alert alert-primary p-2 mt-2 mb-0" id="detail_LichHoc">
-                            <!-- Lịch học render ở đây -->
-                        </div>
-                    </li>
-                </ul>
-                <hr>
-                <div class="d-flex justify-content-between align-items-center">
-                    <span class="text-muted small">Cần đổi giờ học?</span>
-                    <button class="btn btn-warning fw-bold text-dark" onclick="moPopupDoiLich()"><i class="bi bi-arrow-left-right"></i> Đổi Lịch / Chuyển Lớp</button>
-                </div>
-            </div>
-        </div>
-
-    </div>
-</div>
-
-<script>
-    // Logic thay đổi Ghi chú dựa vào lựa chọn "Học mới / Học lại / Cải thiện"
-    function loadDanhSachMon() {
-        const loai = document.querySelector('input[name="loaiDangKy"]:checked').value;
-        const ghiChu = document.getElementById('loaiDangKyGhiChu');
-
-        if(loai === 'moi') {
-            ghiChu.innerHTML = "Đang hiển thị các môn học theo tiến độ chuẩn của khóa <strong>K15</strong>.";
-        } else {
-            ghiChu.innerHTML = "Đang hiển thị các môn học để học lại/cải thiện. Bạn sẽ được xếp lớp cùng chương trình đào tạo của khóa <strong>K16 (Khóa sau)</strong>.";
-            // GỌI API: Fetch danh sách môn và lớp học phần của khóa sau (K16) ở đây
-        }
+else
+{
+    <form method="get" class="sv-filter" role="search" aria-label="Lọc môn học">
+        <label>Học kỳ<select name="hocKy">@foreach (var semester in Model.Semesters) { <option value="@semester.MaHocKy" selected="@(semester.MaHocKy == Model.Semester)">@semester.TenHocKy</option> }</select></label>
+        <label class="sv-search">Tìm môn học<input name="q" value="@Model.Query" placeholder="Nhập tên hoặc mã môn" maxlength="150" type="search" /></label>
+        <label class="sv-check"><input type="checkbox" name="conCho" value="true" checked="@Model.OnlyAvailable" /> Chỉ lớp còn chỗ</label>
+        <button class="button primary-link" type="submit">Tìm kiếm</button>
+        @if (!string.IsNullOrWhiteSpace(Model.Query) || Model.OnlyAvailable) { <a class="sv-link" asp-action="DangKyHocPhan" asp-route-hocKy="@Model.Semester">Xóa bộ lọc</a> }
+    </form>
+    <div class="sv-registration-summary"><span><strong>@Model.Subjects.Count</strong> môn đang hiển thị</span><span>Đã đăng ký <strong>@enrolled.Count học phần · @enrolled.Sum(x => x.Credits) tín chỉ</strong></span><a href="#registered" class="sv-link">Xem kết quả ↓</a></div>
+    @if (Model.Subjects.Count == 0)
+    {
+        <section class="sv-empty"><h2>@(!string.IsNullOrWhiteSpace(Model.Query) || Model.OnlyAvailable ? "Không có môn phù hợp bộ lọc" : "Chưa có lớp mở đăng ký")</h2><p>Thử chọn học kỳ khác hoặc xóa bộ lọc. Nếu thiếu môn cần học, hãy liên hệ phòng đào tạo.</p></section>
     }
-
-    // Logic xử lý khi bấm nút "Xem" ở bảng bên trái
-    function xemChiTietDaDangKy(maHP) {
-        // Ẩn panel empty, hiện panel chi tiết
-        document.getElementById('emptyDetailState').classList.add('d-none');
-        document.getElementById('courseDetailCard').classList.remove('d-none');
-
-        // Giả lập load dữ liệu chi tiết
-        if(maHP === 'IT02') {
-            document.getElementById('detail_MaHP').innerText = "IT02";
-            document.getElementById('detail_TenMon').innerText = "Cấu trúc dữ liệu & giải thuật";
-            document.getElementById('detail_SoTC').innerText = "3";
-            document.getElementById('detail_SiSo').innerText = "65/80 (Còn trống)";
-            document.getElementById('detail_LichHoc').innerHTML = "<i class='bi bi-clock'></i> Thứ 4 (Tiết 7-9) <br> <i class='bi bi-geo-alt'></i> Phòng B302";
-        }
+    else
+    {
+        <div class="sv-registration-grid">
+            <section class="sv-subjects" aria-labelledby="subject-list-title"><div class="sv-section-heading"><h2 id="subject-list-title">Môn học</h2><span>@Model.Subjects.Count môn</span></div>
+            <div class="sv-subject-list">
+                @foreach (var subject in Model.Subjects)
+                {
+                    var info = subject.First(); var active = selected?.Key == subject.Key;
+                    <a asp-action="DangKyHocPhan" asp-route-hocKy="@Model.Semester" asp-route-q="@Model.Query" asp-route-conCho="@Model.OnlyAvailable" asp-route-mon="@subject.Key" class="sv-subject @(active ? "is-selected" : null)" aria-current="@(active ? "true" : null)">
+                        <span class="sv-subject-code">@subject.Key <span>@info.Credits TC</span></span><strong>@info.TenMonHoc</strong><span class="sv-subject-meta">@subject.Count() lớp đang mở @if (Model.HasSubject(subject.Key)) { <em>Đã đăng ký</em> }</span>
+                    </a>
+                }
+            </div></section>
+            <section class="sv-classes" aria-labelledby="class-list-title">
+            @if (selected is not null)
+            {
+                <div class="sv-section-heading sv-selected-heading"><div><span class="sv-subject-code">@selected.Key · @selected.First().Credits tín chỉ</span><h2 id="class-list-title">@selected.First().TenMonHoc</h2></div><span>@selected.Count() lớp</span></div>
+                <div class="sv-table-scroll" tabindex="0" role="region" aria-label="Các lớp của môn đã chọn"><table class="sv-table sv-class-table"><thead><tr><th>Lớp học phần</th><th>Lịch học / Phòng</th><th>Giảng viên</th><th>Chỗ trống</th><th><span class="sv-sr-only">Đăng ký</span></th></tr></thead><tbody>
+                @foreach (var course in selected)
+                {
+                    var registered = enrolled.Any(x => x.MaLopHocPhan == course.MaLopHocPhan);
+                    var anotherClass = Model.HasSubject(course.MaMonHoc) && !registered;
+                    var conflict = Model.Conflicts(course);
+                    var unavailable = registered || anotherClass || course.Seats == 0 || conflict;
+                    <tr class="@(registered ? "sv-registered-row" : null)"><td data-label="Lớp học phần"><strong class="sv-class-code">@course.MaLopHocPhan</strong>@if (registered) { <span class="sv-status sv-status-success">Đã đăng ký</span> }</td>
+                        <td data-label="Lịch học / Phòng">@foreach (var slot in course.LichHoc) { <div class="sv-slot"><span>@slot.Day · Tiết @slot.TietBatDau–@slot.TietKetThuc</span><small>@slot.TenPhong</small></div> }@if (conflict && !registered) { <span class="sv-status sv-status-warning">Trùng lịch đã đăng ký</span> }</td>
+                        <td data-label="Giảng viên">@course.HoTen</td><td data-label="Chỗ trống"><strong class="@(course.Seats == 0 ? "sv-full" : "sv-seats")">@course.Seats</strong><small>@course.SiSoHienTai/@course.SiSoToiDa sinh viên</small></td>
+                        <td class="sv-register-action">
+                        @if (unavailable)
+                        { <span class="sv-unavailable">@(registered ? "Đã đăng ký" : anotherClass ? "Đã chọn lớp khác" : course.Seats == 0 ? "Hết chỗ" : "Trùng lịch")</span> }
+                        else
+                        {
+                            <form asp-action="DangKy" method="post" data-confirm="Đăng ký lớp @course.MaLopHocPhan — @course.TenMonHoc?" data-registration-form>
+                                <input type="hidden" name="maLop" value="@course.MaLopHocPhan" /><input type="hidden" name="hocKy" value="@Model.Semester" /><input type="hidden" name="mon" value="@selected.Key" /><input type="hidden" name="q" value="@Model.Query" /><input type="hidden" name="conCho" value="@Model.OnlyAvailable.ToString().ToLowerInvariant()" />
+                                <button class="button primary-link" type="submit" aria-label="Đăng ký lớp @course.MaLopHocPhan">Đăng ký</button>
+                            </form>
+                        }
+                        </td></tr>
+                }
+                </tbody></table></div>
+                <p class="sv-table-note">Sĩ số có thể thay đổi khi sinh viên khác đăng ký. Mỗi môn chỉ được chọn một lớp trong học kỳ.</p>
+            }
+            </section>
+        </div>
     }
-
-    function moPopupDoiLich() {
-        alert("Tính năng Đổi lịch: Tại đây sẽ bật lên Modal hiển thị các Lớp học phần khác (có giờ học khác) của môn này để sinh viên ấn 'Chuyển lớp'.");
+    <section class="sv-section sv-enrolled" id="registered" aria-labelledby="registered-title"><div class="sv-section-heading"><h2 id="registered-title">Kết quả đăng ký</h2><strong>@enrolled.Count học phần · @enrolled.Sum(x => x.Credits) tín chỉ</strong></div>
+    @if (enrolled.Count == 0) { <div class="sv-empty"><h3>Bạn chưa đăng ký học phần trong học kỳ này</h3><p>Chọn một môn ở trên, xem lịch của lớp và bấm Đăng ký.</p></div> }
+    else
+    {
+        <div class="sv-table-scroll" tabindex="0" role="region" aria-label="Kết quả đăng ký học phần"><table class="sv-table"><thead><tr><th>Môn học / Lớp</th><th>Tín chỉ</th><th>Lịch học / Phòng</th><th>Giảng viên</th><th>Ngày đăng ký</th></tr></thead><tbody>
+        @foreach (var course in enrolled) { <tr><td><strong>@course.TenMonHoc</strong><small>@course.MaLopHocPhan</small></td><td>@course.Credits</td><td>@foreach (var slot in course.LichHoc) { <div class="sv-slot">@slot.Day · Tiết @slot.TietBatDau–@slot.TietKetThuc<small>@slot.TenPhong</small></div> }</td><td>@course.HoTen</td><td>@(course.ThoiGianDangKy?.ToString("dd/MM/yyyy") ?? "—")</td></tr> }
+        </tbody></table></div><p class="sv-table-note">Nếu cần hủy hoặc chuyển lớp, vui lòng liên hệ phòng đào tạo.</p>
     }
-</script>
+    </section>
+    <script defer src="~/js/student-registration.js" asp-append-version="true"></script>
+}

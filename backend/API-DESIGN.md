@@ -221,6 +221,8 @@ Ngưỡng cảnh báo phải là cấu hình theo học kỳ/lớp; ví dụ 20%
 
 ## Các điểm cần chốt từ ERD trước khi code migration
 
+Luồng CTĐT → áp dụng học kỳ → mở nhiều lớp cùng môn → phân công đã có API triển khai tại `/api/v1/dao-tao`. Xem [TRAINING-WORKFLOW.md](TRAINING-WORKFLOW.md) cho các endpoint, request, migration và màn hình web thực tế; bảng bên trên là thiết kế tổng thể, không đồng nghĩa mọi endpoint đã được triển khai.
+
 1. ERD chưa có `AttendanceSession` (phiên/hạn QR/trạng thái đóng), `Notification`, `NotificationRecipient`, `ExamSchedule`, `AcademicResult`. Đây là các bảng bắt buộc để đáp ứng UC15–17, UC29, UC32–34.
 2. `ChuongTrinhDaoTao` hiện chứa `maMonHoc`; nếu một chương trình có nhiều môn học, cần bảng nối `ChuongTrinhMonHoc` thay vì một khóa ngoại đơn.
 3. UC08 yêu cầu kiểm tra môn tiên quyết, sĩ số và trùng lịch. Cần thêm `CoursePrerequisite` và `RegistrationWindow`, hoặc xác nhận đây là dữ liệu tích hợp từ hệ thống khác.

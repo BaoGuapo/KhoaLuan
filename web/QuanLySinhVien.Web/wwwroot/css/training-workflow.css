@@ -1,0 +1,26 @@
+.training-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 24px; }
+.training-steps a { display: flex; gap: 10px; align-items: center; padding: 16px; color: #075f96; background: #fff; border: 1px solid #d8e9f3; border-radius: 12px; text-decoration: none; font-weight: 650; }
+.training-steps span { display: grid; place-items: center; flex: 0 0 30px; height: 30px; background: #e5f3fc; border-radius: 50%; }
+.training-section { margin-bottom: 24px; scroll-margin-top: 20px; }
+.training-section summary { cursor: pointer; font-weight: 650; color: #0067a8; }
+.training-form { display: grid; gap: 16px; margin: 20px 0; }
+.training-form label { display: grid; gap: 8px; font-weight: 650; }
+.training-form input, .training-form select { min-width: 0; width: 100%; min-height: 42px; padding: 10px 12px; border: 1px solid #b8cfdd; border-radius: 8px; background: #fff; color: #16324f; font: inherit; }
+.training-form input:focus, .training-form select:focus { outline: 2px solid #0088c9; outline-offset: 2px; }
+.training-form small { font-size: .82rem; font-weight: 400; color: #668096; }
+.training-form > button { justify-self: start; }
+.training-two, .training-three { display: grid; gap: 16px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.training-three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.training-import { display: flex; gap: 12px; align-items: end; flex-wrap: wrap; padding: 18px; background: #f2f8fc; border-radius: 12px; }
+.training-import small { flex-basis: 100%; }
+.training-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+.training-summary { padding: 18px 0; border-top: 1px solid #e5eef4; }
+.training-class { margin-bottom: 16px; }
+.training-class-heading { display: flex; gap: 16px; justify-content: space-between; align-items: center; }
+.training-class-heading h3 { margin: 0; color: #0067a8; }
+.training-class-heading p { margin-bottom: 0; color: #668096; }
+.training-class-heading .badge { white-space: nowrap; }
+.training-form .table-card { max-width: 100%; }
+.training-form table { min-width: 620px; }
+@media (max-width: 900px) { .training-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 650px) { .training-two, .training-three { grid-template-columns: 1fr; } .training-steps { display: grid; gap: 8px; } .training-steps a { font-size: .84rem; padding: 10px; } .training-class-heading { align-items: start; flex-direction: column; } }

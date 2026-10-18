@@ -22,10 +22,46 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<HoSoKhuonMat> HoSoKhuonMats => Set<HoSoKhuonMat>();
     public DbSet<PhienDiemDanh> PhienDiemDanhs => Set<PhienDiemDanh>();
     public DbSet<ThongBao> ThongBaos => Set<ThongBao>();
+    public DbSet<KeHoachDaoTao> KeHoachDaoTaos => Set<KeHoachDaoTao>();
+    public DbSet<MonKeHoachDaoTao> MonKeHoachDaoTaos => Set<MonKeHoachDaoTao>();
+    public DbSet<ApDungHocKy> ApDungHocKys => Set<ApDungHocKy>();
+    public DbSet<LopHocPhanDuKien> LopHocPhanDuKiens => Set<LopHocPhanDuKien>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        modelBuilder.Entity<KeHoachDaoTao>(e =>
+        {
+            e.ToTable("KeHoachDaoTao"); e.HasKey(x => x.Id);
+            e.Property(x => x.MaNganh).HasMaxLength(50).IsUnicode(false);
+            e.Property(x => x.MaKhoa).HasMaxLength(50).IsUnicode(false);
+            e.Property(x => x.TenKhoaDaoTao).HasMaxLength(200);
+            e.Property(x => x.TenChuongTrinh).HasMaxLength(200);
+            e.HasIndex(x => new { x.MaNganh, x.MaKhoa }).IsUnique();
+        });
+        modelBuilder.Entity<MonKeHoachDaoTao>(e =>
+        {
+            e.ToTable("MonKeHoachDaoTao"); e.HasKey(x => new { x.KeHoachDaoTaoId, x.MaMonHoc });
+            e.Property(x => x.MaMonHoc).HasMaxLength(50).IsUnicode(false);
+            e.HasOne(x => x.KeHoach).WithMany(x => x.MonHocs).HasForeignKey(x => x.KeHoachDaoTaoId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne(x => x.MonHoc).WithMany().HasForeignKey(x => x.MaMonHoc).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<ApDungHocKy>(e =>
+        {
+            e.ToTable("ApDungHocKy"); e.HasKey(x => x.Id);
+            e.Property(x => x.MaHocKy).HasMaxLength(50).IsUnicode(false);
+            e.HasIndex(x => new { x.KeHoachDaoTaoId, x.MaHocKy }).IsUnique();
+            e.HasOne(x => x.KeHoach).WithMany().HasForeignKey(x => x.KeHoachDaoTaoId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<HocKyThucTe>().WithMany().HasForeignKey(x => x.MaHocKy).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<LopHocPhanDuKien>(e =>
+        {
+            e.ToTable("LopHocPhanDuKien"); e.HasKey(x => x.MaLopHocPhan);
+            e.Property(x => x.MaLopHocPhan).HasMaxLength(30);
+            e.Property(x => x.MaMonHoc).HasMaxLength(50).IsUnicode(false);
+            e.HasOne(x => x.ApDung).WithMany(x => x.LopHocPhans).HasForeignKey(x => x.ApDungHocKyId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne(x => x.MonHoc).WithMany().HasForeignKey(x => x.MaMonHoc).OnDelete(DeleteBehavior.Restrict);
+        });
 
         modelBuilder.Entity<User>(entity =>
         {
@@ -127,17 +163,26 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
             e.HasOne<User>().WithOne().HasForeignKey<GiangVien>(x => x.UserId).OnDelete(DeleteBehavior.SetNull);
         });
         modelBuilder.Entity<MonHoc>(e => { e.ToTable("MonHoc"); e.HasKey(x => x.MaMonHoc); e.Property(x => x.MaMonHoc).HasMaxLength(30); e.Property(x => x.TenMonHoc).HasMaxLength(200); });
-        modelBuilder.Entity<HocKyThucTe>(e => { e.ToTable("HocKyThucTe"); e.HasKey(x => x.MaHocKy); e.Property(x => x.MaHocKy).HasMaxLength(30); });
+        modelBuilder.Entity<HocKyThucTe>(e =>
+        {
+            e.ToTable("HocKyThucTe"); e.HasKey(x => x.MaHocKy); e.Property(x => x.MaHocKy).HasMaxLength(30);
+            e.Property(x => x.LoaiHocKy).HasConversion<byte>().IsRequired(false);
+            e.Property(x => x.NgayBatDau).HasColumnType("date"); e.Property(x => x.NgayKetThuc).HasColumnType("date");
+        });
         modelBuilder.Entity<PhongHoc>(e => { e.ToTable("PhongHoc"); e.HasKey(x => x.MaPhong); e.Property(x => x.MaPhong).HasMaxLength(30); });
         modelBuilder.Entity<LopHocPhan>(e =>
         {
             e.ToTable("LopHocPhan"); e.HasKey(x => x.MaLopHocPhan); e.Property(x => x.MaLopHocPhan).HasMaxLength(30);
+            e.Property(x => x.TrangThai).HasConversion<byte>().IsRequired(false);
             e.HasOne(x => x.MonHoc).WithMany().HasForeignKey(x => x.MaMonHoc).OnDelete(DeleteBehavior.Restrict);
             e.HasOne(x => x.GiangVien).WithMany().HasForeignKey(x => x.MaGiangVien).OnDelete(DeleteBehavior.Restrict);
         });
-        modelBuilder.Entity<DanhSachSinhVienLop>(e => { e.ToTable("DanhSachSinhVienLop"); e.HasKey(x => new { x.MaSinhVien, x.MaLopHocPhan }); e.HasOne(x => x.SinhVien).WithMany(x => x.DangKyLop).HasForeignKey(x => x.MaSinhVien); e.HasOne(x => x.LopHocPhan).WithMany(x => x.DanhSachSinhVien).HasForeignKey(x => x.MaLopHocPhan); });
+        modelBuilder.Entity<DanhSachSinhVienLop>(e => { e.ToTable("DanhSachSinhVienLop"); e.HasKey(x => new { x.MaSinhVien, x.MaLopHocPhan }); e.HasOne(x => x.SinhVien).WithMany(x => x.DangKyLop).HasForeignKey(x => x.MaSinhVien); e.HasOne(x => x.LopHocPhan).WithMany(x => x.DanhSachSinhVien).HasForeignKey(x => x.MaLopHocPhan);
+            e.Property(x => x.TrangThaiCanhBao).HasConversion(x => LegacyAcademicValues.WarningCode(x!), x => LegacyAcademicValues.WarningName(x)); });
         modelBuilder.Entity<LichHoc>(e => { e.ToTable("LichHoc"); e.HasKey(x => x.MaLichHoc); e.HasOne(x => x.LopHocPhan).WithMany(x => x.LichHocs).HasForeignKey(x => x.MaLopHocPhan); e.HasOne(x => x.PhongHoc).WithMany().HasForeignKey(x => x.MaPhong); });
-        modelBuilder.Entity<BuoiHoc>(e => { e.ToTable("BuoiHoc"); e.HasKey(x => x.MaBuoiHoc); e.HasOne(x => x.LichHoc).WithMany(x => x.BuoiHocs).HasForeignKey(x => x.MaLichHoc); });
+        modelBuilder.Entity<BuoiHoc>(e => { e.ToTable("BuoiHoc"); e.HasKey(x => x.MaBuoiHoc); e.HasOne(x => x.LichHoc).WithMany(x => x.BuoiHocs).HasForeignKey(x => x.MaLichHoc);
+            e.Property(x => x.ThoiGianDiemDanh).HasColumnName("thoiGianMoDiemDanh").HasColumnType("datetime");
+            e.Property(x => x.TrangThaiBuoiHoc).HasConversion(x => LegacyAcademicValues.SessionCode(x), x => LegacyAcademicValues.SessionName(x)).IsRequired(false); });
         modelBuilder.Entity<ChiTietDiemDanh>(e => { e.ToTable("ChiTietDiemDanh"); e.HasKey(x => new { x.MaBuoiHoc, x.MaSinhVien }); e.HasOne(x => x.BuoiHoc).WithMany(x => x.ChiTietDiemDanhs).HasForeignKey(x => x.MaBuoiHoc); e.HasOne(x => x.SinhVien).WithMany().HasForeignKey(x => x.MaSinhVien); });
         modelBuilder.Entity<HoSoKhuonMat>(e => { e.ToTable("HoSoKhuonMat"); e.HasKey(x => x.MaHoSo); e.HasOne(x => x.SinhVien).WithOne(x => x.HoSoKhuonMat).HasForeignKey<HoSoKhuonMat>(x => x.MaSinhVien); });
         modelBuilder.Entity<PhienDiemDanh>(e => { e.ToTable("PhienDiemDanh"); e.HasKey(x => x.Id); e.HasIndex(x => x.QrTokenHash).IsUnique(); e.HasOne(x => x.BuoiHoc).WithMany().HasForeignKey(x => x.MaBuoiHoc); });
