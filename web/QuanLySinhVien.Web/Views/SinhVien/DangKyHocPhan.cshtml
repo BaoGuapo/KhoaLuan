@@ -7,17 +7,34 @@
 }
 else
 {
+    <section class="sv-term-context" aria-label="Học kỳ đăng ký">
+        <div><span class="sv-eyebrow">HỌC KỲ ĐĂNG KÝ</span><h2>@(Model.Semesters.FirstOrDefault(x => x.MaHocKy == Model.Semester)?.TenHocKy ?? "Chưa xác định học kỳ hiện tại")</h2>
+            @if (Model.Semesters.FirstOrDefault(x => x.MaHocKy == Model.Semester) is { } term) { <p>@term.NgayBatDau?.ToString("dd/MM/yyyy") – @term.NgayKetThuc?.ToString("dd/MM/yyyy")</p> }
+        </div><div class="sv-round-info"><span class="sv-status @(Model.RegistrationOpen ? "sv-status-success" : "sv-status-warning")">@(Model.RegistrationOpen ? "Đang mở đăng ký" : "Chưa mở / Đã kết thúc đăng ký")</span>
+            @foreach (var round in Model.Windows) { <p>@round.TenDot · Đến @round.ClosingTime</p> }
+        </div>
+    </section>
+    <nav class="sv-registration-types" aria-label="Loại đăng ký học phần">
+        @foreach (var type in new[] { "moi", "lai", "caithien", "vuot" })
+        { <a asp-action="DangKyHocPhan" asp-route-hocKy="@Model.Semester" asp-route-loaiDangKy="@type" class="@(Model.RegistrationType == type ? "is-current" : null)" aria-current="@(Model.RegistrationType == type ? "page" : null)">@StudentAcademicWorkspace.TypeLabel(type)</a> }
+    </nav>
+    <p class="sv-type-description">@(Model.RegistrationType switch { "lai" => "Các môn đã có kết quả chưa đạt và đang mở lớp trong học kỳ này.", "caithien" => "Các môn đã đạt và đang mở lớp để cải thiện. Kết quả các lần học được giữ lại.", "vuot" => "Các môn thuộc học kỳ sau trong chương trình của bạn, đang được mở ở học kỳ đăng ký này. Cần đáp ứng điều kiện môn học.", _ => "Các môn chưa có kết quả học tập và thuộc tiến độ hiện tại hoặc các kỳ trước trong chương trình." })</p>
     <form method="get" class="sv-filter" role="search" aria-label="Lọc môn học">
-        <label>Học kỳ<select name="hocKy">@foreach (var semester in Model.Semesters) { <option value="@semester.MaHocKy" selected="@(semester.MaHocKy == Model.Semester)">@semester.TenHocKy</option> }</select></label>
+        <input type="hidden" name="loaiDangKy" value="@Model.RegistrationType" />
+        <label>Học kỳ<select name="hocKy">@if (Model.Semester is null) { <option value="" selected>Chưa có học kỳ hiện tại</option> }@foreach (var semester in Model.Semesters.OrderByDescending(x => x.NgayBatDau)) { <option value="@semester.MaHocKy" selected="@(semester.MaHocKy == Model.Semester)">@semester.TenHocKy@(semester.MaHocKy == Model.CurrentSemester ? " · Hiện tại" : "")</option> }</select></label>
         <label class="sv-search">Tìm môn học<input name="q" value="@Model.Query" placeholder="Nhập tên hoặc mã môn" maxlength="150" type="search" /></label>
         <label class="sv-check"><input type="checkbox" name="conCho" value="true" checked="@Model.OnlyAvailable" /> Chỉ lớp còn chỗ</label>
         <button class="button primary-link" type="submit">Tìm kiếm</button>
-        @if (!string.IsNullOrWhiteSpace(Model.Query) || Model.OnlyAvailable) { <a class="sv-link" asp-action="DangKyHocPhan" asp-route-hocKy="@Model.Semester">Xóa bộ lọc</a> }
+        @if (!string.IsNullOrWhiteSpace(Model.Query) || Model.OnlyAvailable) { <a class="sv-link" asp-action="DangKyHocPhan" asp-route-hocKy="@Model.Semester" asp-route-loaiDangKy="@Model.RegistrationType">Xóa bộ lọc</a> }
     </form>
+    @if (Model.RegistrationOpen && (Model.MinCredits is not null || Model.MaxCredits is not null))
+    {
+        <p class="sv-credit-guidance" role="status">@if (Model.MinCredits is int min) { <span>Khối lượng tối thiểu: <strong>@min tín chỉ</strong>. </span> }@if (Model.MaxCredits is int max) { <span>Tối đa: <strong>@max tín chỉ</strong>. </span> }@if (Model.MinCredits is int required && enrolled.Sum(x => x.Credits) < required) { <span>Bạn cần bổ sung @(required - enrolled.Sum(x => x.Credits)) tín chỉ trước khi hoàn tất đợt đăng ký.</span> }</p>
+    }
     <div class="sv-registration-summary"><span><strong>@Model.Subjects.Count</strong> môn đang hiển thị</span><span>Đã đăng ký <strong>@enrolled.Count học phần · @enrolled.Sum(x => x.Credits) tín chỉ</strong></span><a href="#registered" class="sv-link">Xem kết quả ↓</a></div>
     @if (Model.Subjects.Count == 0)
     {
-        <section class="sv-empty"><h2>@(!string.IsNullOrWhiteSpace(Model.Query) || Model.OnlyAvailable ? "Không có môn phù hợp bộ lọc" : "Chưa có lớp mở đăng ký")</h2><p>Thử chọn học kỳ khác hoặc xóa bộ lọc. Nếu thiếu môn cần học, hãy liên hệ phòng đào tạo.</p></section>
+        <section class="sv-empty"><h2>@(!string.IsNullOrWhiteSpace(Model.Query) || Model.OnlyAvailable ? "Không có môn phù hợp bộ lọc" : $"Chưa có môn {StudentAcademicWorkspace.TypeLabel(Model.RegistrationType).ToLowerInvariant()} trong học kỳ này")</h2><p>Danh sách dựa trên chương trình và kết quả đã công bố. Nếu thiếu dữ liệu hoặc môn cần học, hãy liên hệ phòng đào tạo.</p></section>
     }
     else
     {
@@ -27,7 +44,7 @@ else
                 @foreach (var subject in Model.Subjects)
                 {
                     var info = subject.First(); var active = selected?.Key == subject.Key;
-                    <a asp-action="DangKyHocPhan" asp-route-hocKy="@Model.Semester" asp-route-q="@Model.Query" asp-route-conCho="@Model.OnlyAvailable" asp-route-mon="@subject.Key" class="sv-subject @(active ? "is-selected" : null)" aria-current="@(active ? "true" : null)">
+                    <a asp-action="DangKyHocPhan" asp-route-hocKy="@Model.Semester" asp-route-loaiDangKy="@Model.RegistrationType" asp-route-q="@Model.Query" asp-route-conCho="@Model.OnlyAvailable" asp-route-mon="@subject.Key" class="sv-subject @(active ? "is-selected" : null)" aria-current="@(active ? "true" : null)">
                         <span class="sv-subject-code">@subject.Key <span>@info.Credits TC</span></span><strong>@info.TenMonHoc</strong><span class="sv-subject-meta">@subject.Count() lớp đang mở @if (Model.HasSubject(subject.Key)) { <em>Đã đăng ký</em> }</span>
                     </a>
                 }
@@ -35,23 +52,24 @@ else
             <section class="sv-classes" aria-labelledby="class-list-title">
             @if (selected is not null)
             {
-                <div class="sv-section-heading sv-selected-heading"><div><span class="sv-subject-code">@selected.Key · @selected.First().Credits tín chỉ</span><h2 id="class-list-title">@selected.First().TenMonHoc</h2></div><span>@selected.Count() lớp</span></div>
+                <div class="sv-section-heading sv-selected-heading"><div><span class="sv-subject-code">@selected.Key · @selected.First().Credits tín chỉ</span><h2 id="class-list-title">@selected.First().TenMonHoc</h2>@if (selected.First().DiemDaCo is string grade) { <p class="sv-previous-grade">Kết quả đã có: <strong>@grade</strong> · @StudentAcademicWorkspace.TypeLabel(Model.RegistrationType)</p> }</div><span>@selected.Count() lớp</span></div>
                 <div class="sv-table-scroll" tabindex="0" role="region" aria-label="Các lớp của môn đã chọn"><table class="sv-table sv-class-table"><thead><tr><th>Lớp học phần</th><th>Lịch học / Phòng</th><th>Giảng viên</th><th>Chỗ trống</th><th><span class="sv-sr-only">Đăng ký</span></th></tr></thead><tbody>
                 @foreach (var course in selected)
                 {
                     var registered = enrolled.Any(x => x.MaLopHocPhan == course.MaLopHocPhan);
                     var anotherClass = Model.HasSubject(course.MaMonHoc) && !registered;
                     var conflict = Model.Conflicts(course);
-                    var unavailable = registered || anotherClass || course.Seats == 0 || conflict;
+                    var unavailable = registered || anotherClass || course.Seats == 0 || conflict || course.LyDoKhongDuDieuKien is not null || !Model.RegistrationOpen;
                     <tr class="@(registered ? "sv-registered-row" : null)"><td data-label="Lớp học phần"><strong class="sv-class-code">@course.MaLopHocPhan</strong>@if (registered) { <span class="sv-status sv-status-success">Đã đăng ký</span> }</td>
                         <td data-label="Lịch học / Phòng">@foreach (var slot in course.LichHoc) { <div class="sv-slot"><span>@slot.Day · Tiết @slot.TietBatDau–@slot.TietKetThuc</span><small>@slot.TenPhong</small></div> }@if (conflict && !registered) { <span class="sv-status sv-status-warning">Trùng lịch đã đăng ký</span> }</td>
                         <td data-label="Giảng viên">@course.HoTen</td><td data-label="Chỗ trống"><strong class="@(course.Seats == 0 ? "sv-full" : "sv-seats")">@course.Seats</strong><small>@course.SiSoHienTai/@course.SiSoToiDa sinh viên</small></td>
                         <td class="sv-register-action">
                         @if (unavailable)
-                        { <span class="sv-unavailable">@(registered ? "Đã đăng ký" : anotherClass ? "Đã chọn lớp khác" : course.Seats == 0 ? "Hết chỗ" : "Trùng lịch")</span> }
+                        { <span class="sv-unavailable">@(registered ? "Đã đăng ký" : anotherClass ? "Đã chọn lớp khác" : course.Seats == 0 ? "Hết chỗ" : conflict ? "Trùng lịch" : course.LyDoKhongDuDieuKien ?? "Ngoài đợt đăng ký")</span> }
                         else
                         {
                             <form asp-action="DangKy" method="post" data-confirm="Đăng ký lớp @course.MaLopHocPhan — @course.TenMonHoc?" data-registration-form>
+                                <input type="hidden" name="loaiDangKy" value="@Model.RegistrationType" />
                                 <input type="hidden" name="maLop" value="@course.MaLopHocPhan" /><input type="hidden" name="hocKy" value="@Model.Semester" /><input type="hidden" name="mon" value="@selected.Key" /><input type="hidden" name="q" value="@Model.Query" /><input type="hidden" name="conCho" value="@Model.OnlyAvailable.ToString().ToLowerInvariant()" />
                                 <button class="button primary-link" type="submit" aria-label="Đăng ký lớp @course.MaLopHocPhan">Đăng ký</button>
                             </form>
@@ -69,7 +87,7 @@ else
     else
     {
         <div class="sv-table-scroll" tabindex="0" role="region" aria-label="Kết quả đăng ký học phần"><table class="sv-table"><thead><tr><th>Môn học / Lớp</th><th>Tín chỉ</th><th>Lịch học / Phòng</th><th>Giảng viên</th><th>Ngày đăng ký</th></tr></thead><tbody>
-        @foreach (var course in enrolled) { <tr><td><strong>@course.TenMonHoc</strong><small>@course.MaLopHocPhan</small></td><td>@course.Credits</td><td>@foreach (var slot in course.LichHoc) { <div class="sv-slot">@slot.Day · Tiết @slot.TietBatDau–@slot.TietKetThuc<small>@slot.TenPhong</small></div> }</td><td>@course.HoTen</td><td>@(course.ThoiGianDangKy?.ToString("dd/MM/yyyy") ?? "—")</td></tr> }
+        @foreach (var course in enrolled) { <tr><td><strong>@course.TenMonHoc</strong><small>@course.MaLopHocPhan · @StudentAcademicWorkspace.TypeLabel(course.LoaiDangKy)</small></td><td>@course.Credits</td><td>@foreach (var slot in course.LichHoc) { <div class="sv-slot">@slot.Day · Tiết @slot.TietBatDau–@slot.TietKetThuc<small>@slot.TenPhong</small></div> }</td><td>@course.HoTen</td><td>@(course.ThoiGianDangKy?.ToString("dd/MM/yyyy") ?? "—")</td></tr> }
         </tbody></table></div><p class="sv-table-note">Nếu cần hủy hoặc chuyển lớp, vui lòng liên hệ phòng đào tạo.</p>
     }
     </section>

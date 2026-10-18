@@ -10,6 +10,9 @@ public sealed class StudentScheduleSlot
 }
 public sealed class StudentCourseClass
 {
+    public string LoaiDangKy { get; set; } = "moi";
+    public string? LyDoKhongDuDieuKien { get; set; }
+    public string? DiemDaCo { get; set; }
     public string MaLopHocPhan { get; set; } = "";
     public string MaMonHoc { get; set; } = "";
     public string TenMonHoc { get; set; } = "";
@@ -34,6 +37,14 @@ public sealed class StudentSemester
 }
 public sealed class StudentAcademicWorkspace
 {
+    public string RegistrationType { get; set; } = "moi";
+    public string? CurrentSemester { get; set; }
+    public bool RegistrationOpen { get; set; }
+    public int? MinCredits { get; set; }
+    public int? MaxCredits { get; set; }
+    public decimal? Gpa { get; set; }
+    public List<StudentRegistrationWindow> Windows { get; set; } = [];
+    public static string TypeLabel(string type) => type switch { "lai" => "Học lại", "caithien" => "Học cải thiện", "vuot" => "Học vượt", _ => "Học mới" };
     public List<StudentCourseClass> Available { get; set; } = [];
     public List<StudentCourseClass> Registered { get; set; } = [];
     public List<StudentSemester> Semesters { get; set; } = [];
@@ -53,4 +64,10 @@ public sealed class StudentAcademicWorkspace
     public bool Conflicts(StudentCourseClass candidate) => candidate.LichHoc.Any(slot => SemesterRegistered.Any(enrolled =>
         enrolled.MaLopHocPhan != candidate.MaLopHocPhan && enrolled.LichHoc.Any(existing => existing.ThuTrongTuan == slot.ThuTrongTuan &&
             existing.TietBatDau <= slot.TietKetThuc && slot.TietBatDau <= existing.TietKetThuc)));
+}
+public sealed class StudentRegistrationWindow
+{
+    public string TenDot { get; set; } = "";
+    public DateTime DongLucUtc { get; set; }
+    public string ClosingTime => TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.SpecifyKind(DongLucUtc, DateTimeKind.Utc), "SE Asia Standard Time").ToString("HH:mm dd/MM/yyyy");
 }

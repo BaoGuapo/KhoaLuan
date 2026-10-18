@@ -115,6 +115,7 @@ public sealed class LopHocPhan
 
 public sealed class DanhSachSinhVienLop
 {
+    public string LoaiDangKy { get; set; } = "moi";
     public string MaSinhVien { get; set; } = string.Empty;
     public string MaLopHocPhan { get; set; } = string.Empty;
     public DateTime ThoiGianDangKy { get; set; }

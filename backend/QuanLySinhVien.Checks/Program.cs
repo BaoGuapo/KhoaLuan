@@ -74,6 +74,7 @@ if (args.Contains("--schema") || args.Contains("--db-read") || args.Contains("--
     catch (SqlException ex) { Console.WriteLine($"Database schema check failed (SQL error {ex.Number})."); Environment.ExitCode = 1; }
     return;
 }
+RegistrationRuleChecks.Run();
 var checks = 0;
 void Check(bool condition, string description)
 { if (!condition) throw new Exception(description); checks++; Console.WriteLine($"PASS: {description}"); }

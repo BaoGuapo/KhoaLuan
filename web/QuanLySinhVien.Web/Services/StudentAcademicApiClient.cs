@@ -7,15 +7,19 @@ namespace QuanLySinhVien.Web.Services;
 
 public sealed class StudentAcademicApiClient(HttpClient client)
 {
-    public async Task<StudentAcademicWorkspace> LoadAsync(string token, CancellationToken ct, bool includeOffers = true)
+    public async Task<StudentAcademicWorkspace> LoadAsync(string token, CancellationToken ct, bool includeOffers = true, string registrationType = "moi", string? semester = null)
     {
         try
         {
-            var offers = includeOffers ? Get<Offers>(token, "api/v1/dang-ky-hoc-phan/danh-sach", ct) : Task.FromResult(new Offers());
+            var offers = includeOffers ? Get<Offers>(token, "api/v1/dang-ky-hoc-phan/danh-sach?loaiDangKy=" + Uri.EscapeDataString(registrationType)
+                + (semester is null ? "" : "&hocKy=" + Uri.EscapeDataString(semester)), ct) : Task.FromResult(new Offers());
             var enrolled = Get<List<StudentCourseClass>>(token, "api/v1/dang-ky-hoc-phan/da-dang-ky", ct);
             var semesters = Get<List<StudentSemester>>(token, "api/v1/hoc-ky", ct);
             await Task.WhenAll(offers, enrolled, semesters);
-            return new() { Available = (await offers).Data, Registered = await enrolled, Semesters = await semesters };
+            var offer = await offers;
+            return new() { Available = offer.Data, Registered = await enrolled, Semesters = await semesters,
+                RegistrationType = registrationType, CurrentSemester = offer.HocKyHienTai, Semester = offer.HocKyDangXem,
+                RegistrationOpen = offer.DangMoDangKy, MinCredits = offer.TinChiToiThieu, MaxCredits = offer.TinChiToiDa, Gpa = offer.GpaTichLuy, Windows = offer.DotDangKy };
         }
         catch (HttpRequestException ex)
         { return new() { Error = ex.StatusCode == System.Net.HttpStatusCode.Unauthorized ? "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại." : "Chưa tải được dữ liệu học phần. Vui lòng thử lại sau." }; }
@@ -23,11 +27,11 @@ public sealed class StudentAcademicApiClient(HttpClient client)
         { return new() { Error = "Kết nối đến hệ thống đang chậm. Vui lòng thử lại." }; }
         catch (JsonException) { return new() { Error = "Dữ liệu học phần chưa hợp lệ. Vui lòng liên hệ phòng đào tạo." }; }
     }
-    public async Task<ApiResult> RegisterAsync(string token, string code, CancellationToken ct)
+    public async Task<ApiResult> RegisterAsync(string token, string code, CancellationToken ct, string registrationType = "moi")
     {
         try
         {
-            using var request = Request(token, HttpMethod.Post, "api/v1/dang-ky-hoc-phan/sinh-vien-tu-dang-ky/" + Uri.EscapeDataString(code));
+            using var request = Request(token, HttpMethod.Post, "api/v1/dang-ky-hoc-phan/sinh-vien-tu-dang-ky/" + Uri.EscapeDataString(code) + "?loaiDangKy=" + Uri.EscapeDataString(registrationType));
             using var response = await client.SendAsync(request, ct);
             if (response.IsSuccessStatusCode) return new(true);
             try
@@ -49,5 +53,15 @@ public sealed class StudentAcademicApiClient(HttpClient client)
     }
     private static HttpRequestMessage Request(string token, HttpMethod method, string url)
     { var request = new HttpRequestMessage(method, url); request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token); return request; }
-    private sealed class Offers { public List<StudentCourseClass> Data { get; set; } = []; }
+    private sealed class Offers
+    {
+        public List<StudentCourseClass> Data { get; set; } = [];
+        public string? HocKyHienTai { get; set; }
+        public string? HocKyDangXem { get; set; }
+        public bool DangMoDangKy { get; set; }
+        public int? TinChiToiThieu { get; set; }
+        public int? TinChiToiDa { get; set; }
+        public decimal? GpaTichLuy { get; set; }
+        public List<StudentRegistrationWindow> DotDangKy { get; set; } = [];
+    }
 }

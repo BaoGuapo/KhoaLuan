@@ -39,6 +39,9 @@ public static class TrainingDatabaseChecks
                 await db.SaveChangesAsync(); await transaction.CommitAsync();
             });
             owned = true;
+            db.HoSoHocVus.AddRange(new HoSoHocVu { MaSinhVien = student, ThuTuHocKy = 1, GpaTichLuy = 2.5m }, new HoSoHocVu { MaSinhVien = otherStudent, ThuTuHocKy = 1, GpaTichLuy = 2.5m });
+            db.DotDangKyHocPhans.Add(new DotDangKyHocPhan { MaHocKy = semester, TenDot = "Đợt kiểm thử tạm", MoLucUtc = DateTime.UtcNow.AddHours(-1), DongLucUtc = DateTime.UtcNow.AddHours(1) });
+            await db.SaveChangesAsync();
             var controller = new TrainingWorkflowController(db);
             var created = await controller.CreateCurriculum(new(major, intake, "Khoa kiểm thử tạm", "Chương trình kiểm thử tạm", [new(subject, 1, true)]), default);
             Check(Status(created) == 200, "save curriculum and sync legacy table"); planId = Id(created);
@@ -75,6 +78,8 @@ public static class TrainingDatabaseChecks
                 {
                     db.ChangeTracker.Clear(); await using var transaction = await db.Database.BeginTransactionAsync();
                     await db.DanhSachSinhVienLops.Where(x => x.MaSinhVien == student || x.MaSinhVien == otherStudent).ExecuteDeleteAsync();
+                    await db.HoSoHocVus.Where(x => x.MaSinhVien == student || x.MaSinhVien == otherStudent).ExecuteDeleteAsync();
+                    await db.DotDangKyHocPhans.Where(x => x.MaHocKy == semester).ExecuteDeleteAsync();
                     await db.BuoiHocs.Where(x => codes.Contains(x.LichHoc.MaLopHocPhan)).ExecuteDeleteAsync();
                     await db.LichHocs.Where(x => codes.Contains(x.MaLopHocPhan)).ExecuteDeleteAsync();
                     await db.LopHocPhans.Where(x => codes.Contains(x.MaLopHocPhan)).ExecuteDeleteAsync();

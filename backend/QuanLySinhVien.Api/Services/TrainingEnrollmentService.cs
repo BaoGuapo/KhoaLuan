@@ -8,17 +8,20 @@ namespace QuanLySinhVien.Api.Services;
 public sealed record EnrollmentResult(int StatusCode, string Message);
 public sealed class TrainingEnrollmentService(AppDbContext db)
 {
-    public async Task<EnrollmentResult> EnrollAsync(string studentCode, string classCode, CancellationToken ct) =>
+    public async Task<EnrollmentResult> EnrollAsync(string studentCode, string classCode, CancellationToken ct, string? registrationType = null) =>
         await db.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
         {
             db.ChangeTracker.Clear();
             await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable, ct);
             var student = await db.SinhViens.AsNoTracking().SingleOrDefaultAsync(x => x.MaSinhVien == studentCode && x.TrangThaiTaiKhoan, ct);
             if (student is null) return new EnrollmentResult(404, "Không tìm thấy sinh viên đang hoạt động.");
-            var course = await db.LopHocPhans.AsNoTracking().SingleOrDefaultAsync(x => x.MaLopHocPhan == classCode, ct);
+            var course = await db.LopHocPhans.AsNoTracking().Include(x => x.MonHoc).SingleOrDefaultAsync(x => x.MaLopHocPhan == classCode, ct);
             if (course is null) return new EnrollmentResult(404, "Không tìm thấy lớp học phần.");
             if (course.TrangThai != "0") return new EnrollmentResult(409, "Lớp chưa mở đăng ký.");
             if (!await db.LichHocs.AnyAsync(x => x.MaLopHocPhan == classCode, ct)) return new EnrollmentResult(409, "Lớp chưa có lịch học.");
+            var rules = await StudentRegistrationRules.LoadAsync(db, studentCode, ct);
+            var type = registrationType ?? rules.Classify(course.MaMonHoc, course.MaHocKy);
+            if (rules.Block(course, type, selfRegistration: registrationType is not null) is string blocked) return new EnrollmentResult(409, blocked);
             var planned = await db.LopHocPhanDuKiens.AsNoTracking().Include(x => x.ApDung).ThenInclude(x => x.KeHoach)
                 .SingleOrDefaultAsync(x => x.MaLopHocPhan == classCode, ct);
             if (planned is not null)
@@ -41,7 +44,7 @@ public sealed class TrainingEnrollmentService(AppDbContext db)
                     x.TietBatDau <= schedule.TietKetThuc && schedule.TietBatDau <= x.TietKetThuc &&
                     x.LopHocPhan.DanhSachSinhVien.Any(s => s.MaSinhVien == studentCode), ct))
                     return new EnrollmentResult(409, "Lịch học trùng lớp bạn đã đăng ký.");
-            db.DanhSachSinhVienLops.Add(new DanhSachSinhVienLop { MaSinhVien = studentCode, MaLopHocPhan = classCode, ThoiGianDangKy = DateTime.UtcNow, TrangThaiCanhBao = "0" });
+            db.DanhSachSinhVienLops.Add(new DanhSachSinhVienLop { MaSinhVien = studentCode, MaLopHocPhan = classCode, LoaiDangKy = type, ThoiGianDangKy = DateTime.UtcNow, TrangThaiCanhBao = "0" });
             await db.SaveChangesAsync(ct); await transaction.CommitAsync(ct);
             return new EnrollmentResult(200, "Đăng ký học phần thành công.");
         });

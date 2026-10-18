@@ -65,7 +65,8 @@ public static class StudentUiChecks
             var html = await Page("/SinhVien/DangKyHocPhan?mon=MH001");
             Check(html.Contains("Hết chỗ") && html.Contains("Trùng lịch") && html.Contains("Kết quả đăng ký"), "registration statuses and result section");
             Check(!html.Contains("Đỗ Gia Bảo") && !html.Contains("K15") && !html.Contains("moPopupDoiLich"), "no hard-coded previous student/mock controls");
-            Check(Regex.Matches(html, "aria-current=\"page\"").Count == 1, "exactly one active student navigation link");
+            Check(Regex.Matches(html, "aria-current=\"page\"").Count == 2, "one active student navigation link and one active registration type");
+            Check(html.Contains("Học cải thiện") && html.Contains("Học vượt") && html.Contains("HỌC KỲ ĐĂNG KÝ"), "registration modes and semester context render");
             var empty = await Page("/SinhVien/DangKyHocPhan?q=not-a-subject");
             Check(empty.Contains("Không có môn phù hợp bộ lọc") && empty.Contains("Xóa bộ lọc"), "search empty state and reset");
             var filtered = await Page("/SinhVien/DangKyHocPhan?mon=MH001&conCho=true");
@@ -112,7 +113,7 @@ public static class StudentUiChecks
                 course.DaDangKy = true; course.SiSoHienTai++; registered.Add(course); Registrations++;
                 value = new { message = "Đăng ký thành công." };
             }
-            else if (path.EndsWith("danh-sach")) value = new { data = available };
+            else if (path.EndsWith("danh-sach")) value = new { data = available, hocKyHienTai = "HK1-2026", hocKyDangXem = "HK1-2026", dangMoDangKy = true, tinChiToiThieu = 14 };
             else if (path.EndsWith("da-dang-ky")) value = registered;
             else if (path.EndsWith("hoc-ky")) value = new[] { new StudentSemester { MaHocKy = "HK1-2026", TenHocKy = "Học kỳ 1 (2026–2027)", NgayBatDau = new(2026, 9, 7), NgayKetThuc = new(2026, 12, 27) } };
             else if (path.Contains("ho-so-khuon-mat")) value = new { maSinhVien = "SV-UI-TEST", daDangKy = false };

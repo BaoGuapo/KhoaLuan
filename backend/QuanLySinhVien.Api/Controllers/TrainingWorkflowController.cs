@@ -162,7 +162,7 @@ public sealed class TrainingWorkflowController(AppDbContext db) : ControllerBase
     [HttpGet("ap-dung-hoc-ky")]
     public async Task<IActionResult> Applications(CancellationToken ct) => Ok(await db.ApDungHocKys.AsNoTracking()
         .Select(x => new { x.Id, x.KeHoachDaoTaoId, x.MaHocKy, x.ThuTuHocKy, x.KeHoach.TenChuongTrinh, x.KeHoach.MaNganh, x.KeHoach.MaKhoa,
-            monHocs = x.KeHoach.MonHocs.Where(m => m.ThuTuHocKy == x.ThuTuHocKy).Select(m => new { m.MaMonHoc, m.MonHoc.TenMonHoc, m.BatBuoc }),
+            monHocs = x.KeHoach.MonHocs.OrderBy(m => m.ThuTuHocKy).Select(m => new { m.MaMonHoc, m.MonHoc.TenMonHoc, m.BatBuoc }),
             lopHocPhans = x.LopHocPhans.OrderBy(l => l.MaLopHocPhan).Select(l => new { l.MaLopHocPhan, l.MaMonHoc, l.SiSoToiDa, l.DaPhanCong,
                 maGiangVien = db.LopHocPhans.Where(p => p.MaLopHocPhan == l.MaLopHocPhan).Select(p => p.MaGiangVien).FirstOrDefault(),
                 trangThai = db.LopHocPhans.Where(p => p.MaLopHocPhan == l.MaLopHocPhan).Select(p => p.TrangThai).FirstOrDefault() })
@@ -190,8 +190,8 @@ public sealed class TrainingWorkflowController(AppDbContext db) : ControllerBase
     {
         var application = await db.ApDungHocKys.AsNoTracking().SingleOrDefaultAsync(x => x.Id == id, ct);
         if (application is null) return NotFound();
-        if (!await db.MonKeHoachDaoTaos.AnyAsync(x => x.KeHoachDaoTaoId == application.KeHoachDaoTaoId && x.ThuTuHocKy == application.ThuTuHocKy && x.MaMonHoc == request.MaMonHoc, ct))
-            return BadRequest(new { message = "Môn không thuộc học kỳ được áp dụng." });
+        if (!await db.MonKeHoachDaoTaos.AnyAsync(x => x.KeHoachDaoTaoId == application.KeHoachDaoTaoId && x.MaMonHoc == request.MaMonHoc, ct))
+            return BadRequest(new { message = "Môn không thuộc chương trình. Có thể mở môn khác tiến độ để học lại, cải thiện hoặc học vượt." });
         var codes = TrainingRules.ClassCodes(request.TienToMaLop.Trim(), request.SoLop);
         if (await db.LopHocPhans.AnyAsync(x => codes.Contains(x.MaLopHocPhan), ct) || await db.LopHocPhanDuKiens.AnyAsync(x => codes.Contains(x.MaLopHocPhan), ct))
             return Conflict(new { message = "Có mã lớp trùng. Hãy đổi tiền tố; chưa có lớp nào được tạo." });

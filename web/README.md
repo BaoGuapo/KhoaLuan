@@ -1,5 +1,7 @@
 # QuanLySinhVien.Web
 
+Đăng ký học phần theo học kỳ/đợt hiện tại, học mới/học lại/cải thiện/học vượt: xem [thiết kế, API và yêu cầu schema](../docs/DANG_KY_HOC_PHAN.md).
+
 ASP.NET Core MVC cho nội dung tuần 6: đăng nhập, đăng xuất, đổi mật khẩu và phân quyền người dùng. Web không truy cập database; mọi thao tác xác thực đều gọi backend API.
 
 ## Chạy ứng dụng

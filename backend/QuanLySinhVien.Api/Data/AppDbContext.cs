@@ -26,10 +26,46 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<MonKeHoachDaoTao> MonKeHoachDaoTaos => Set<MonKeHoachDaoTao>();
     public DbSet<ApDungHocKy> ApDungHocKys => Set<ApDungHocKy>();
     public DbSet<LopHocPhanDuKien> LopHocPhanDuKiens => Set<LopHocPhanDuKien>();
+    public DbSet<HoSoHocVu> HoSoHocVus => Set<HoSoHocVu>();
+    public DbSet<KetQuaHocPhan> KetQuaHocPhans => Set<KetQuaHocPhan>();
+    public DbSet<DieuKienHocPhan> DieuKienHocPhans => Set<DieuKienHocPhan>();
+    public DbSet<DotDangKyHocPhan> DotDangKyHocPhans => Set<DotDangKyHocPhan>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        modelBuilder.Entity<HoSoHocVu>(e =>
+        {
+            e.ToTable("HoSoHocVu"); e.HasKey(x => x.MaSinhVien);
+            e.Property(x => x.MaSinhVien).HasMaxLength(30);
+            e.Property(x => x.GpaTichLuy).HasPrecision(3, 2);
+            e.HasOne(x => x.SinhVien).WithOne().HasForeignKey<HoSoHocVu>(x => x.MaSinhVien).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<KetQuaHocPhan>(e =>
+        {
+            e.ToTable("KetQuaHocPhan"); e.HasKey(x => new { x.MaSinhVien, x.MaMonHoc, x.MaHocKy });
+            e.Property(x => x.MaSinhVien).HasMaxLength(30); e.Property(x => x.MaMonHoc).HasMaxLength(30);
+            e.Property(x => x.MaHocKy).HasMaxLength(30); e.Property(x => x.DiemChu).HasMaxLength(2);
+            e.HasOne(x => x.SinhVien).WithMany().HasForeignKey(x => x.MaSinhVien).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<MonHoc>().WithMany().HasForeignKey(x => x.MaMonHoc).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne(x => x.HocKy).WithMany().HasForeignKey(x => x.MaHocKy).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<DieuKienHocPhan>(e =>
+        {
+            e.ToTable("DieuKienHocPhan"); e.HasKey(x => new { x.KeHoachDaoTaoId, x.MaMonHoc, x.MaMonDieuKien });
+            e.Property(x => x.MaMonHoc).HasMaxLength(30); e.Property(x => x.MaMonDieuKien).HasMaxLength(30); e.Property(x => x.Loai).HasMaxLength(12);
+            e.HasOne<KeHoachDaoTao>().WithMany().HasForeignKey(x => x.KeHoachDaoTaoId).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<MonHoc>().WithMany().HasForeignKey(x => x.MaMonHoc).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<MonHoc>().WithMany().HasForeignKey(x => x.MaMonDieuKien).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<DotDangKyHocPhan>(e =>
+        {
+            e.ToTable("DotDangKyHocPhan"); e.HasKey(x => x.Id); e.Property(x => x.TenDot).HasMaxLength(200); e.Property(x => x.MaHocKy).HasMaxLength(30);
+            e.HasOne(x => x.HocKy).WithMany().HasForeignKey(x => x.MaHocKy).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<KeHoachDaoTao>().WithMany().HasForeignKey(x => x.KeHoachDaoTaoId).OnDelete(DeleteBehavior.Restrict);
+            e.HasIndex(x => new { x.MaHocKy, x.MoLucUtc, x.DongLucUtc });
+        });
+        modelBuilder.Entity<DanhSachSinhVienLop>().Property(x => x.LoaiDangKy).HasMaxLength(12).HasDefaultValue("moi");
         modelBuilder.Entity<KeHoachDaoTao>(e =>
         {
             e.ToTable("KeHoachDaoTao"); e.HasKey(x => x.Id);

@@ -1,5 +1,7 @@
 # Backend — QuanLySinhVien.Api
 
+Điều kiện đăng ký học phần và cấu hình đợt/kết quả học tập: [hướng dẫn cập nhật](../docs/DANG_KY_HOC_PHAN.md). Dữ liệu demo đào tạo cần hồ sơ học vụ và đợt đăng ký phù hợp trước khi sinh viên tự đăng ký.
+
 ASP.NET Core Web API cho hệ thống quản lý sinh viên. API là thành phần duy nhất truy cập SQL Server/Azure SQL; web và mobile chỉ gọi API qua HTTPS.
 
 ## Yêu cầu

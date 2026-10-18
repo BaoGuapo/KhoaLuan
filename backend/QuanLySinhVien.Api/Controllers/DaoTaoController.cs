@@ -89,9 +89,9 @@ public sealed class DaoTaoController(AppDbContext db, TrainingEnrollmentService 
     [Authorize(Roles = RoleNames.SinhVien)]
     public async Task<IActionResult> GetDanhSachMonHocDangKy(
         [FromQuery] string loaiDangKy = "moi",
-        CancellationToken ct = default)
+        CancellationToken ct = default, [FromQuery] string? hocKy = null)
     {
-        if (loaiDangKy is not ("moi" or "lai" or "caithien"))
+        if (!StudentRegistrationRules.Types.Contains(loaiDangKy))
             return BadRequest(new { message = "Loại đăng ký không hợp lệ." });
 
         var maSinhVien = User.Identity?.Name;
@@ -100,6 +100,8 @@ public sealed class DaoTaoController(AppDbContext db, TrainingEnrollmentService 
             return Unauthorized();
 
         var student = await db.SinhViens.AsNoTracking().SingleAsync(x => x.MaSinhVien == maSinhVien, ct);
+        var rules = await StudentRegistrationRules.LoadAsync(db, maSinhVien, ct);
+        var selectedSemester = hocKy ?? rules.CurrentSemester;
         var majorValue = student.Nganh?.Trim() ?? "";
         var intakeValue = student.KhoaHoc?.Trim() ?? "";
         var eligibleMajors = await db.Database.SqlQuery<string>($"SELECT maNganh AS Value FROM NganhHoc WHERE maNganh={majorValue} OR tenNganh={majorValue}").ToListAsync(ct);
@@ -108,6 +110,7 @@ public sealed class DaoTaoController(AppDbContext db, TrainingEnrollmentService 
         var lopHocPhans = await db.LopHocPhans
             .AsNoTracking()
             .Where(x => x.TrangThai == "0" && x.LichHocs.Any())
+            .Where(x => x.MaHocKy == selectedSemester)
             .Where(x => !db.LopHocPhanDuKiens.Any(p => p.MaLopHocPhan == x.MaLopHocPhan)
                 || db.LopHocPhanDuKiens.Any(p => p.MaLopHocPhan == x.MaLopHocPhan && eligibleApplications.Contains(p.ApDungHocKyId)))
             .Select(x => new
@@ -134,19 +137,31 @@ public sealed class DaoTaoController(AppDbContext db, TrainingEnrollmentService 
             .ThenBy(x => x.MaLopHocPhan)
             .ToListAsync(ct);
 
-        return Ok(new { loaiDangKy, data = lopHocPhans });
+        var data = lopHocPhans.Where(x => rules.Classify(x.MaMonHoc, x.MaHocKy) == loaiDangKy).Select(x =>
+        {
+            var course = new LopHocPhan { MaHocKy = x.MaHocKy, MaMonHoc = x.MaMonHoc,
+                MonHoc = new MonHoc { SoTinChiLyThuyet = x.SoTinChiLyThuyet, SoTinChiThucHanh = x.SoTinChiThucHanh } };
+            var reason = rules.Block(course, loaiDangKy);
+            return new { x.MaLopHocPhan, x.MaMonHoc, x.TenMonHoc, x.SoTinChiLyThuyet, x.SoTinChiThucHanh, x.MaHocKy,
+                x.HoTen, x.SiSoToiDa, x.SiSoHienTai, x.DaDangKy, x.LichHoc, LoaiDangKy = loaiDangKy, DiemDaCo = rules.PreviousGrade(x.MaMonHoc, x.MaHocKy), LyDoKhongDuDieuKien = reason };
+        }).ToArray();
+        return Ok(new { loaiDangKy, data, hocKyHienTai = rules.CurrentSemester, hocKyDangXem = selectedSemester,
+            dotDangKy = rules.Windows.Where(x => x.MaHocKy == selectedSemester && rules.IsOpen(x)).Select(x => new { x.TenDot, x.MoLucUtc, x.DongLucUtc }),
+            dangMoDangKy = rules.Windows.Any(x => x.MaHocKy == selectedSemester && rules.IsOpen(x)),
+            tinChiToiThieu = rules.MinCredits(selectedSemester ?? ""), tinChiToiDa = rules.MaxCredits(selectedSemester ?? ""),
+            gpaTichLuy = rules.Profile?.GpaTichLuy });
     }
 
     [HttpPost("dang-ky-hoc-phan/sinh-vien-tu-dang-ky/{maLopHocPhan}")]
     [Authorize(Roles = RoleNames.SinhVien)]
-    public async Task<IActionResult> SinhVienTuDangKy(string maLopHocPhan, CancellationToken ct)
+    public async Task<IActionResult> SinhVienTuDangKy(string maLopHocPhan, CancellationToken ct, [FromQuery] string loaiDangKy = "moi")
     {
         var maSinhVien = User.Identity?.Name;
         if (string.IsNullOrWhiteSpace(maSinhVien)
             || !await db.SinhViens.AnyAsync(x => x.MaSinhVien == maSinhVien && x.TrangThaiTaiKhoan, ct))
             return Unauthorized();
 
-        var result = await enrollment.EnrollAsync(maSinhVien, maLopHocPhan, ct);
+        var result = await enrollment.EnrollAsync(maSinhVien, maLopHocPhan, ct, loaiDangKy);
         return StatusCode(result.StatusCode, new { message = result.Message });
     }
 
@@ -160,7 +175,7 @@ public sealed class DaoTaoController(AppDbContext db, TrainingEnrollmentService 
             .OrderBy(x => x.LopHocPhan.MaHocKy).ThenBy(x => x.LopHocPhan.MaMonHoc)
             .Select(x => new
             {
-                x.MaLopHocPhan, x.LopHocPhan.MaMonHoc, x.LopHocPhan.MonHoc.TenMonHoc,
+                x.MaLopHocPhan, x.LopHocPhan.MaMonHoc, x.LopHocPhan.MonHoc.TenMonHoc, x.LoaiDangKy,
                 SoTinChiLyThuyet = (int?)x.LopHocPhan.MonHoc.SoTinChiLyThuyet ?? 0, SoTinChiThucHanh = (int?)x.LopHocPhan.MonHoc.SoTinChiThucHanh ?? 0,
                 x.LopHocPhan.MaHocKy, HoTen = x.LopHocPhan.GiangVien.HoTen, ThoiGianDangKy = (DateTime?)x.ThoiGianDangKy,
                 LichHoc = x.LopHocPhan.LichHocs.Select(l => new

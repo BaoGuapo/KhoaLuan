@@ -88,7 +88,7 @@ else
     {
         <form asp-action="Index" method="get" class="training-form"><label>Đợt áp dụng<select name="id">@foreach (var app in Model.Applications) { <option value="@app.Id" selected="@(selected.Id == app.Id)">@app.TenChuongTrinh · @app.MaKhoa · @app.MaHocKy · HK dự kiến @app.ThuTuHocKy</option> }</select></label><button type="submit" class="button">Xem đợt</button></form>
         <form asp-action="Classes" method="post" class="training-form"><input type="hidden" name="id" value="@selected.Id" /><div class="training-two">
-            <label>Môn của học kỳ<select name="maMonHoc" required>@foreach (var course in selected.MonHocs) { <option value="@course.MaMonHoc">@course.MaMonHoc · @course.TenMonHoc (@(course.BatBuoc ? "Bắt buộc" : "Tự chọn"))</option> }</select></label>
+            <label>Môn trong chương trình<select name="maMonHoc" required>@foreach (var course in selected.MonHocs) { <option value="@course.MaMonHoc">@course.MaMonHoc · @course.TenMonHoc (@(course.BatBuoc ? "Bắt buộc" : "Tự chọn"))</option> }</select><small>Có thể mở môn khác tiến độ để học lại, cải thiện hoặc học vượt trong học kỳ này.</small></label>
             <label>Tiền tố mã lớp<input name="tienToMaLop" maxlength="24" pattern="[A-Za-z0-9_-]+" required placeholder="Ví dụ: LTCB-K26-HK1" /><small>Tạo mã tiền tố-01, tiền tố-02… Đổi tiền tố khi mở thêm đợt.</small></label>
             <label>Số lớp cùng môn<input name="soLop" type="number" min="1" max="50" value="8" required /></label>
             <label>Sĩ số tối đa mỗi lớp<input name="siSoToiDa" type="number" min="1" max="500" value="40" required /></label>
