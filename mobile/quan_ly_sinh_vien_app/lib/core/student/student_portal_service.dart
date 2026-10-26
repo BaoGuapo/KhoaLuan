@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../api/api_constants.dart';
-import '../auth/token_storage.dart';
+import '../auth/auth_provider.dart';
 
 class StudentPortalException implements Exception {
   const StudentPortalException(this.message);
@@ -250,7 +250,7 @@ class StudentPortalService {
     String path, {
     Map<String, dynamic>? body,
   }) async {
-    final token = await TokenStorage.getAccessToken();
+    final token = AuthProvider.instance.accessToken;
     if (token == null || token.isEmpty) {
       throw const StudentPortalException('Vui lòng đăng nhập lại.');
     }

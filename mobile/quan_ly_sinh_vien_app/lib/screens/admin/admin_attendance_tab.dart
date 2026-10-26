@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import '../../core/api/api_constants.dart';
-import '../../core/auth/token_storage.dart';
+import '../../core/auth/auth_provider.dart';
 import '../../core/theme/app_colors.dart';
 
 class AdminAttendanceTab extends StatefulWidget {
@@ -42,8 +42,8 @@ class _AdminAttendanceTabState extends State<AdminAttendanceTab> {
       _selectedSessionId = null;
     });
     try {
-      _token ??= await TokenStorage.getAccessToken();
-      if (_token == null || _token!.isEmpty || _token!.startsWith('mock_')) {
+      _token = AuthProvider.instance.accessToken;
+      if (_token == null || _token!.isEmpty) {
         throw const _AttendanceException(
           'Đăng nhập bằng tài khoản quản trị/giảng viên trên máy chủ.',
         );

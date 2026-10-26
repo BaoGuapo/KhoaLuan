@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../../core/auth/auth_provider.dart';
 import '../../core/network/api_exception.dart';
 import '../../data/models/auth_session.dart';
 import '../../data/repositories/auth_repository.dart';
@@ -34,6 +35,7 @@ class AuthController extends ChangeNotifier {
       _status = AuthStatus.unauthenticated;
       _errorMessage = 'Không thể khôi phục phiên đăng nhập.';
     }
+    AuthProvider.instance.setSession(_session);
     notifyListeners();
   }
 
@@ -47,6 +49,7 @@ class AuthController extends ChangeNotifier {
         userNameOrEmail: accountCode,
         password: password,
       );
+      AuthProvider.instance.setSession(_session);
       _status = AuthStatus.authenticated;
       _errorMessage = null;
       _noticeMessage = _session!.mustChangePassword
@@ -79,6 +82,7 @@ class AuthController extends ChangeNotifier {
         newPassword: newPassword,
       );
       _session = null;
+      AuthProvider.instance.setSession(null);
       _status = AuthStatus.unauthenticated;
       _errorMessage = null;
       _noticeMessage = 'Đổi mật khẩu thành công. Hãy đăng nhập bằng mật khẩu mới.';
@@ -101,6 +105,7 @@ class AuthController extends ChangeNotifier {
       await _repository.logout(currentSession);
     }
     _session = null;
+    AuthProvider.instance.setSession(null);
     _status = AuthStatus.unauthenticated;
     _noticeMessage = 'Bạn đã đăng xuất.';
     _setBusy(false);
@@ -109,6 +114,7 @@ class AuthController extends ChangeNotifier {
   void clearMessages() {
     _errorMessage = null;
     _noticeMessage = null;
+    notifyListeners();
   }
 
   void _setBusy(bool value) {

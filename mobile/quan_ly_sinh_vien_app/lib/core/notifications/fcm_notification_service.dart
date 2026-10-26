@@ -8,7 +8,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 
 import '../api/api_constants.dart';
-import '../auth/token_storage.dart';
+import '../auth/auth_provider.dart';
 import 'notification_model.dart';
 
 // ─── Background handler (top-level, required by FCM) ─────────────────────────
@@ -285,7 +285,7 @@ class FcmNotificationService extends ChangeNotifier {
 
   // ── API calls ──────────────────────────────────────────────────────────────
   Future<void> loadNotifications() async {
-    final token = await TokenStorage.getAccessToken();
+    final token = AuthProvider.instance.accessToken;
     if (!_hasServerSession(token)) {
       _loadError = 'Đăng nhập máy chủ để tải thông báo.';
       notifyListeners();
@@ -354,7 +354,7 @@ class FcmNotificationService extends ChangeNotifier {
   }
 
   Future<void> removeCurrentDevice() async {
-    final token = await TokenStorage.getAccessToken();
+    final token = AuthProvider.instance.accessToken;
     if (!_isFirebaseAvailable ||
         _fcmToken == null ||
         !_hasServerSession(token)) {
@@ -375,7 +375,7 @@ class FcmNotificationService extends ChangeNotifier {
 
   // ── Private helpers ────────────────────────────────────────────────────────
   Future<void> _registerDevice(String token) async {
-    final accessToken = await TokenStorage.getAccessToken();
+    final accessToken = AuthProvider.instance.accessToken;
     if (!_hasServerSession(accessToken)) return;
 
     try {
@@ -394,7 +394,7 @@ class FcmNotificationService extends ChangeNotifier {
   }
 
   Future<bool> _put(String path) async {
-    final token = await TokenStorage.getAccessToken();
+    final token = AuthProvider.instance.accessToken;
     if (!_hasServerSession(token)) return false;
     try {
       final response = await http
@@ -414,7 +414,7 @@ class FcmNotificationService extends ChangeNotifier {
   }
 
   Future<bool> _delete(String path) async {
-    final token = await TokenStorage.getAccessToken();
+    final token = AuthProvider.instance.accessToken;
     if (!_hasServerSession(token)) return false;
     try {
       final response = await http
@@ -433,7 +433,7 @@ class FcmNotificationService extends ChangeNotifier {
   }
 
   bool _hasServerSession(String? token) =>
-      token != null && token.isNotEmpty && !token.startsWith('mock_');
+      token != null && token.isNotEmpty;
 
   Map<String, String> _authorizedHeaders(String token) => {
         'Authorization': 'Bearer $token',

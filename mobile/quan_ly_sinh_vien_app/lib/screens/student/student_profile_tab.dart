@@ -1,5 +1,9 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
-import '../../core/auth/auth_service.dart';
+import 'package:image_picker/image_picker.dart';
+
+import '../../core/auth/auth_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/face_scan_icon.dart';
 import '../auth/change_password_screen.dart';
@@ -7,8 +11,60 @@ import 'student_contact_screen.dart';
 import 'student_face_enrollment_screen.dart';
 import 'student_tuition_screen.dart';
 
-class StudentProfileTab extends StatelessWidget {
+class StudentProfileTab extends StatefulWidget {
   const StudentProfileTab({super.key});
+
+  @override
+  State<StudentProfileTab> createState() => _StudentProfileTabState();
+}
+
+class _StudentProfileTabState extends State<StudentProfileTab> {
+  final picker = ImagePicker();
+  Uint8List? _profileImageBytes;
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final pickedFile = await picker.pickImage(
+        source: source,
+        imageQuality: 70,
+        maxWidth: 1024,
+      );
+      if (pickedFile != null) {
+        final bytes = await pickedFile.readAsBytes();
+        if (mounted) setState(() => _profileImageBytes = bytes);
+      }
+    } catch (_) {}
+  }
+
+  void _showImagePickerSheet() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.camera_alt),
+            title: const Text('Chụp ảnh'),
+            onTap: () {
+              Navigator.pop(ctx);
+              _pickImage(ImageSource.camera);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.photo_library),
+            title: const Text('Chọn từ thư viện'),
+            onTap: () {
+              Navigator.pop(ctx);
+              _pickImage(ImageSource.gallery);
+            },
+          ),
+        ],
+      ),
+    );
+  }
 
   void _showLogoutDialog(BuildContext context) {
     showDialog(
@@ -30,7 +86,7 @@ class StudentProfileTab extends StatelessWidget {
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              await AuthService().logout();
+              await AuthProvider.instance.logout();
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.danger,
@@ -46,7 +102,7 @@ class StudentProfileTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = AuthService().currentUser;
+    final auth = AuthProvider.instance;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -79,24 +135,35 @@ class StudentProfileTab extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border:
-                            Border.all(color: AppColors.primary, width: 2.5),
-                      ),
-                      child: const Icon(
-                        Icons.person,
-                        size: 44,
-                        color: AppColors.primary,
+                    GestureDetector(
+                      onTap: _showImagePickerSheet,
+                      child: Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: AppColors.primary, width: 2.5),
+                        ),
+                        child: ClipOval(
+                          child: _profileImageBytes != null
+                              ? Image.memory(
+                                  _profileImageBytes!,
+                                  fit: BoxFit.cover,
+                                  width: 100,
+                                  height: 100,
+                                )
+                              : const Icon(
+                                  Icons.person,
+                                  size: 44,
+                                  color: AppColors.primary,
+                                ),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      user?.fullName.isNotEmpty == true
-                          ? user!.fullName
+                      auth.userName.isNotEmpty
+                          ? auth.userName
                           : 'Chưa cập nhật họ tên',
                       style: const TextStyle(
                         fontSize: 18,
@@ -106,9 +173,7 @@ class StudentProfileTab extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      user?.email.isNotEmpty == true
-                          ? user!.email
-                          : 'Chưa cập nhật email',
+                      'Chưa cập nhật email',
                       style: const TextStyle(
                         fontSize: 13,
                         color: AppColors.textSecondary,
@@ -131,16 +196,16 @@ class StudentProfileTab extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    _buildInfoRow('Mã tài khoản', user?.code ?? '—'),
+                    _buildInfoRow('Mã tài khoản', auth.userName.isNotEmpty ? auth.userName : '—'),
                     const SizedBox(height: 12),
                     _buildInfoRow(
-                        'Lớp sinh hoạt', user?.className ?? 'Chưa cập nhật'),
+                        'Lớp sinh hoạt', 'Chưa cập nhật'),
                     const SizedBox(height: 12),
                     _buildInfoRow(
-                        'Ngành đào tạo', user?.department ?? 'Chưa cập nhật'),
+                        'Ngành đào tạo', 'Chưa cập nhật'),
                     const SizedBox(height: 12),
                     _buildInfoRow(
-                        'Hệ đào tạo', user?.programType ?? 'Chưa cập nhật'),
+                        'Hệ đào tạo', 'Chưa cập nhật'),
                   ],
                 ),
               ),

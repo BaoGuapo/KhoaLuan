@@ -22,6 +22,15 @@ var jwtSettings = builder.Configuration.GetSection(JwtSettings.SectionName).Get<
 jwtSettings.Validate();
 
 builder.Services.AddControllers();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowMobile", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
 builder.Services.AddDataProtection();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -125,6 +134,7 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
 }
+app.UseCors("AllowMobile");
 app.UseAuthentication();
 app.UseRateLimiter();
 app.Use(async (context, next) =>

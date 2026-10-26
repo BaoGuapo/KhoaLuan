@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../core/auth/auth_service.dart';
+import '../../core/auth/auth_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/custom_text_field.dart';
 import '../../core/widgets/primary_button.dart';
@@ -40,9 +40,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       _isLoading = true;
     });
 
-    final success = await AuthService().changePassword(
-      _currentPasswordController.text,
-      _newPasswordController.text,
+    final auth = AuthProvider.instance;
+    final success = await auth.changePassword(
+      currentPassword: _currentPasswordController.text,
+      newPassword: _newPasswordController.text,
     );
 
     if (!mounted) return;
@@ -52,31 +53,19 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     });
 
     if (success) {
-      final authService = AuthService();
-      final mustChangePassword = authService.mustChangePassword;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           backgroundColor: AppColors.success,
           content: Text('Đổi mật khẩu thành công!'),
         ),
       );
-      if (mustChangePassword) {
-        final homeRoute = authService.isLecturerOrAdmin ? '/admin' : '/student';
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          homeRoute,
-          (route) => false,
-        );
-      } else {
-        Navigator.pop(context);
-      }
+      Navigator.pop(context);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           backgroundColor: AppColors.danger,
-          content: Text(
-            AuthService().errorMessage ??
-                'Đổi mật khẩu thất bại. Vui lòng kiểm tra kết nối và thử lại.',
+          content: const Text(
+            'Đổi mật khẩu thất bại. Vui lòng kiểm tra kết nối và thử lại.',
           ),
         ),
       );
@@ -85,12 +74,13 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final auth = AuthProvider.instance;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: AuthService().mustChangePassword
+          onPressed: auth.mustChangePassword
               ? null
               : () => Navigator.pop(context),
         ),

@@ -5,6 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
 import 'app.dart';
+import 'core/auth/auth_provider.dart';
 import 'core/config/api_config.dart';
 import 'core/network/api_client.dart';
 import 'data/local/secure_session_storage.dart';
@@ -26,6 +27,9 @@ void main() {
     sessionStorage: sessionStorage,
   );
   final authController = AuthController(authRepository);
+
+  AuthProvider.instance.setRepository(authRepository);
+  unawaited(AuthProvider.instance.initialize());
 
   runApp(QuanLySinhVienApp(authController: authController));
   unawaited(authController.initialize());

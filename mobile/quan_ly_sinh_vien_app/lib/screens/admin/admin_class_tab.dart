@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import '../../core/api/api_constants.dart';
-import '../../core/auth/token_storage.dart';
+import '../../core/auth/auth_provider.dart';
 import '../../core/theme/app_colors.dart';
 
 class AdminClassTab extends StatefulWidget {
@@ -38,8 +38,8 @@ class _AdminClassTabState extends State<AdminClassTab> {
       _error = null;
     });
     try {
-      final token = await TokenStorage.getAccessToken();
-      if (token == null || token.isEmpty || token.startsWith('mock_')) {
+      final token = AuthProvider.instance.accessToken;
+      if (token == null || token.isEmpty) {
         throw const _ClassException('Đăng nhập máy chủ để xem lớp học phần.');
       }
       final response = await http.get(

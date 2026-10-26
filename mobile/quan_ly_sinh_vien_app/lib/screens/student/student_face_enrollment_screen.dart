@@ -5,6 +5,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/face/face_detection_service.dart';
+import '../../core/face/face_embedding_service.dart';
 import '../../core/face/face_enrollment_service.dart';
 import '../../core/theme/app_colors.dart';
 
@@ -24,7 +25,10 @@ class _StudentFaceEnrollmentScreenState
     'Nghiêng nhẹ đầu sang phải',
   ];
 
-  final FaceEnrollmentService _enrollmentService = FaceEnrollmentService();
+  final FaceEnrollmentService _enrollmentService = FaceEnrollmentService(
+    embeddingService: TfLiteFaceEmbeddingService(),
+    detectionService: FaceDetectionService(),
+  );
   final FaceDetectionService _faceDetectionService = FaceDetectionService();
   final List<String> _samples = [];
   CameraController? _cameraController;

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import '../../core/api/api_constants.dart';
-import '../../core/auth/token_storage.dart';
+import '../../core/auth/auth_provider.dart';
 import '../../core/theme/app_colors.dart';
 
 class AdminCurriculumTab extends StatefulWidget {
@@ -38,8 +38,8 @@ class _AdminCurriculumTabState extends State<AdminCurriculumTab> {
 
   Future<http.Response> _request(String method, String path,
       {Map<String, dynamic>? body}) async {
-    final token = await TokenStorage.getAccessToken();
-    if (token == null || token.isEmpty || token.startsWith('mock_')) {
+    final token = AuthProvider.instance.accessToken;
+    if (token == null || token.isEmpty) {
       throw const _TrainingException(
           'Đăng nhập bằng tài khoản giáo vụ để tiếp tục.');
     }

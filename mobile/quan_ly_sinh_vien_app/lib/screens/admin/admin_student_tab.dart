@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import '../../core/api/api_constants.dart';
-import '../../core/auth/token_storage.dart';
+import '../../core/auth/auth_provider.dart';
 import '../../core/theme/app_colors.dart';
 
 class AdminStudentTab extends StatefulWidget {
@@ -39,8 +39,8 @@ class _AdminStudentTabState extends State<AdminStudentTab> {
       _error = null;
     });
     try {
-      final token = await TokenStorage.getAccessToken();
-      if (token == null || token.isEmpty || token.startsWith('mock_')) {
+      final token = AuthProvider.instance.accessToken;
+      if (token == null || token.isEmpty) {
         throw const _StudentLoadException(
           'Đăng nhập bằng tài khoản quản trị máy chủ để xem danh sách.',
         );
@@ -126,8 +126,8 @@ class _AdminStudentTabState extends State<AdminStudentTab> {
 
     setState(() => _deletingFaceProfiles.add(code));
     try {
-      final token = await TokenStorage.getAccessToken();
-      if (token == null || token.isEmpty || token.startsWith('mock_')) {
+      final token = AuthProvider.instance.accessToken;
+      if (token == null || token.isEmpty) {
         throw const _StudentLoadException(
           'Đăng nhập bằng tài khoản Admin để xóa dữ liệu FaceID.',
         );

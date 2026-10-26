@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../core/auth/auth_service.dart';
+import '../../core/auth/auth_provider.dart';
+import '../../core/constants/role_names.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/auth/user_model.dart';
 import 'admin_curriculum_tab.dart';
 
 class AdminDashboardTab extends StatelessWidget {
@@ -12,10 +12,9 @@ class AdminDashboardTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = AuthService().currentUser;
-    final isLecturer = user?.role.name.contains('giangVien') ?? false;
-    final canManageFees =
-        user?.role == UserRole.admin || user?.role == UserRole.canBoQuanLy;
+    final auth = AuthProvider.instance;
+    final isLecturer = auth.roles.contains(RoleNames.giangVien);
+    final canManageFees = auth.isLecturerOrAdmin;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -32,8 +31,8 @@ class AdminDashboardTab extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              user?.fullName.isNotEmpty == true
-                  ? user!.fullName
+              auth.userName.isNotEmpty
+                  ? auth.userName
                   : 'Tài khoản quản trị',
               style: const TextStyle(
                 fontSize: 22,

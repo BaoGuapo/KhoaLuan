@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../api/api_constants.dart';
-import '../auth/token_storage.dart';
+import '../auth/auth_provider.dart';
 
 class StudentRegistrationService {
   static const _base = '/api/v1/dang-ky-hoc-phan';
@@ -73,6 +73,13 @@ class StudentRegistrationService {
             '?loaiDangKy=${Uri.encodeQueryComponent(type)}',
       );
 
+  Future<void> unregister(String sectionCode, String type) => _send(
+        'DELETE',
+        '$_base/sinh-vien-tu-dang-ky/'
+            '${Uri.encodeComponent(sectionCode)}'
+            '?loaiDangKy=${Uri.encodeQueryComponent(type)}',
+      );
+
   Map<String, dynamic> _mapSection(Map<String, dynamic> section) {
     final schedules =
         (section['lichHoc'] as List<dynamic>? ?? const []).whereType<Map>();
@@ -133,8 +140,8 @@ class StudentRegistrationService {
 
   Future<http.Response> _request(String method, String path,
       {Map<String, dynamic>? body}) async {
-    final token = await TokenStorage.getAccessToken();
-    if (token == null || token.isEmpty || token.startsWith('mock_')) {
+    final token = AuthProvider.instance.accessToken;
+    if (token == null || token.isEmpty) {
       throw const StudentRegistrationException(
           'Đăng nhập bằng tài khoản máy chủ để đăng ký học phần.');
     }

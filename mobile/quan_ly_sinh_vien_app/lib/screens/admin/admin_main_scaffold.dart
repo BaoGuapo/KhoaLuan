@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../core/auth/auth_service.dart';
+import '../../core/auth/auth_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/face_scan_icon.dart';
 import 'admin_attendance_tab.dart';
@@ -36,7 +36,7 @@ class _AdminMainScaffoldState extends State<AdminMainScaffold> {
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              await AuthService().logout();
+              await AuthProvider.instance.logout();
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.danger,
@@ -51,9 +51,9 @@ class _AdminMainScaffoldState extends State<AdminMainScaffold> {
 
   @override
   Widget build(BuildContext context) {
-    final user = AuthService().currentUser;
+    final auth = AuthProvider.instance;
     final canManageFees =
-        user?.role.name == 'admin' || user?.role.name == 'canBoQuanLy';
+        auth.isLecturerOrAdmin;
     final List<Widget> pages = [
       AdminDashboardTab(onNavigateTab: (index) {
         setState(() {

@@ -92,9 +92,20 @@ class _StudentCourseRegistrationScreenState
     }
   }
 
-  void _showCancellationUnavailable() => _showMessage(
-        'Backend GitHub hiện chưa có API hủy đăng ký học phần.',
-      );
+  Future<void> _unregister(Map<String, dynamic> section) async {
+    final code = '${section['maLopHocPhan'] ?? ''}';
+    if (code.isEmpty || _busySections.contains(code)) return;
+    setState(() => _busySections.add(code));
+    try {
+      await _service.unregister(code, _types[_tabs.index]);
+      await _loadAll();
+      if (mounted) _showMessage('Đã hủy đăng ký nhóm học phần.');
+    } catch (error) {
+      if (mounted) _showMessage(_message(error));
+    } finally {
+      if (mounted) setState(() => _busySections.remove(code));
+    }
+  }
 
   String _message(Object error) => error is StudentRegistrationException
       ? error.message
@@ -345,30 +356,35 @@ class _StudentCourseRegistrationScreenState
           ),
         ],
         const SizedBox(height: 8),
-        Row(children: [
-          Expanded(
-              child: Text(
-                  'Sĩ số $enrolled/$capacity  ·  Còn ${_int(group['conTrong'])} chỗ',
-                  style: TextStyle(
-                      fontSize: 11,
-                      color:
-                          full ? AppColors.danger : AppColors.textSecondary))),
-          if (registered)
-            TextButton(
-                onPressed: _showCancellationUnavailable,
-                child: const Text('Không thể hủy'))
-          else
-            FilledButton.tonal(
-                onPressed: full || !canRegister || _busySections.contains(code)
-                    ? null
-                    : () => _register(group),
-                child: _busySections.contains(code)
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2))
-                    : const Text('Chọn nhóm')),
-        ]),
+Row(children: [
+            Expanded(
+                child: Text(
+                    'Sĩ số $enrolled/$capacity  ·  Còn ${_int(group['conTrong'])} chỗ',
+                    style: TextStyle(
+                        fontSize: 11,
+                        color:
+                            full ? AppColors.danger : AppColors.textSecondary))),
+            if (registered)
+              TextButton(
+                  onPressed: _busySections.contains(code) ? null : () => _unregister(group),
+                  child: _busySections.contains(code)
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Text('Hủy đăng ký'))
+            else
+              FilledButton.tonal(
+                  onPressed: full || !canRegister || _busySections.contains(code)
+                      ? null
+                      : () => _register(group),
+                  child: _busySections.contains(code)
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Text('Chọn nhóm')),
+          ]),
       ]),
     );
   }
@@ -399,8 +415,8 @@ class _StudentCourseRegistrationScreenState
               subtitle: Text(
                   '${course['tenNhom'] ?? ''}  ·  ${course['tongSoTinChi'] ?? 0} tín chỉ  ·  ${course['giangVien'] ?? ''}'),
               trailing: IconButton(
-                tooltip: 'Backend hiện chưa hỗ trợ hủy đăng ký',
-                onPressed: _showCancellationUnavailable,
+                tooltip: 'Hủy đăng ký nhóm học phần',
+                onPressed: () => _unregister(course),
                 icon: const Icon(Icons.remove_circle_outline,
                     color: AppColors.danger),
               ),
