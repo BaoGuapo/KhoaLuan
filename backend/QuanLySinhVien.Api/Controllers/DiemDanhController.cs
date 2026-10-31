@@ -3,6 +3,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using QuanLySinhVien.Api.Contracts.Faces;
 using QuanLySinhVien.Api.Data;
 using QuanLySinhVien.Api.Models.Entities;
 using QuanLySinhVien.Api.Services;
@@ -11,7 +12,10 @@ namespace QuanLySinhVien.Api.Controllers;
 
 [ApiController]
 [Route("api/v1")]
-public sealed class DiemDanhController(AppDbContext db) : ControllerBase
+public sealed class DiemDanhController(
+    AppDbContext db,
+    IFaceRecognitionService faces,
+    ILogger<DiemDanhController> logger) : ControllerBase
 {
     [HttpPost("buoi-hoc/{maBuoiHoc}/phien-diem-danh")]
     [Authorize(Roles = RoleNames.GiangVien + "," + RoleNames.CanBoQuanLy + "," + RoleNames.Admin)]
@@ -74,6 +78,157 @@ public sealed class DiemDanhController(AppDbContext db) : ControllerBase
             .Where(x => x.MaBuoiHoc == maBuoiHoc)
             .Select(x => new { x.MaSinhVien, x.SinhVien.HoTen, x.TrangThai, x.ThoiGianCheckIn })
             .ToListAsync(ct));
+    }
+
+    [HttpGet("sinh-vien/buoi-hoc-hom-nay")]
+    [Authorize(Roles = RoleNames.SinhVien)]
+    public async Task<ActionResult<List<object>>> BuoiHocHomNay(CancellationToken ct)
+    {
+        var maSinhVien = User.Identity?.Name;
+        if (string.IsNullOrWhiteSpace(maSinhVien)) return Unauthorized();
+
+        var today = DateTime.UtcNow.Date;
+
+        var sessions = await db.BuoiHocs.AsNoTracking()
+            .Where(x => x.NgayHocCuThe.Date == today)
+            .Join(
+                db.LichHocs.AsNoTracking(),
+                bh => bh.MaLichHoc,
+                lh => lh.MaLichHoc,
+                (bh, lh) => new { bh, lh })
+            .Join(
+                db.DanhSachSinhVienLops.AsNoTracking().Where(x => x.MaSinhVien == maSinhVien),
+                x => x.lh.MaLopHocPhan,
+                dsl => dsl.MaLopHocPhan,
+                (x, dsl) => new { x.bh, x.lh })
+            .Join(
+                db.LopHocPhans.AsNoTracking(),
+                x => x.lh.MaLopHocPhan,
+                lp => lp.MaLopHocPhan,
+                (x, lp) => new { x.bh, x.lh, lp })
+            .Join(
+                db.MonHocs.AsNoTracking(),
+                x => x.lp.MaMonHoc,
+                mh => mh.MaMonHoc,
+                (x, mh) => new { x.bh, x.lh, x.lp, mh })
+            .Join(
+                db.GiangViens.AsNoTracking(),
+                x => x.lp.MaGiangVien,
+                gv => gv.MaGiangVien,
+                (x, gv) => new { x.bh, x.lh, x.lp, x.mh, gv })
+            .Join(
+                db.PhongHocs.AsNoTracking(),
+                x => x.lh.MaPhong,
+                phong => phong.MaPhong,
+                (x, phong) => new
+                {
+                    x.bh.MaBuoiHoc,
+                    TenMonHoc = x.mh.TenMonHoc,
+                    x.lp.MaMonHoc,
+                    x.lp.MaLopHocPhan,
+                    GiangVien = x.gv.HoTen,
+                    ThoiGian = $"Tiết {x.lh.TietBatDau} - {x.lh.TietKetThuc}",
+                    Phong = phong.TenPhong,
+                    x.bh.TrangThaiBuoiHoc
+                })
+            .ToListAsync(ct);
+
+        var maBuoiHocList = sessions.Select(s => s.MaBuoiHoc).ToList();
+        var daDiemDanhSet = (await db.ChiTietDiemDanhs.AsNoTracking()
+            .Where(x => maBuoiHocList.Contains(x.MaBuoiHoc) && x.MaSinhVien == maSinhVien)
+            .Select(x => x.MaBuoiHoc)
+            .ToListAsync(ct))
+            .ToHashSet();
+
+        var response = sessions.Select(s => new
+        {
+            s.MaBuoiHoc,
+            s.TenMonHoc,
+            s.MaMonHoc,
+            s.MaLopHocPhan,
+            s.GiangVien,
+            s.ThoiGian,
+            s.Phong,
+            s.TrangThaiBuoiHoc,
+            DaDiemDanh = daDiemDanhSet.Contains(s.MaBuoiHoc)
+        }).ToList();
+
+        return Ok(response);
+    }
+
+    [HttpPost("buoi-hoc/{maBuoiHoc}/diem-danh-khuon-mat")]
+    [Authorize(Roles = RoleNames.SinhVien)]
+    [RequestSizeLimit(64 * 1024)]
+    public async Task<ActionResult<FaceAttendanceResponse>> DiemDanhKhuonMat(
+        string maBuoiHoc,
+        FaceDescriptorSamplesRequest request,
+        CancellationToken ct)
+    {
+        var maSinhVien = User.Identity?.Name;
+        if (string.IsNullOrWhiteSpace(maSinhVien)) return Unauthorized();
+
+        var session = await db.BuoiHocs
+            .Where(x => x.MaBuoiHoc == maBuoiHoc)
+            .Select(x => new
+            {
+                x.MaBuoiHoc,
+                x.TrangThaiBuoiHoc,
+                MaLopHocPhan = x.LichHoc.MaLopHocPhan
+            })
+            .SingleOrDefaultAsync(ct);
+        if (session is null) return NotFound(new { message = "Không tìm thấy buổi học." });
+        if (session.TrangThaiBuoiHoc == "DaChot")
+            return Conflict(new { code = "AttendanceFinalized", message = "Buổi học đã chốt điểm danh." });
+
+        var isEnrolled = await db.DanhSachSinhVienLops.AnyAsync(
+            x => x.MaLopHocPhan == session.MaLopHocPhan && x.MaSinhVien == maSinhVien, ct);
+        if (!isEnrolled)
+            return StatusCode(403, new { code = "NotEnrolled", message = "Sinh viên chưa đăng ký lớp học phần này." });
+
+        var normalized = faces.NormalizeSamples(request.Descriptors);
+        if (!normalized.Succeeded)
+            return UnprocessableEntity(new { code = normalized.ErrorCode, message = normalized.ErrorMessage });
+
+        var match = await faces.MatchStudentInClassAsync(session.MaLopHocPhan, normalized.Value!, ct);
+        if (!match.Succeeded)
+            return UnprocessableEntity(new { code = match.ErrorCode, message = match.ErrorMessage });
+
+        if (!string.Equals(match.Value.MaSinhVien, maSinhVien, StringComparison.OrdinalIgnoreCase))
+            return StatusCode(403, new { code = "FaceMismatch", message = "Khuôn mặt không khớp với tài khoản đăng nhập." });
+
+        var attendance = await db.ChiTietDiemDanhs.FindAsync([maBuoiHoc, match.Value.MaSinhVien], ct);
+        var alreadyCheckedIn = attendance?.TrangThai is "CoMat" or "DiTre";
+        if (attendance is null)
+        {
+            attendance = new ChiTietDiemDanh
+            {
+                MaBuoiHoc = maBuoiHoc,
+                MaSinhVien = match.Value.MaSinhVien
+            };
+            db.ChiTietDiemDanhs.Add(attendance);
+        }
+
+        if (!alreadyCheckedIn)
+        {
+            attendance.TrangThai = "CoMat";
+            attendance.ThoiGianCheckIn = DateTime.UtcNow;
+            await db.SaveChangesAsync(ct);
+        }
+
+        var checkedInAt = attendance.ThoiGianCheckIn ?? DateTime.UtcNow;
+        logger.LogInformation(
+            "Student face check-in {Result} for student {StudentCode}, session {SessionCode}.",
+            alreadyCheckedIn ? "already-recorded" : "recorded",
+            match.Value.MaSinhVien,
+            maBuoiHoc);
+
+        return Ok(new FaceAttendanceResponse(
+            match.Value.MaSinhVien,
+            match.Value.HoTen,
+            maBuoiHoc,
+            attendance.TrangThai,
+            checkedInAt,
+            alreadyCheckedIn));
     }
 
     private static string Hash(string value) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value)));
