@@ -1,15 +1,47 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using QuanLySinhVien.Api.Contracts.Reporting;
 using QuanLySinhVien.Api.Data;
 using QuanLySinhVien.Api.Models.Entities;
+using QuanLySinhVien.Api.Services;
 
 namespace QuanLySinhVien.Api.Controllers;
 
 [ApiController]
 [Route("api/v1")]
-public sealed class CoSoVaBaoCaoController(AppDbContext db) : ControllerBase
+public sealed class CoSoVaBaoCaoController(AppDbContext db, AttendanceReportService reports) : ControllerBase
 {
+    private const string ReportViewers = RoleNames.Admin + "," + RoleNames.CanBoQuanLy;
+
+    [HttpGet("bao-cao/thong-ke-diem-danh")]
+    [Authorize(Roles = ReportViewers)]
+    public async Task<ActionResult<AttendanceReportResponse>> ThongKeDiemDanh(
+        string maHocKy,
+        CancellationToken ct)
+    {
+        var report = await reports.BuildAsync(maHocKy, ct);
+        return report is null ? NotFound(new { message = "Không tìm thấy học kỳ." }) : Ok(report);
+    }
+
+    [HttpGet("bao-cao/thong-ke-diem-danh/xuat-excel")]
+    [Authorize(Roles = ReportViewers)]
+    public async Task<IActionResult> XuatThongKeDiemDanh(string maHocKy, CancellationToken ct)
+    {
+        var report = await reports.BuildAsync(maHocKy, ct);
+        if (report is null) return NotFound(new { message = "Không tìm thấy học kỳ." });
+        var fileName = $"bao-cao-diem-danh-{Sanitize(maHocKy)}.xlsx";
+        return File(AttendanceReportExcel.Write(report),
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+    }
+
+    /// <summary>Mã học kỳ do người dùng nhập nên phải lọc trước khi ghép vào tên tệp tải về.</summary>
+    private static string Sanitize(string value)
+    {
+        var safe = new string(value.Where(x => char.IsLetterOrDigit(x) || x is '-' or '_').ToArray());
+        return safe.Length == 0 ? "hoc-ky" : safe;
+    }
+
     [HttpGet("phong-hoc")]
     [Authorize]
     public Task<List<PhongHoc>> GetPhongHoc(CancellationToken ct) => db.PhongHocs.AsNoTracking().OrderBy(x => x.MaPhong).ToListAsync(ct);

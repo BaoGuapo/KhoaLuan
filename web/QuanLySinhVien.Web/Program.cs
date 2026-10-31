@@ -23,6 +23,12 @@ builder.Services.AddHttpClient<TrainingWorkflowApiClient>(client =>
         ?? throw new InvalidOperationException("BackendApi:BaseUrl is missing."));
     client.Timeout = TimeSpan.FromSeconds(30);
 });
+builder.Services.AddHttpClient<AttendanceReportApiClient>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["BackendApi:BaseUrl"]
+        ?? throw new InvalidOperationException("BackendApi:BaseUrl is missing."));
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {

@@ -80,6 +80,7 @@ builder.Services.AddSingleton<IFaceEvidenceService, FaceEvidenceService>();
 builder.Services.AddSingleton<AttendanceQrTokens>();
 builder.Services.AddSingleton<FaceReviewPhotos>();
 builder.Services.AddScoped<TrainingEnrollmentService>();
+builder.Services.AddScoped<AttendanceReportService>();
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;

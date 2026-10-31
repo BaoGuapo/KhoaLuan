@@ -138,6 +138,34 @@ tr:last-child td { border-bottom: 0; }
 .attendance-window.closed { color: #825310; background: #fff5dd; border-color: #f0d49a; }
 .table-card tbody tr.row-selected { background: #eef7fd; }
 .table-card td > .button { white-space: nowrap; }
+
+/* Biểu đồ báo cáo. Màu trạng thái điểm danh đã qua kiểm tra tương phản và mù màu;
+   riêng màu "đi trễ" dưới 3:1 nên luôn đi kèm nhãn chữ và bảng số. */
+.viz-root {
+    --viz-comat: #0ca30c;
+    --viz-ditre: #fab219;
+    --viz-cophep: #6250d6;
+    --viz-vang: #d03b3b;
+    --viz-chua: #c9d4dd;
+    --viz-bar: #2a78d6;
+    --viz-grid: #e1edf4;
+    --viz-ink: #123a5a;
+    --viz-ink-muted: #668096;
+}
+.viz-root svg { display: block; width: 100%; height: auto; overflow: visible; }
+.viz-label { fill: var(--viz-ink); font-size: 13px; }
+.viz-value { fill: var(--viz-ink); font-size: 13px; font-weight: 700; }
+.viz-tick { fill: var(--viz-ink-muted); font-size: 12px; }
+.viz-grid { stroke: var(--viz-grid); stroke-width: 1; }
+.viz-legend { display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 14px 0 0; padding: 0; list-style: none; }
+.viz-legend li { display: flex; align-items: center; gap: 8px; color: var(--viz-ink); font-size: .9rem; }
+.viz-swatch { width: 13px; height: 13px; border-radius: 3px; flex: none; }
+.viz-legend small { color: var(--viz-ink-muted); }
+.viz-caption { margin: 10px 0 0; color: #526d80; font-size: .88rem; line-height: 1.5; }
+.report-toolbar { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
+.report-toolbar form { display: grid; grid-template-columns: auto minmax(220px, 1fr) auto; align-items: center; gap: 10px; margin: 0; }
+.hero-figure { display: grid; gap: 6px; }
+.hero-figure strong { color: #0067a8; font-size: 2.1rem; line-height: 1.1; }
 .face-layout { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(260px, .7fr); gap: 22px; align-items: start; }
 .face-camera-panel { min-width: 0; }
 .face-status-card { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 18px; padding: 13px 16px; border-radius: 9px; }
