@@ -1,0 +1,44 @@
+@{
+    ViewData["Title"] = "Điểm danh QR và khuôn mặt";
+    var student = User.IsInRole(RoleNames.SinhVien);
+    var enrollment = ViewData["Enrollment"] is true;
+}
+<div id="qr-attendance" data-student="@student.ToString().ToLowerInvariant()" data-enrollment="@enrollment.ToString().ToLowerInvariant()" data-lesson="@ViewData["Lesson"]">
+    <div class="page-heading"><div><p class="eyebrow blue">ĐIỂM DANH</p><h1>@(enrollment ? "Hồ sơ khuôn mặt" : "Điểm danh QR và khuôn mặt")</h1>
+    <p>@(student ? "Xác nhận tài khoản, lớp học và khuôn mặt trước khi ghi nhận." : "Mở phiên cho lớp phụ trách, hiển thị QR và theo dõi kết quả.")</p></div></div>
+    @Html.AntiForgeryToken()
+    <p id="attendance-status" role="status" aria-live="polite"></p>
+    @if (!student)
+    {
+        <section class="panel section-gap">
+            <h2>Phiên điểm danh</h2>
+            <label for="lesson">Buổi học (7 ngày trước đến 14 ngày tới)</label><select id="lesson"></select>
+            <label for="duration">Thời gian mở (phút)</label><input id="duration" type="number" min="1" max="30" value="10" />
+            <div class="form-actions"><button id="open-session" class="button primary-link" type="button">Mở phiên mới</button><button id="resume-session" class="button secondary" type="button">Xem phiên đang mở</button><button id="close-session" class="button secondary" type="button" disabled>Đóng phiên</button></div>
+            <div id="qr-area" hidden><h3 id="session-title"></h3><div id="qr-image" style="background:white;padding:20px;display:inline-block"></div><p id="qr-countdown"></p><p>QR tự cập nhật. Sinh viên mở mục Điểm danh trên điện thoại để quét.</p></div>
+            <h3>Kết quả buổi học</h3><div class="table-card"><table><thead><tr><th>Sinh viên</th><th>Họ tên</th><th>Trạng thái</th><th>Thời gian</th></tr></thead><tbody id="attendance-results"></tbody></table></div>
+        </section>
+    }
+    else if (!enrollment)
+    {
+        <section class="panel section-gap" id="scan-section"><h2>1. Quét QR của giảng viên</h2><p>Tài khoản đang đăng nhập: <strong>@User.Identity?.Name</strong></p>
+        <button id="scan-qr" class="button primary-link" type="button">Mở camera quét QR</button>
+        <p><a href="/diem-danh/ho-so">Đăng ký hoặc xem hồ sơ khuôn mặt</a></p></section>
+    }
+    else
+    {
+        <section class="panel section-gap"><p id="profile-status">Đang tải trạng thái hồ sơ…</p><p><strong>Đăng ký một lần cho tất cả lớp.</strong> Sau khi được duyệt một lần, mỗi buổi điểm danh chỉ xác minh với hồ sơ đã có; không tạo hồ sơ mới theo môn.</p><p>Ảnh được kiểm tra người thật và động tác. Ảnh đăng ký và mẫu khuôn mặt được lưu mã hóa để CBQL/Admin đối chiếu với ảnh thẻ và phục vụ điểm danh.</p>
+        <label><input id="face-consent" type="checkbox" /> Tôi đồng ý lưu ảnh đăng ký và mẫu khuôn mặt mã hóa để CBQL/Admin đối chiếu và phục vụ điểm danh.</label>
+        <div class="form-actions"><button id="start-enrollment" class="button primary-link" type="button" disabled>Bắt đầu đăng ký</button><a href="/diem-danh/ho-so" class="button secondary">Cập nhật trạng thái</a><a href="/diem-danh" class="button secondary">Điểm danh</a></div></section>
+    }
+    <partial name="_GuidedFaceCapture" />
+    @if (student && !enrollment)
+    {
+        <section class="panel section-gap"><h2>Kết quả điểm danh của tôi</h2><button id="refresh-history" class="button secondary" type="button">Cập nhật kết quả</button><div id="my-results"></div></section>
+    }
+</div>
+<script defer src="~/vendor/qrcode/qrcode.min.js" asp-append-version="true"></script>
+<script defer src="~/vendor/jsqr/jsQR.js" asp-append-version="true"></script>
+<script defer src="~/js/face-pose-guide.js" asp-append-version="true"></script>
+<script defer src="~/js/qr-attendance.js" asp-append-version="true"></script>
+

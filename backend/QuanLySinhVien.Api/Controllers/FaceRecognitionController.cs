@@ -14,7 +14,6 @@ namespace QuanLySinhVien.Api.Controllers;
 [EnableRateLimiting("face-recognition")]
 public sealed class FaceRecognitionController(
     AppDbContext db,
-    IFaceRecognitionService faces,
     ILogger<FaceRecognitionController> logger) : ControllerBase
 {
     [HttpGet("me/ho-so-khuon-mat")]
@@ -37,13 +36,13 @@ public sealed class FaceRecognitionController(
     [RequestSizeLimit(64 * 1024)]
     [Authorize(Roles = RoleNames.SinhVien)]
     public Task<IActionResult> RegisterMyProfile(FaceDescriptorSamplesRequest request, CancellationToken ct) =>
-        SaveMyProfileAsync(request, replaceExisting: false, ct);
+        Task.FromResult<IActionResult>(StatusCode(410, new { code = "LiveEvidenceRequired", message = "Đăng ký bằng camera qua /api/v1/qr-diem-danh/ho-so." }));
 
     [HttpPut("me/ho-so-khuon-mat")]
     [RequestSizeLimit(64 * 1024)]
     [Authorize(Roles = RoleNames.SinhVien)]
     public Task<IActionResult> ReplaceMyProfile(FaceDescriptorSamplesRequest request, CancellationToken ct) =>
-        SaveMyProfileAsync(request, replaceExisting: true, ct);
+        Task.FromResult<IActionResult>(StatusCode(410, new { code = "LiveEvidenceRequired", message = "Không thể thay hồ sơ bằng vector. Liên hệ giảng viên để đăng ký lại." }));
 
     [HttpDelete("sinh-vien/{maSinhVien}/ho-so-khuon-mat")]
     [Authorize(Roles = RoleNames.Admin + "," + RoleNames.CanBoQuanLy)]
@@ -58,109 +57,7 @@ public sealed class FaceRecognitionController(
     }
 
     [HttpPost("giang-day/buoi-hoc/{maBuoiHoc}/nhan-dien-khuon-mat")]
-    [RequestSizeLimit(64 * 1024)]
     [Authorize(Roles = RoleNames.Admin + "," + RoleNames.CanBoQuanLy + "," + RoleNames.GiangVien)]
-    public async Task<ActionResult<FaceAttendanceResponse>> RecognizeAttendance(
-        string maBuoiHoc,
-        FaceDescriptorSamplesRequest request,
-        CancellationToken ct)
-    {
-        var session = await db.BuoiHocs
-            .Where(x => x.MaBuoiHoc == maBuoiHoc)
-            .Select(x => new
-            {
-                x.MaBuoiHoc,
-                x.TrangThaiBuoiHoc,
-                x.LichHoc.MaLopHocPhan,
-                x.LichHoc.LopHocPhan.MaGiangVien
-            })
-            .SingleOrDefaultAsync(ct);
-        if (session is null) return NotFound(new { message = "Không tìm thấy buổi học." });
-        if (session.TrangThaiBuoiHoc == "DaChot")
-            return Conflict(new { code = "AttendanceFinalized", message = "Buổi học đã chốt điểm danh." });
-        if (User.IsInRole(RoleNames.GiangVien)
-            && !string.Equals(session.MaGiangVien, User.Identity?.Name, StringComparison.OrdinalIgnoreCase))
-            return Forbid();
-
-        var normalized = faces.NormalizeSamples(request.Descriptors);
-        if (!normalized.Succeeded)
-            return UnprocessableEntity(new { code = normalized.ErrorCode, message = normalized.ErrorMessage });
-
-        var match = await faces.MatchStudentInClassAsync(session.MaLopHocPhan, normalized.Value!, ct);
-        if (!match.Succeeded)
-            return UnprocessableEntity(new { code = match.ErrorCode, message = match.ErrorMessage });
-
-        var attendance = await db.ChiTietDiemDanhs.FindAsync([maBuoiHoc, match.Value!.MaSinhVien], ct);
-        var alreadyCheckedIn = attendance?.TrangThai is "CoMat" or "DiTre";
-        if (attendance is null)
-        {
-            attendance = new ChiTietDiemDanh
-            {
-                MaBuoiHoc = maBuoiHoc,
-                MaSinhVien = match.Value.MaSinhVien
-            };
-            db.ChiTietDiemDanhs.Add(attendance);
-        }
-
-        if (!alreadyCheckedIn)
-        {
-            attendance.TrangThai = "CoMat";
-            attendance.ThoiGianCheckIn = DateTime.UtcNow;
-            await db.SaveChangesAsync(ct);
-        }
-
-        var checkedInAt = attendance.ThoiGianCheckIn ?? DateTime.UtcNow;
-        logger.LogInformation(
-            "Face attendance {Result} for student {StudentCode}, session {SessionCode}, actor {Actor}.",
-            alreadyCheckedIn ? "already-recorded" : "recorded",
-            match.Value.MaSinhVien,
-            maBuoiHoc,
-            User.Identity?.Name);
-
-        return Ok(new FaceAttendanceResponse(
-            match.Value.MaSinhVien,
-            match.Value.HoTen,
-            maBuoiHoc,
-            attendance.TrangThai,
-            checkedInAt,
-            alreadyCheckedIn));
-    }
-
-    private async Task<IActionResult> SaveMyProfileAsync(
-        FaceDescriptorSamplesRequest request,
-        bool replaceExisting,
-        CancellationToken ct)
-    {
-        var studentCode = User.Identity?.Name;
-        if (string.IsNullOrWhiteSpace(studentCode)) return Unauthorized();
-        if (!await db.SinhViens.AnyAsync(x => x.MaSinhVien == studentCode, ct))
-            return NotFound(new { message = "Không tìm thấy hồ sơ sinh viên." });
-
-        var normalized = faces.NormalizeSamples(request.Descriptors);
-        if (!normalized.Succeeded)
-            return UnprocessableEntity(new { code = normalized.ErrorCode, message = normalized.ErrorMessage });
-
-        var profile = await db.HoSoKhuonMats.SingleOrDefaultAsync(x => x.MaSinhVien == studentCode, ct);
-        if (profile is not null && !replaceExisting)
-            return Conflict(new { code = "ProfileAlreadyExists", message = "Sinh viên đã có hồ sơ khuôn mặt." });
-        if (profile is null && replaceExisting)
-            return NotFound(new { code = "ProfileNotFound", message = "Sinh viên chưa có hồ sơ khuôn mặt để cập nhật." });
-
-        var created = profile is null;
-        if (profile is null)
-        {
-            profile = new HoSoKhuonMat
-            {
-                MaHoSo = $"FACE-{Guid.NewGuid():N}",
-                MaSinhVien = studentCode
-            };
-            db.HoSoKhuonMats.Add(profile);
-        }
-        profile.VectorJson = faces.ProtectDescriptor(normalized.Value!);
-        profile.ThoiGianCapNhat = DateTime.UtcNow;
-        await db.SaveChangesAsync(ct);
-
-        logger.LogInformation("Face profile {Action} for student {StudentCode}.", replaceExisting ? "replaced" : "registered", studentCode);
-        return created ? StatusCode(StatusCodes.Status201Created) : NoContent();
-    }
+    public IActionResult RecognizeAttendance(string maBuoiHoc) =>
+        StatusCode(410, new { code = "QrAttendanceRequired", message = "Mở phiên QR để sinh viên xác minh trực tiếp qua camera. Không nhận vector điểm danh từ client." });
 }

@@ -49,10 +49,12 @@
         <button class="nav-toggle" type="button" aria-controls="primary-nav" aria-expanded="false" aria-label="Mở menu điều hướng" data-nav-toggle>Menu</button>
         <nav id="primary-nav" aria-label="Điều hướng chính">
             <span>@User.Identity.Name</span>
+            <a asp-controller="QrAttendance" asp-action="Index">Điểm danh QR</a>
             @if (User.IsInRole(RoleNames.Admin) || User.IsInRole(RoleNames.CanBoQuanLy))
             {
                 <a asp-controller="UserManagement" asp-action="Index">Người dùng</a>
                 <a asp-controller="TrainingWorkflow" asp-action="Index">Đào tạo</a>
+                <a asp-controller="FaceProfileManagement" asp-action="Index">Duyệt hồ sơ khuôn mặt</a>
             }
             @if (User.IsInRole(RoleNames.GiangVien))
             {

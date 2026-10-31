@@ -64,10 +64,19 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAccountProvisioningService, AccountProvisioningService>();
 builder.Services.AddScoped<UserManagementService>();
 builder.Services.AddScoped<IFaceRecognitionService, FaceRecognitionService>();
+builder.Services.AddOptions<FaceEvidenceOptions>().Bind(builder.Configuration.GetSection("FaceEvidence"))
+    .Validate(x => x.MinimumLiveScore > 0 && x.MinimumLiveScore <= 1 && x.MinimumTurn > 0 && x.MinimumTurn < 1,
+        "Face evidence thresholds are invalid.").ValidateOnStart();
+builder.Services.AddSingleton<IFaceEvidenceService, FaceEvidenceService>();
+builder.Services.AddSingleton<AttendanceQrTokens>();
+builder.Services.AddSingleton<FaceReviewPhotos>();
 builder.Services.AddScoped<TrainingEnrollmentService>();
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("face-guidance", context =>
+        RateLimitPartition.GetFixedWindowLimiter(context.User.Identity?.Name ?? context.Connection.RemoteIpAddress?.ToString() ?? "anonymous",
+            _ => new FixedWindowRateLimiterOptions { PermitLimit = 120, Window = TimeSpan.FromMinutes(1), QueueLimit = 0, AutoReplenishment = true }));
     options.AddPolicy("face-recognition", context =>
         RateLimitPartition.GetFixedWindowLimiter(
             context.User.Identity?.Name

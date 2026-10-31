@@ -11,6 +11,7 @@ public interface ITeachingManagementApiClient
     Task<ApiResult> CreateAssignmentAsync(string token, CreateTeachingAssignmentViewModel model, CancellationToken ct);
     Task<ApiResult<IReadOnlyCollection<TeachingAssignmentModel>>> GetMyAssignmentsAsync(string token, CancellationToken ct);
     Task<ApiResult<LecturerClassWorkspaceModel>> GetClassWorkspaceAsync(string token, string classCode, string? sessionCode, CancellationToken ct);
+    Task<ApiResult<ClassAttendanceHistoryModel>> GetClassAttendanceHistoryAsync(string token, string classCode, CancellationToken ct);
     Task<ApiResult> UpdateAttendanceAsync(string token, string sessionCode, string studentCode, string status, CancellationToken ct);
     Task<ApiResult> FinalizeAttendanceAsync(string token, string sessionCode, CancellationToken ct);
 }
@@ -50,6 +51,13 @@ public sealed class TeachingManagementApiClient(HttpClient httpClient) : ITeachi
             path += $"?maBuoiHoc={Uri.EscapeDataString(sessionCode)}";
         return GetAsync<LecturerClassWorkspaceModel>(token, path, ct);
     }
+
+    public Task<ApiResult<ClassAttendanceHistoryModel>> GetClassAttendanceHistoryAsync(
+        string token,
+        string classCode,
+        CancellationToken ct) =>
+        GetAsync<ClassAttendanceHistoryModel>(
+            token, $"api/v1/giang-day/lop/{Uri.EscapeDataString(classCode)}/lich-su", ct);
 
     public Task<ApiResult> UpdateAttendanceAsync(
         string token,

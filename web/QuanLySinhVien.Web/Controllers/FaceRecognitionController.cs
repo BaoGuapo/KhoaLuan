@@ -11,19 +11,7 @@ public sealed class FaceRecognitionController(IFaceRecognitionApiClient api) : C
 {
     [HttpGet("")]
     [Authorize(Roles = RoleNames.SinhVien)]
-    public async Task<IActionResult> Profile(CancellationToken ct)
-    {
-        var token = HttpContext.Session.GetString("AccessToken");
-        if (string.IsNullOrWhiteSpace(token)) return LoginRedirect();
-        var result = await SafeAsync(() => api.GetMyProfileAsync(token, ct));
-        if (!result.Succeeded || result.Value is null)
-        {
-            TempData["Error"] = result.Error ?? "Không thể tải hồ sơ khuôn mặt.";
-            return View(new FaceCaptureViewModel());
-        }
-        return View(new FaceCaptureViewModel { Profile = result.Value });
-    }
-
+    public IActionResult Profile() => RedirectToAction("Profile", "QrAttendance");
     [HttpPost("luu"), ValidateAntiForgeryToken]
     [Authorize(Roles = RoleNames.SinhVien)]
     public async Task<IActionResult> Save(string descriptorsJson, bool replace, CancellationToken ct)
@@ -46,12 +34,7 @@ public sealed class FaceRecognitionController(IFaceRecognitionApiClient api) : C
     [HttpGet("diem-danh/{maBuoiHoc}")]
     [Authorize(Roles = RoleNames.GiangVien)]
     public IActionResult Attendance(string maBuoiHoc, string maLop, string? ngayHoc) =>
-        View(new FaceAttendanceCaptureViewModel
-        {
-            MaBuoiHoc = maBuoiHoc,
-            MaLopHocPhan = maLop,
-            NgayHoc = ngayHoc
-        });
+        RedirectToAction("Index", "QrAttendance", new { maBuoiHoc });
 
     [HttpPost("diem-danh/{maBuoiHoc}"), ValidateAntiForgeryToken]
     [Authorize(Roles = RoleNames.GiangVien)]

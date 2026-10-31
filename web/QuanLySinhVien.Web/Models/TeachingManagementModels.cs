@@ -99,4 +99,41 @@ public sealed class LecturerClassWorkspaceModel
     public IReadOnlyCollection<AttendanceSessionModel> BuoiHoc { get; set; } = [];
     public string? MaBuoiHocDangChon { get; set; }
     public IReadOnlyCollection<StudentAttendanceModel> SinhVien { get; set; } = [];
+    public bool CoTheDiemDanh { get; set; }
+    public string? LyDoKhongDiemDanh { get; set; }
+    public string KhungGioTiet { get; set; } = string.Empty;
+    public DateTime? MoDiemDanhLuc { get; set; }
+    public DateTime? DongDiemDanhLuc { get; set; }
+}
+
+public sealed class AttendanceSessionStatisticsModel
+{
+    public string MaBuoiHoc { get; set; } = string.Empty;
+    public DateTime NgayHocCuThe { get; set; }
+    public string TrangThaiBuoiHoc { get; set; } = string.Empty;
+    public bool DaChot { get; set; }
+    public bool LaHomNay { get; set; }
+    public int SiSoLop { get; set; }
+    public int CoMat { get; set; }
+    public int DiTre { get; set; }
+    public int CoPhep { get; set; }
+    public int Vang { get; set; }
+    public int ChuaDiemDanh { get; set; }
+
+    public int DaDiemDanh => CoMat + DiTre + CoPhep + Vang;
+    public double TyLeChuyenCan => SiSoLop == 0 ? 0 : (double)(CoMat + DiTre) / SiSoLop;
+}
+
+public sealed class ClassAttendanceHistoryModel
+{
+    public TeachingAssignmentModel LopHocPhan { get; set; } = new();
+    public string KhungGioTiet { get; set; } = string.Empty;
+    public IReadOnlyCollection<AttendanceSessionStatisticsModel> BuoiHoc { get; set; } = [];
+}
+
+/// <summary>Trang lịch sử: bảng thống kê mọi buổi, kèm chi tiết buổi đang mở (nếu có).</summary>
+public sealed class ClassAttendanceHistoryPageViewModel
+{
+    public required ClassAttendanceHistoryModel LichSu { get; init; }
+    public LecturerClassWorkspaceModel? ChiTietBuoi { get; init; }
 }

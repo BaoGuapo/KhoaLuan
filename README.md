@@ -2,6 +2,8 @@
 
 Repository chung của đồ án, gồm ASP.NET Core Web API, website ASP.NET Core MVC và ứng dụng Flutter.
 
+Luồng điểm danh QR và xác minh khuôn mặt trên web/mobile: xem [hướng dẫn triển khai và kiểm thử](docs/QR_FACE_ATTENDANCE.md). Cần áp dụng migration mới trước khi dùng chức năng.
+
 ## Cấu trúc repository
 
 ```text

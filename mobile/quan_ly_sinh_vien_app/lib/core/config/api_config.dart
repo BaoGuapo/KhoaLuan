@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 class ApiConfig {
   ApiConfig._();
 
@@ -9,6 +11,9 @@ class ApiConfig {
   );
 
   static Uri get baseUri {
+    if (kIsWeb && const bool.fromEnvironment('WEB_SAME_ORIGIN')) {
+      return Uri.base.resolve('/');
+    }
     final uri = Uri.parse(baseUrl);
     if (!uri.hasScheme || uri.host.isEmpty) {
       throw StateError('API_BASE_URL không hợp lệ: $baseUrl');

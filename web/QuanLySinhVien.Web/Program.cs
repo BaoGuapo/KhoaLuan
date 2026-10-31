@@ -7,6 +7,11 @@ using QuanLySinhVien.Web.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddHttpClient("Attendance", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["BackendApi:BaseUrl"] ?? throw new InvalidOperationException("BackendApi:BaseUrl is missing."));
+    client.Timeout = TimeSpan.FromSeconds(90);
+});
 builder.Services.AddHttpClient<StudentAcademicApiClient>(client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["BackendApi:BaseUrl"] ?? throw new InvalidOperationException("BackendApi:BaseUrl is missing."));

@@ -29,3 +29,7 @@
 *.suo
 Thumbs.db
 .DS_Store
+
+# Task-local SDKs and test artifacts
+.tools/
+.artifacts/

@@ -1,5 +1,7 @@
 # Mô hình nhận diện khuôn mặt Tuần 8
 
+Luồng điểm danh hiện tại đã chuyển sang QR và xác minh ảnh tại backend với SCRFD + MobileNetV2 + MiniFASNetV2. Xem [QR_FACE_ATTENDANCE.md](QR_FACE_ATTENDANCE.md). Phần dưới mô tả pipeline vector cũ còn dùng ở bước xác thực đăng nhập; không dùng kết luận từ pipeline client này để ghi nhận điểm danh.
+
 Website dùng hai bước: phát hiện/căn chỉnh mặt bằng `face-api.js` và trích xuất
 embedding bằng checkpoint **MobileNetV2** đã huấn luyện nhận diện khuôn mặt.
 Không dùng trọng số MobileNetV2 phân loại ImageNet để xác định danh tính.

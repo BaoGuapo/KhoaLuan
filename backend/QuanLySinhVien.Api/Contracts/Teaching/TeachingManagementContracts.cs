@@ -58,6 +58,25 @@ public sealed record AttendanceSessionResponse(
     string TrangThaiBuoiHoc,
     bool DaChot);
 
+/// <summary>Thống kê điểm danh của một buổi học, dùng cho trang lịch sử.</summary>
+public sealed record AttendanceSessionStatisticsResponse(
+    string MaBuoiHoc,
+    DateTime NgayHocCuThe,
+    string TrangThaiBuoiHoc,
+    bool DaChot,
+    bool LaHomNay,
+    int SiSoLop,
+    int CoMat,
+    int DiTre,
+    int CoPhep,
+    int Vang,
+    int ChuaDiemDanh);
+
+public sealed record ClassAttendanceHistoryResponse(
+    TeachingAssignmentResponse LopHocPhan,
+    string KhungGioTiet,
+    IReadOnlyCollection<AttendanceSessionStatisticsResponse> BuoiHoc);
+
 public sealed record StudentAttendanceResponse(
     string MaSinhVien,
     string HoTen,
@@ -76,7 +95,13 @@ public sealed record LecturerClassWorkspaceResponse(
     TeachingAssignmentResponse LopHocPhan,
     IReadOnlyCollection<AttendanceSessionResponse> BuoiHoc,
     string? MaBuoiHocDangChon,
-    IReadOnlyCollection<StudentAttendanceResponse> SinhVien);
+    IReadOnlyCollection<StudentAttendanceResponse> SinhVien,
+    // Chỉ buổi diễn ra hôm nay và đang trong giờ lên lớp mới được sửa điểm danh.
+    bool CoTheDiemDanh,
+    string? LyDoKhongDiemDanh,
+    string KhungGioTiet,
+    DateTime? MoDiemDanhLuc,
+    DateTime? DongDiemDanhLuc);
 
 public sealed class UpdateAttendanceRequest
 {

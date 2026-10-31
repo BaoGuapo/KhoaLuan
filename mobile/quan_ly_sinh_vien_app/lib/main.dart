@@ -5,6 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
 import 'app.dart';
+import 'core/attendance/attendance_workflow_api.dart';
 import 'core/config/api_config.dart';
 import 'core/network/api_client.dart';
 import 'data/local/secure_session_storage.dart';
@@ -26,6 +27,7 @@ void main() {
     sessionStorage: sessionStorage,
   );
   final authController = AuthController(authRepository);
+  AttendanceWorkflowApi.accessTokenProvider = () async => authController.session?.accessToken;
 
   runApp(QuanLySinhVienApp(authController: authController));
   unawaited(authController.initialize());

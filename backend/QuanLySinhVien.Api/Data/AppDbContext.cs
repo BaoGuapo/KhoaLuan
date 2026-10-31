@@ -20,7 +20,9 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<BuoiHoc> BuoiHocs => Set<BuoiHoc>();
     public DbSet<ChiTietDiemDanh> ChiTietDiemDanhs => Set<ChiTietDiemDanh>();
     public DbSet<HoSoKhuonMat> HoSoKhuonMats => Set<HoSoKhuonMat>();
+    public DbSet<StudentIdentityPhoto> StudentIdentityPhotos => Set<StudentIdentityPhoto>();
     public DbSet<PhienDiemDanh> PhienDiemDanhs => Set<PhienDiemDanh>();
+    public DbSet<AttendanceChallenge> AttendanceChallenges => Set<AttendanceChallenge>();
     public DbSet<ThongBao> ThongBaos => Set<ThongBao>();
     public DbSet<KeHoachDaoTao> KeHoachDaoTaos => Set<KeHoachDaoTao>();
     public DbSet<MonKeHoachDaoTao> MonKeHoachDaoTaos => Set<MonKeHoachDaoTao>();
@@ -34,6 +36,27 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        modelBuilder.Entity<AttendanceChallenge>(e =>
+        {
+            e.HasKey(x => x.Id);
+            e.Property(x => x.MaSinhVien).HasMaxLength(30);
+            e.Property(x => x.Purpose).HasMaxLength(20);
+            e.Property(x => x.IssuedTo).HasMaxLength(100);
+            e.Property(x => x.Direction).HasMaxLength(5);
+            e.Property(x => x.FrameHashes).HasMaxLength(194);
+            e.HasIndex(x => new { x.MaSinhVien, x.CreatedAtUtc });
+            e.HasOne<SinhVien>().WithMany().HasForeignKey(x => x.MaSinhVien).OnDelete(DeleteBehavior.Restrict);
+            e.HasOne<PhienDiemDanh>().WithMany().HasForeignKey(x => x.PhienDiemDanhId).OnDelete(DeleteBehavior.Restrict);
+        });
+        modelBuilder.Entity<HoSoKhuonMat>().Property(x => x.ApprovedBy).HasMaxLength(100);
+        modelBuilder.Entity<HoSoKhuonMat>().Property(x => x.RejectedBy).HasMaxLength(100);
+        modelBuilder.Entity<HoSoKhuonMat>().Property(x => x.RejectionReason).HasMaxLength(500);
+        modelBuilder.Entity<HoSoKhuonMat>().Property(x => x.ReviewNote).HasMaxLength(500);
+        modelBuilder.Entity<StudentIdentityPhoto>(e => {
+            e.ToTable("StudentIdentityPhotos"); e.HasKey(x => x.MaSinhVien);
+            e.Property(x => x.MaSinhVien).HasMaxLength(30); e.Property(x => x.UpdatedBy).HasMaxLength(100);
+            e.HasOne(x => x.SinhVien).WithOne().HasForeignKey<StudentIdentityPhoto>(x => x.MaSinhVien).OnDelete(DeleteBehavior.Restrict);
+        });
         modelBuilder.Entity<HoSoHocVu>(e =>
         {
             e.ToTable("HoSoHocVu"); e.HasKey(x => x.MaSinhVien);

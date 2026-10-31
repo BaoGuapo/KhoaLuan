@@ -161,6 +161,14 @@ public sealed class ChiTietDiemDanh
 
 public sealed class HoSoKhuonMat
 {
+    public string? RegistrationPhotosProtected { get; set; }
+    public Guid? ReviewVersion { get; set; }
+    public DateTime? RejectedAtUtc { get; set; }
+    public string? RejectedBy { get; set; }
+    public string? RejectionReason { get; set; }
+    public string? ReviewNote { get; set; }
+    public DateTime? ApprovedAtUtc { get; set; }
+    public string? ApprovedBy { get; set; }
     public string MaHoSo { get; set; } = string.Empty;
     public string MaSinhVien { get; set; } = string.Empty;
     public string VectorJson { get; set; } = string.Empty;

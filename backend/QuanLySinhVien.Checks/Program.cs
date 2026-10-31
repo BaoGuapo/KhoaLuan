@@ -7,6 +7,10 @@ using QuanLySinhVien.Api.Data;
 using QuanLySinhVien.Api.Contracts.Training;
 using QuanLySinhVien.Api.Services;
 
+if (args.Contains("--class-periods")) { ClassPeriodChecks.Run(); return; }
+if (args.Contains("--attendance")) { await AttendanceChecks.Run(); return; }
+if (args.Contains("--attendance-web")) { await AttendanceWebChecks.Run(); return; }
+if (args.Contains("--attendance-api")) { await AttendanceApiBindingChecks.Run(); return; }
 if (args.Contains("--web-smoke")) { await TrainingWebChecks.Run(); return; }
 if (args.Contains("--student-smoke") || args.Contains("--student-preview")) { await StudentUiChecks.Run(args.Contains("--student-preview")); return; }
 if (args.Contains("--schema") || args.Contains("--db-read") || args.Contains("--db-test") || args.Contains("--demo-seed"))

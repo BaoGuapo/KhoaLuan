@@ -34,6 +34,29 @@ public sealed class GiangVienController(ITeachingManagementApiClient api) : Cont
         return View(result.Value);
     }
 
+    public async Task<IActionResult> LichSuDiemDanh(string maLop, string? maBuoiHoc, CancellationToken ct)
+    {
+        var token = AccessToken;
+        if (token is null) return LoginRedirect();
+        var history = await SafeAsync(() => api.GetClassAttendanceHistoryAsync(token, maLop, ct));
+        if (!history.Succeeded || history.Value is null)
+        {
+            TempData["Error"] = history.Error;
+            return RedirectToAction(nameof(LichGiangDay));
+        }
+
+        // Chi tiết một buổi dùng lại dữ liệu workspace, chỉ để xem nên không cần kiểm tra khung giờ.
+        LecturerClassWorkspaceModel? detail = null;
+        if (!string.IsNullOrWhiteSpace(maBuoiHoc))
+        {
+            var result = await SafeAsync(() => api.GetClassWorkspaceAsync(token, maLop, maBuoiHoc, ct));
+            if (result.Succeeded) detail = result.Value;
+            else TempData["Error"] = result.Error;
+        }
+
+        return View(new ClassAttendanceHistoryPageViewModel { LichSu = history.Value, ChiTietBuoi = detail });
+    }
+
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> CapNhatDiemDanh(
         string maLop,

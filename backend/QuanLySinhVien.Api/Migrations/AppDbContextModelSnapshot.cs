@@ -50,6 +50,57 @@ namespace QuanLySinhVien.Api.Migrations
                     b.ToTable("ApDungHocKy", (string)null);
                 });
 
+            modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.AttendanceChallenge", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Direction")
+                        .IsRequired()
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)");
+
+                    b.Property<DateTime>("ExpiresAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FrameHashes")
+                        .HasMaxLength(194)
+                        .HasColumnType("nvarchar(194)");
+
+                    b.Property<string>("IssuedTo")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("MaSinhVien")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<Guid?>("PhienDiemDanhId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Purpose")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("UsedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PhienDiemDanhId");
+
+                    b.HasIndex("MaSinhVien", "CreatedAtUtc");
+
+                    b.ToTable("AttendanceChallenges");
+                });
+
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.BuoiHoc", b =>
                 {
                     b.Property<string>("MaBuoiHoc")
@@ -338,9 +389,37 @@ namespace QuanLySinhVien.Api.Migrations
                     b.Property<string>("MaHoSo")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<DateTime?>("ApprovedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ApprovedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<string>("MaSinhVien")
                         .IsRequired()
                         .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("RegistrationPhotosProtected")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("RejectedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RejectedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("RejectionReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("ReviewNote")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid?>("ReviewVersion")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("ThoiGianCapNhat")
                         .HasColumnType("datetime2");
@@ -872,6 +951,32 @@ namespace QuanLySinhVien.Api.Migrations
                     b.ToTable("SinhVien", (string)null);
                 });
 
+            modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.StudentIdentityPhoto", b =>
+                {
+                    b.Property<string>("MaSinhVien")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("ImageProtected")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("Version")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("MaSinhVien");
+
+                    b.ToTable("StudentIdentityPhotos", (string)null);
+                });
+
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.ThongBao", b =>
                 {
                     b.Property<Guid>("Id")
@@ -977,6 +1082,20 @@ namespace QuanLySinhVien.Api.Migrations
                         .IsRequired();
 
                     b.Navigation("KeHoach");
+                });
+
+            modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.AttendanceChallenge", b =>
+                {
+                    b.HasOne("QuanLySinhVien.Api.Models.Entities.SinhVien", null)
+                        .WithMany()
+                        .HasForeignKey("MaSinhVien")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("QuanLySinhVien.Api.Models.Entities.PhienDiemDanh", null)
+                        .WithMany()
+                        .HasForeignKey("PhienDiemDanhId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.BuoiHoc", b =>
@@ -1224,6 +1343,17 @@ namespace QuanLySinhVien.Api.Migrations
                         .WithOne()
                         .HasForeignKey("QuanLySinhVien.Api.Models.Entities.SinhVien", "UserId")
                         .OnDelete(DeleteBehavior.SetNull);
+                });
+
+            modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.StudentIdentityPhoto", b =>
+                {
+                    b.HasOne("QuanLySinhVien.Api.Models.Entities.SinhVien", "SinhVien")
+                        .WithOne()
+                        .HasForeignKey("QuanLySinhVien.Api.Models.Entities.StudentIdentityPhoto", "MaSinhVien")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("SinhVien");
                 });
 
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.UserRole", b =>

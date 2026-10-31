@@ -1,3 +1,4 @@
 @{ ViewData["Title"] = "Quản trị"; }
 <section class="dashboard-heading"><p class="eyebrow blue">QUẢN TRỊ VIÊN</p><h1>Trang quản trị hệ thống</h1><p>Chào @User.Identity?.Name. Tài khoản của bạn được xác thực với quyền quản trị viên.</p></section>
+<section class="panel section-gap"><h2>Duyệt hồ sơ khuôn mặt</h2><p>Xác minh và duyệt hồ sơ sinh viên một lần để sử dụng tại tất cả lớp.</p><a class="button primary-link" asp-controller="FaceProfileManagement" asp-action="Index">Mở trang duyệt hồ sơ khuôn mặt</a></section>
 <div class="role-grid"><article><h2>Quản lý người dùng</h2><p>Quản lý tài khoản, phân quyền và hồ sơ sinh viên/giảng viên.</p><a asp-controller="UserManagement" asp-action="Index">Mở chức năng quản lý</a></article><article><h2>Bảo mật tài khoản</h2><a asp-controller="Account" asp-action="ChangePassword">Đổi mật khẩu</a></article></div>

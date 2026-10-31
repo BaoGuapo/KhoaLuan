@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QuanLySinhVien.Api.Data;
 using QuanLySinhVien.Api.Models.Entities;
+using QuanLySinhVien.Api.Services;
 
 namespace QuanLySinhVien.Api.Controllers;
 
@@ -40,9 +41,17 @@ public sealed class DiemDanhController(AppDbContext db) : ControllerBase
         if (request.TrangThai is not ("CoMat" or "DiTre" or "CoPhep" or "Vang"))
             return BadRequest(new { message = "Trạng thái điểm danh không hợp lệ." });
         if (!await CanManageSessionAsync(maBuoiHoc, ct)) return Forbid();
-        var classCode = await db.BuoiHocs.Where(x => x.MaBuoiHoc == maBuoiHoc)
-            .Select(x => x.LichHoc.MaLopHocPhan).SingleOrDefaultAsync(ct);
-        if (classCode is null) return NotFound();
+        var session = await db.BuoiHocs.AsNoTracking().Where(x => x.MaBuoiHoc == maBuoiHoc)
+            .Select(x => new { x.TrangThaiBuoiHoc, x.NgayHocCuThe, x.LichHoc.MaLopHocPhan, x.LichHoc.TietBatDau, x.LichHoc.TietKetThuc })
+            .SingleOrDefaultAsync(ct);
+        if (session is null) return NotFound();
+        if (session.TrangThaiBuoiHoc == "DaChot")
+            return Conflict(new { code = "AttendanceFinalized", message = "Buổi học đã chốt điểm danh." });
+        // Giảng viên chỉ sửa trong giờ lên lớp; học vụ vẫn sửa được để xử lý sai sót.
+        if (!User.IsInRole(RoleNames.Admin) && !User.IsInRole(RoleNames.CanBoQuanLy)
+            && !ClassPeriods.DangTrongKhungGio(session.NgayHocCuThe, session.TietBatDau, session.TietKetThuc))
+            return Conflict(new { code = "OutsideAttendanceWindow", message = "Chỉ điểm danh được trong giờ lên lớp của buổi hôm nay." });
+        var classCode = session.MaLopHocPhan;
         if (!await db.DanhSachSinhVienLops.AnyAsync(
                 x => x.MaLopHocPhan == classCode && x.MaSinhVien == maSinhVien, ct))
             return BadRequest(new { message = "Sinh viên không thuộc lớp học phần." });
