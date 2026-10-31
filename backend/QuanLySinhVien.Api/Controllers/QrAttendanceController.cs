@@ -13,7 +13,8 @@ namespace QuanLySinhVien.Api.Controllers;
 
 [ApiController, Route("api/v1/qr-diem-danh"), Authorize, EnableRateLimiting("face-recognition")]
 public sealed class QrAttendanceController(AppDbContext db, AttendanceQrTokens qr, IFaceEvidenceService evidence,
-    IFaceRecognitionService faces, FaceReviewPhotos reviewPhotos, ILogger<QrAttendanceController> logger) : ControllerBase
+    IFaceRecognitionService faces, FaceReviewPhotos reviewPhotos, IFacePhotoStorage photoStorage,
+    ILogger<QrAttendanceController> logger) : ControllerBase
 {
     private const string Managers = RoleNames.GiangVien + "," + RoleNames.Admin + "," + RoleNames.CanBoQuanLy;
     private const string FaceApprovers = RoleNames.Admin + "," + RoleNames.CanBoQuanLy;
@@ -243,7 +244,9 @@ public sealed class QrAttendanceController(AppDbContext db, AttendanceQrTokens q
                 if (challenge.ExpiresAtUtc <= DateTime.UtcNow) return Error("ChallengeExpired", "Lượt đăng ký đã hết hạn.", 409);
                 if (profile is null) { profile = new() { MaHoSo = $"FACE-{Guid.NewGuid():N}", MaSinhVien = Student }; db.HoSoKhuonMats.Add(profile); }
                 profile.VectorJson = faces.ProtectDescriptor(normalized.Value!); profile.ThoiGianCapNhat = DateTime.UtcNow;
-                profile.RegistrationPhotosProtected = reviewPhotos.ProtectRegistration(request.Frames); profile.ReviewVersion = Guid.NewGuid();
+                // Ảnh của lần đăng ký trước không còn dùng nữa, dọn trước khi ghi đè mã ảnh mới.
+                await photoStorage.DeleteRegistrationAsync(profile.RegistrationPhotosProtected, ct);
+                profile.RegistrationPhotosProtected = await photoStorage.SaveRegistrationAsync(request.Frames, ct); profile.ReviewVersion = Guid.NewGuid();
                 profile.RejectedAtUtc = null; profile.RejectedBy = null; profile.RejectionReason = null; profile.ReviewNote = null;
                 profile.ApprovedAtUtc = null; profile.ApprovedBy = null;
                 await db.SaveChangesAsync(ct); await transaction.CommitAsync(ct);
@@ -275,12 +278,12 @@ public sealed class QrAttendanceController(AppDbContext db, AttendanceQrTokens q
         if (profile is null) return NotFound();
         var photo = await db.StudentIdentityPhotos.AsNoTracking().SingleOrDefaultAsync(x => x.MaSinhVien == code, ct);
         var identity = reviewPhotos.ReadIdentity(photo?.ImageProtected);
-        var registration = reviewPhotos.ReadRegistration(profile.RegistrationPhotosProtected);
+        var registration = await photoStorage.ReadRegistrationAsync(profile.RegistrationPhotosProtected, ct);
         Response.Headers.CacheControl = "no-store, private";
         return Ok(new { maSinhVien = code, profile.SinhVien.HoTen, profile.SinhVien.LopHoc, profile.ThoiGianCapNhat,
             profileVersion = profile.ReviewVersion, identityPhotoVersion = photo?.Version,
             anhThe = identity is null ? null : FaceReviewPhotos.DataUrl(identity),
-            anhDangKy = registration.Select(FaceReviewPhotos.DataUrl).ToArray(),
+            anhDangKy = registration,
             anhTheCapNhatBoi = photo?.UpdatedBy, anhTheCapNhatLucUtc = photo?.UpdatedAtUtc,
             daDuyet = profile.ApprovedAtUtc != null, biTuChoi = profile.RejectedAtUtc != null,
             nguoiDuyet = profile.ApprovedBy, ngayDuyet = profile.ApprovedAtUtc,
@@ -332,7 +335,7 @@ public sealed class QrAttendanceController(AppDbContext db, AttendanceQrTokens q
             var photo = await db.StudentIdentityPhotos.SingleOrDefaultAsync(x => x.MaSinhVien == code, ct);
             if (profile.ReviewVersion != request.ProfileVersion || photo?.Version != request.IdentityPhotoVersion)
                 return Error("ReviewChanged", "Ảnh hoặc hồ sơ vừa thay đổi. Tải lại để đối chiếu trước khi quyết định.", 409);
-            if (approve && (reviewPhotos.ReadRegistration(profile.RegistrationPhotosProtected).Length != 3 || reviewPhotos.ReadIdentity(photo?.ImageProtected) is null))
+            if (approve && (await photoStorage.CountRegistrationAsync(profile.RegistrationPhotosProtected, ct) != 3 || reviewPhotos.ReadIdentity(photo?.ImageProtected) is null))
                 return Error("ReviewEvidenceMissing", "Cần đủ ảnh thẻ từ hồ sơ gốc và ba ảnh đăng ký để duyệt. Hồ sơ cũ thiếu ảnh cần được trả lại để sinh viên đăng ký lại.");
             profile.ReviewNote = note;
             if (approve) { profile.ApprovedAtUtc = DateTime.UtcNow; profile.ApprovedBy = Student; }

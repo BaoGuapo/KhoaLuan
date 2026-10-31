@@ -79,6 +79,15 @@ builder.Services.AddOptions<FaceEvidenceOptions>().Bind(builder.Configuration.Ge
 builder.Services.AddSingleton<IFaceEvidenceService, FaceEvidenceService>();
 builder.Services.AddSingleton<AttendanceQrTokens>();
 builder.Services.AddSingleton<FaceReviewPhotos>();
+// Chưa khai báo đủ khóa Cloudinary thì ảnh đăng ký vẫn lưu trong cơ sở dữ liệu như trước.
+var cloudinarySettings = builder.Configuration.GetSection("Cloudinary").Get<CloudinarySettings>()
+    ?? new CloudinarySettings();
+builder.Services.AddSingleton(cloudinarySettings);
+builder.Services.AddSingleton<DatabaseFacePhotoStorage>();
+if (cloudinarySettings.IsConfigured)
+    builder.Services.AddSingleton<IFacePhotoStorage, CloudinaryFacePhotoStorage>();
+else
+    builder.Services.AddSingleton<IFacePhotoStorage>(x => x.GetRequiredService<DatabaseFacePhotoStorage>());
 builder.Services.AddScoped<TrainingEnrollmentService>();
 builder.Services.AddScoped<AttendanceReportService>();
 builder.Services.AddRateLimiter(options =>

@@ -63,7 +63,9 @@ internal static class AttendanceChecks
         var fake = new Evidence(vector);
         QrAttendanceController Controller(string name, string role)
         {
-            var c = new QrAttendanceController(db, tokens, fake, recognition, photos, NullLogger<QrAttendanceController>.Instance);
+            // Kiểm tra này chạy ngoại tuyến nên ảnh vẫn lưu trong cơ sở dữ liệu, không gọi Cloudinary.
+            var c = new QrAttendanceController(db, tokens, fake, recognition, photos,
+                new DatabaseFacePhotoStorage(photos), NullLogger<QrAttendanceController>.Instance);
             var services = new ServiceCollection().AddSingleton(Options.Create(new FaceRecognitionOptions())).BuildServiceProvider();
             c.ControllerContext = new() { HttpContext = new DefaultHttpContext { RequestServices = services,
                 User = new ClaimsPrincipal(new ClaimsIdentity([new(ClaimTypes.Name, name), new(ClaimTypes.Role, role)], "test")) } };

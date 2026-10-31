@@ -36,6 +36,9 @@ internal static class AttendanceApiBindingChecks
         builder.Services.AddSingleton<IDataProtectionProvider>(new EphemeralDataProtectionProvider());
         builder.Services.AddSingleton<AttendanceQrTokens>();
         builder.Services.AddSingleton<FaceReviewPhotos>();
+        // Kiểm tra chạy ngoại tuyến nên ảnh lưu trong cơ sở dữ liệu, không gọi Cloudinary.
+        builder.Services.AddSingleton<DatabaseFacePhotoStorage>();
+        builder.Services.AddSingleton<IFacePhotoStorage>(x => x.GetRequiredService<DatabaseFacePhotoStorage>());
         builder.Services.Configure<FaceRecognitionOptions>(_ => { });
         builder.Services.AddScoped<IFaceRecognitionService, FaceRecognitionService>();
         builder.Services.AddSingleton<IFaceEvidenceService, UnusedEvidence>();
