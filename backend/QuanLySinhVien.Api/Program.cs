@@ -90,6 +90,12 @@ else
     builder.Services.AddSingleton<IFacePhotoStorage>(x => x.GetRequiredService<DatabaseFacePhotoStorage>());
 builder.Services.AddScoped<TrainingEnrollmentService>();
 builder.Services.AddScoped<AttendanceReportService>();
+// Chưa khai báo SMTP thì thư chỉ được ghi vào nhật ký, nghiệp vụ vẫn chạy bình thường.
+builder.Services.AddSingleton(builder.Configuration.GetSection("Email").Get<EmailSettings>() ?? new EmailSettings());
+builder.Services.AddSingleton<EmailQueue>();
+builder.Services.AddSingleton<IEmailSender>(x => x.GetRequiredService<EmailQueue>());
+builder.Services.AddHostedService<EmailBackgroundSender>();
+builder.Services.AddScoped<AttendanceEmailNotifier>();
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;

@@ -157,7 +157,9 @@ internal static class AttendanceChecks
         Check(approved is OkObjectResult && fake.Calls == aiCallsBeforeReview, "CBQL approves stored-photo comparison without student recapture or extra live inference");
         Check(Code(await officer.Approve("SV1", decision, default)) == "ProfileLocked", "approved global profile cannot be approved twice");
         Check((await student.MyResults(default)) is OkObjectResult && (await student.MyLessons(default)) is OkObjectResult, "student history and current lessons queries translate");
-        var teaching = new TeachingManagementController(db);
+        // Thư cảnh báo chuyên cần chỉ được xếp hàng đợi, kiểm tra này không gửi đi đâu.
+        var teaching = new TeachingManagementController(db,
+            new AttendanceEmailNotifier(db, new EmailQueue(NullLogger<EmailQueue>.Instance)));
         teaching.ControllerContext = lecturer.ControllerContext;
         Check(await teaching.FinalizeAttendance("BH", default) is NoContentResult
             && !await db.PhienDiemDanhs.AnyAsync(x => x.MaBuoiHoc == "BH" && x.DongLucUtc == null), "finalizing lesson also closes QR sessions atomically");

@@ -10,7 +10,7 @@ namespace QuanLySinhVien.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/giang-day")]
-public sealed class TeachingManagementController(AppDbContext db) : ControllerBase
+public sealed class TeachingManagementController(AppDbContext db, AttendanceEmailNotifier notifier) : ControllerBase
 {
     private static readonly HashSet<string> AttendanceStatuses =
         ["CoMat", "DiTre", "CoPhep", "Vang"];
@@ -400,8 +400,10 @@ public sealed class TeachingManagementController(AppDbContext db) : ControllerBa
         session.ThoiGianDiemDanh ??= DateTime.UtcNow;
         await db.SaveChangesAsync(ct);
 
+        var warningChanges = new List<(string MaSinhVien, string MucCu, string MucMoi, int SoBuoiVang)>();
         foreach (var enrollment in enrollments)
         {
+            var mucCu = enrollment.TrangThaiCanhBao ?? "BinhThuong";
             enrollment.TongSoBuoiVang = await db.ChiTietDiemDanhs.CountAsync(x =>
                 x.MaSinhVien == enrollment.MaSinhVien
                 && x.BuoiHoc.LichHoc.MaLopHocPhan == enrollment.MaLopHocPhan
@@ -412,12 +414,15 @@ public sealed class TeachingManagementController(AppDbContext db) : ControllerBa
                 >= 2 => "CanhBao",
                 _ => "BinhThuong"
             };
+            warningChanges.Add((enrollment.MaSinhVien, mucCu, enrollment.TrangThaiCanhBao, enrollment.TongSoBuoiVang));
         }
         await db.SaveChangesAsync(ct);
         var openSessions = await db.PhienDiemDanhs.Where(x => x.MaBuoiHoc == maBuoiHoc && x.DongLucUtc == null).ToListAsync(ct);
         foreach (var openSession in openSessions) openSession.DongLucUtc = DateTime.UtcNow;
         await db.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
+        // Chỉ xếp thư sau khi giao dịch đã commit, để không báo cảnh báo cho một lần chốt bị rollback.
+        await notifier.NotifyAttendanceWarningsAsync(session.LichHoc.MaLopHocPhan, warningChanges, ct);
         return (IActionResult)NoContent();
         });
     }
