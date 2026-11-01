@@ -12,7 +12,7 @@ Mất khoảng 15–30 phút, phần lớn là thời gian tải gói NuGet.
 | Thứ | Ghi chú |
 |---|---|
 | **.NET SDK 8** | `dotnet --version` phải in ra `8.x`. Tải tại dotnet.microsoft.com |
-| **SQL Server 17 trở lên** | Express là đủ. **Bản cũ hơn 17 sẽ không khôi phục được file sao lưu** |
+| **SQL Server 17 trở lên** | Express là đủ. Bản cũ hơn không đọc được `HKH.bak`, dùng cách ở mục 2b |
 | **sqlcmd** | Thường cài kèm SQL Server |
 | **Git** | Để lấy mã nguồn |
 
@@ -21,8 +21,8 @@ Hai thứ phải xin người bàn giao:
 1. File sao lưu cơ sở dữ liệu `HKH.bak` (khoảng 13 MB)
 2. Mật khẩu chung của các tài khoản demo
 
-Kiểm tra phiên bản SQL Server trước khi làm tiếp. Nếu dưới 17 thì dừng lại và cài bản mới hơn,
-vì mọi bước sau sẽ thất bại:
+Kiểm tra phiên bản SQL Server trước khi làm tiếp. Nếu dưới 17 thì bỏ qua mục 2 và làm theo
+mục 2b:
 
 ```powershell
 sqlcmd -S ".\SQLEXPRESS" -E -C -I -W -Q "SELECT SERVERPROPERTY('ProductVersion')"
@@ -57,7 +57,7 @@ quả vừa lấy ở trên:
 sqlcmd -S ".\SQLEXPRESS" -E -C -I -Q "RESTORE DATABASE QuanLySinhVien_Personal_HKH FROM DISK='C:\Tai\HKH.bak' WITH MOVE 'QuanLySinhVien_Personal_HKH' TO '<DATA_PATH>QuanLySinhVien_Personal_HKH.mdf', MOVE 'QuanLySinhVien_Personal_HKH_log' TO '<DATA_PATH>QuanLySinhVien_Personal_HKH_log.ldf', STATS=50"
 ```
 
-Kiểm tra. Phải thấy **31 bảng** và **10 migration**:
+Kiểm tra. Phải thấy **32 bảng** và **11 migration**:
 
 ```powershell
 sqlcmd -S ".\SQLEXPRESS" -E -C -I -W -d QuanLySinhVien_Personal_HKH -Q "SET NOCOUNT ON; SELECT COUNT(*) AS so_bang FROM sys.tables; SELECT COUNT(*) AS so_migration FROM __EFMigrationsHistory"
@@ -68,6 +68,51 @@ Nếu `so_migration` là 0 thì file sao lưu lấy từ bản cũ chưa ghi nh�
 ```powershell
 sqlcmd -S ".\SQLEXPRESS" -E -C -I -d QuanLySinhVien_Personal_HKH -i backend\QuanLySinhVien.Api\Migrations\BaselineExistingDatabase.sql
 ```
+
+---
+
+## 2b. Khi SQL Server dưới bản 17
+
+Chỉ làm mục này nếu mục 2 báo lỗi phiên bản:
+
+```
+The database was backed up on a server running database version 998.
+That version is incompatible with this server, which supports version 957.
+```
+
+File `.bak` là bản sao nhị phân của trang dữ liệu nên SQL Server không đọc được từ bản mới hơn.
+Không có tham số nào vượt được. Thay vào đó xin file `HKH-sql2022.bacpac` — cùng dữ liệu nhưng
+ở dạng câu lệnh T-SQL, nạp được từ SQL Server 2022 trở lên.
+
+Cần `sqlpackage`, là công cụ phía máy khách nên không phụ thuộc phiên bản server:
+
+```powershell
+dotnet tool install -g microsoft.sqlpackage
+```
+
+Nạp vào:
+
+```powershell
+sqlpackage /Action:Import /SourceFile:"C:\Tai\HKH-sql2022.bacpac" /TargetServerName:".\SQLEXPRESS" /TargetDatabaseName:QuanLySinhVien_Personal_HKH /TargetTrustServerCertificate:True
+```
+
+Kiểm tra bằng đúng câu lệnh ở mục 2, cũng phải thấy **32 bảng** và **11 migration**.
+
+Nếu không có cả hai file thì vẫn dựng được từ đầu, chỉ là không có dữ liệu mẫu của người bàn
+giao. Tạo database rỗng rồi để migration dựng toàn bộ schema:
+
+```powershell
+dotnet ef database update --project backend/QuanLySinhVien.Api
+```
+
+Lần đầu chạy API sẽ tự tạo bốn tài khoản dev ở mục 6. Muốn có thêm lớp học phần và sinh viên
+mẫu thì chạy:
+
+```powershell
+dotnet run --project backend/QuanLySinhVien.Checks -- --demo-seed
+```
+
+Cách này thiếu bộ tài khoản `HKH-*`, nhưng đủ để chạy và trình diễn mọi chức năng.
 
 ---
 
@@ -282,8 +327,8 @@ Các lỗi dưới đây đều đã gặp thật khi dựng dự án.
 
 ### `RESTORE` báo sai phiên bản
 
-SQL Server dưới bản 17 không đọc được file sao lưu này. Phải cài bản 17 trở lên, không có cách
-vòng nào khác.
+SQL Server dưới bản 17 không đọc được file `.bak` này, và không có tham số nào vượt được. Hoặc
+cài bản 17 trở lên, hoặc dùng file `.bacpac` theo mục 2b.
 
 ### `RESTORE` báo không mở được file `.bak`
 
