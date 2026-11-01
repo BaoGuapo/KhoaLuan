@@ -89,7 +89,9 @@ public sealed record StudentAttendanceResponse(
     int CoPhep,
     int Vang,
     int TongSoBuoi,
-    string? TrangThaiCanhBao);
+    string? TrangThaiCanhBao,
+    string? KetQuaViTri,
+    double? KhoangCachMet);
 
 public sealed record LecturerClassWorkspaceResponse(
     TeachingAssignmentResponse LopHocPhan,

@@ -65,7 +65,7 @@
             <tr>
                 <td><strong>@item.MaSinhVien</strong><small>@item.HoTen</small></td>
                 <td>@item.Email<small>@(item.SoDienThoai ?? "Chưa có SĐT")</small></td>
-                <td><span class="badge @AttendanceBadge(item.TrangThaiBuoiHoc)">@AttendanceLabel(item.TrangThaiBuoiHoc)</span>@if (item.ThoiGianCheckIn.HasValue) { <small>@item.ThoiGianCheckIn.Value.ToLocalTime().ToString("HH:mm dd/MM")</small> }</td>
+                <td><span class="badge @AttendanceBadge(item.TrangThaiBuoiHoc)">@AttendanceLabel(item.TrangThaiBuoiHoc)</span>@if (item.ThoiGianCheckIn.HasValue) { <small>@item.ThoiGianCheckIn.Value.ToLocalTime().ToString("HH:mm dd/MM")</small> }@if (item.KetQuaViTri == "NgoaiKhuonVien") { <span class="badge badge-warning" title="GPS chỉ xác định được là ngoài khuôn viên, không phân biệt được phòng học. Hãy tự kiểm tra lại.">Ngoài khuôn viên@(item.KhoangCachMet.HasValue ? $" · {item.KhoangCachMet.Value:0} m" : "")</span>}</td>
                 @if (Model.CoTheDiemDanh)
                 {
                     <td>

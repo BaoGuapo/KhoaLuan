@@ -147,7 +147,11 @@ dotnet run --project backend/QuanLySinhVien.Checks -- --attendance
 dotnet run --project backend/QuanLySinhVien.Checks -- --email
 ```
 
-Kết quả mong đợi: 19, 70 và 8 check đều PASS.
+```powershell
+dotnet run --project backend/QuanLySinhVien.Checks -- --campus-location
+```
+
+Kết quả mong đợi: 19, 78, 8 và 27 check đều PASS.
 
 Sau đó mở website, đăng nhập bằng một tài khoản demo và kiểm tra:
 
@@ -239,7 +243,40 @@ miền. Muốn thử gửi thật thì đổi email của một sinh viên thàn
 
 ---
 
-## 9. Xử lý sự cố
+## 9. Xác minh vị trí lúc điểm danh (tùy chọn)
+
+Bỏ qua phần này thì điểm danh vẫn chạy bình thường, chỉ là không có thông tin vị trí.
+
+Khai tọa độ cơ sở để hệ thống đối chiếu. Lấy tọa độ bằng cách mở Google Maps, bấm chuột phải vào
+điểm giữa khuôn viên rồi chép cặp số hiện ra:
+
+```bash
+dotnet user-secrets set --project backend/QuanLySinhVien.Api "CampusLocation:ViDo" "10.785"
+```
+
+```bash
+dotnet user-secrets set --project backend/QuanLySinhVien.Api "CampusLocation:KinhDo" "106.624"
+```
+
+Bán kính mặc định 250 m, đổi được nếu khuôn viên rộng hơn:
+
+```bash
+dotnet user-secrets set --project backend/QuanLySinhVien.Api "CampusLocation:BanKinhMet" "250"
+```
+
+Ba điều cần biết trước khi dùng:
+
+- GPS trong nhà sai số hàng chục mét nên chỉ kết luận được "trong hay ngoài khuôn viên", **không**
+  phân biệt được phòng học này với phòng kế bên.
+- Vị trí **không chặn** điểm danh. Ngoài bán kính thì bản ghi vẫn được tạo, kèm một nhãn cảnh báo
+  hiện trong bảng điểm danh của giảng viên để giảng viên tự quyết.
+- Trình duyệt chỉ cho đọc vị trí trong ngữ cảnh an toàn: `localhost` hoặc HTTPS. Sinh viên vào
+  web bằng địa chỉ LAN dạng `http://192.168.x.x` sẽ không gửi được vị trí, và lượt đó ghi là chưa
+  xác minh.
+
+---
+
+## 10. Xử lý sự cố
 
 Các lỗi dưới đây đều đã gặp thật khi dựng dự án.
 

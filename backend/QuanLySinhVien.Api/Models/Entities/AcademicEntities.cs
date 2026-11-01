@@ -155,6 +155,15 @@ public sealed class ChiTietDiemDanh
     public string MaSinhVien { get; set; } = string.Empty;
     public DateTime? ThoiGianCheckIn { get; set; }
     public string TrangThai { get; set; } = "Vang";
+
+    // Vị trí lúc điểm danh. Null khi thiết bị không gửi hoặc điểm danh thủ công.
+    public double? ViDo { get; set; }
+    public double? KinhDo { get; set; }
+    public double? DoChinhXacMet { get; set; }
+    public double? KhoangCachMet { get; set; }
+    /// <summary>"TrongKhuonVien", "NgoaiKhuonVien" hoặc null khi chưa xác minh được.</summary>
+    public string? KetQuaViTri { get; set; }
+
     public BuoiHoc BuoiHoc { get; set; } = null!;
     public SinhVien SinhVien { get; set; } = null!;
 }

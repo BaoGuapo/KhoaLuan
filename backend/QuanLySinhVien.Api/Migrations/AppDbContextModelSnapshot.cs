@@ -135,12 +135,28 @@ namespace QuanLySinhVien.Api.Migrations
                     b.Property<string>("MaSinhVien")
                         .HasColumnType("nvarchar(30)");
 
+                    b.Property<double?>("DoChinhXacMet")
+                        .HasColumnType("float");
+
+                    b.Property<string>("KetQuaViTri")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<double?>("KhoangCachMet")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("KinhDo")
+                        .HasColumnType("float");
+
                     b.Property<DateTime?>("ThoiGianCheckIn")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("TrangThai")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<double?>("ViDo")
+                        .HasColumnType("float");
 
                     b.HasKey("MaBuoiHoc", "MaSinhVien");
 

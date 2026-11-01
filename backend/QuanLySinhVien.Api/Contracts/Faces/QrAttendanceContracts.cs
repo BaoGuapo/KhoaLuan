@@ -10,6 +10,7 @@ public sealed class FaceEvidenceRequest
     [Required, MinLength(3), MaxLength(3)] public string[] Frames { get; init; } = [];
     public bool Consent { get; init; }
     public bool StoreReviewPhotosConsent { get; init; }
+    public ViTriRequest? ViTri { get; init; }
 }
 public sealed class FaceGuidanceRequest
 {

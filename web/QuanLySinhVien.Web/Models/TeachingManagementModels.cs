@@ -91,6 +91,10 @@ public sealed class StudentAttendanceModel
     public int Vang { get; set; }
     public int TongSoBuoi { get; set; }
     public string? TrangThaiCanhBao { get; set; }
+
+    /// <summary>"TrongKhuonVien", "NgoaiKhuonVien" hoặc null khi chưa xác minh được vị trí.</summary>
+    public string? KetQuaViTri { get; set; }
+    public double? KhoangCachMet { get; set; }
 }
 
 public sealed class LecturerClassWorkspaceModel

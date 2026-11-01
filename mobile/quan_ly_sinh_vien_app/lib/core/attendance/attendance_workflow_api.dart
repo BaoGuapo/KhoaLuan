@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import '../auth/token_storage.dart';
 import '../config/api_config.dart';
 import '../face/live_pose_guidance.dart';
+import 'vi_tri_service.dart';
 
 class AttendanceWorkflowException implements Exception {
   const AttendanceWorkflowException(this.message, {this.code});
@@ -106,17 +107,22 @@ class AttendanceWorkflowApi {
     Map<String, dynamic> challenge,
     List<String> frames, {
     bool enrollment = false,
-  }) async => Map<String, dynamic>.from(
-    await request(
-          enrollment ? 'ho-so' : 'xac-nhan',
-          body: {
-            'challengeId': challenge['challengeId'],
-            'frames': frames,
-            'consent': true,
-            if (enrollment) 'storeReviewPhotosConsent': true,
-          },
-        )
-        as Map,
-  );
+  }) async {
+    // Chỉ lúc điểm danh mới cần vị trí; đăng ký hồ sơ thì không.
+    final viTri = enrollment ? null : await const ViTriService().layViTri();
+    return Map<String, dynamic>.from(
+      await request(
+            enrollment ? 'ho-so' : 'xac-nhan',
+            body: {
+              'challengeId': challenge['challengeId'],
+              'frames': frames,
+              'consent': true,
+              if (viTri != null) 'viTri': viTri,
+              if (enrollment) 'storeReviewPhotosConsent': true,
+            },
+          )
+          as Map,
+    );
+  }
   void close() => _client.close();
 }

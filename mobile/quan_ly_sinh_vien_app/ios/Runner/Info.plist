@@ -26,6 +26,8 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>Ứng dụng cần camera để sinh viên chụp ảnh đăng ký khuôn mặt.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Ứng dụng dùng vị trí để ghi nhận bạn điểm danh trong khuôn viên trường.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

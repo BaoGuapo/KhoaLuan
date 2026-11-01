@@ -201,7 +201,19 @@ public sealed class TeachingManagementController(AppDbContext db, AttendanceEmai
                 db.ChiTietDiemDanhs.Count(d => d.MaSinhVien == x.MaSinhVien
                     && d.BuoiHoc.LichHoc.MaLopHocPhan == maLopHocPhan && d.TrangThai == "Vang"),
                 totalSessions,
-                x.TrangThaiCanhBao))
+                x.TrangThaiCanhBao,
+                selectedCode == null
+                    ? null
+                    : db.ChiTietDiemDanhs
+                        .Where(d => d.MaBuoiHoc == selectedCode && d.MaSinhVien == x.MaSinhVien)
+                        .Select(d => d.KetQuaViTri)
+                        .FirstOrDefault(),
+                selectedCode == null
+                    ? null
+                    : db.ChiTietDiemDanhs
+                        .Where(d => d.MaBuoiHoc == selectedCode && d.MaSinhVien == x.MaSinhVien)
+                        .Select(d => d.KhoangCachMet)
+                        .FirstOrDefault()))
             .ToListAsync(ct);
 
         var khungGio = selectedSession is null

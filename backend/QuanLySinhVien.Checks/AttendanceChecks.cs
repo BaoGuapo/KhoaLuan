@@ -61,11 +61,13 @@ internal static class AttendanceChecks
             RegistrationPhotosProtected = photos.ProtectRegistration(RegistrationFrames()), ReviewVersion = Guid.NewGuid() });
         await db.SaveChangesAsync();
         var fake = new Evidence(vector);
-        QrAttendanceController Controller(string name, string role)
+        QrAttendanceController Controller(string name, string role, CampusLocationSettings? campus = null)
         {
             // Kiểm tra này chạy ngoại tuyến nên ảnh vẫn lưu trong cơ sở dữ liệu, không gọi Cloudinary.
+            // Mặc định chưa cấu hình tọa độ cơ sở, nên phần lớn kiểm tra không xét vị trí.
             var c = new QrAttendanceController(db, tokens, fake, recognition, photos,
-                new DatabaseFacePhotoStorage(photos), NullLogger<QrAttendanceController>.Instance);
+                new DatabaseFacePhotoStorage(photos), campus ?? new CampusLocationSettings(),
+                NullLogger<QrAttendanceController>.Instance);
             var services = new ServiceCollection().AddSingleton(Options.Create(new FaceRecognitionOptions())).BuildServiceProvider();
             c.ControllerContext = new() { HttpContext = new DefaultHttpContext { RequestServices = services,
                 User = new ClaimsPrincipal(new ClaimsIdentity([new(ClaimTypes.Name, name), new(ClaimTypes.Role, role)], "test")) } };
@@ -107,6 +109,36 @@ internal static class AttendanceChecks
         Check(Code(await student.Guidance(guidance, default)) == "ChallengeExpired", "consumed nonce cannot request more live guidance");
         Check(Code(await student.Confirm(request, default)) == "ChallengeExpired" && fake.Calls == 1, "replay rejected before AI runs");
         Check(Code(await student.Scan(new(qr.QrToken), default)) == "AlreadyCheckedIn", "duplicate attendance rejected");
+        Check(await db.ChiTietDiemDanhs.AnyAsync(x => x.KetQuaViTri == null && x.ViDo == null),
+            "chưa cấu hình cơ sở thì bản ghi không mang kết luận vị trí");
+        await db.ChiTietDiemDanhs.ExecuteDeleteAsync();
+
+        // Vị trí đi hết đường từ request tới bản ghi, và không chặn điểm danh.
+        var campus = new CampusLocationSettings { ViDo = 10.785, KinhDo = 106.624, BanKinhMet = 250 };
+        var sinhVienCoViTri = Controller("SV1", RoleNames.SinhVien, campus);
+        challenge = Value<FaceChallengeResponse>(await sinhVienCoViTri.Scan(new(qr.QrToken), default));
+        Check(await sinhVienCoViTri.Confirm(new()
+        {
+            ChallengeId = challenge.ChallengeId,
+            Frames = FreshFrames(),
+            ViTri = new() { ViDo = 10.803, KinhDo = 106.624, DoChinhXacMet = 8 }
+        }, default) is OkObjectResult, "điểm danh ngoài khuôn viên vẫn được ghi nhận");
+        var banGhiXa = await db.ChiTietDiemDanhs.SingleAsync();
+        Check(banGhiXa.TrangThai == "CoMat", "ngoài khuôn viên không đổi trạng thái điểm danh");
+        Check(banGhiXa.KetQuaViTri == "NgoaiKhuonVien", "bản ghi mang cảnh báo ngoài khuôn viên");
+        Check(banGhiXa.KhoangCachMet is > 1_800 and < 2_200, "khoảng cách lưu lại xấp xỉ 2 km");
+        Check(banGhiXa.ViDo == 10.803 && banGhiXa.DoChinhXacMet == 8, "tọa độ và sai số được lưu nguyên");
+        await db.ChiTietDiemDanhs.ExecuteDeleteAsync();
+
+        challenge = Value<FaceChallengeResponse>(await sinhVienCoViTri.Scan(new(qr.QrToken), default));
+        Check(await sinhVienCoViTri.Confirm(new()
+        {
+            ChallengeId = challenge.ChallengeId,
+            Frames = FreshFrames(),
+            ViTri = new() { ViDo = 10.7855, KinhDo = 106.624, DoChinhXacMet = 8 }
+        }, default) is OkObjectResult, "điểm danh trong khuôn viên được ghi nhận");
+        Check((await db.ChiTietDiemDanhs.SingleAsync()).KetQuaViTri == "TrongKhuonVien",
+            "bản ghi mang kết luận trong khuôn viên");
         await db.ChiTietDiemDanhs.ExecuteDeleteAsync();
         challenge = Value<FaceChallengeResponse>(await student.Scan(new(qr.QrToken), default));
         var previousCalls = fake.Calls;

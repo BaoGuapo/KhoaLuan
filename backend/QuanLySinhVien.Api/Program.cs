@@ -69,6 +69,8 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(
         errorNumbersToAdd: null)));
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
 builder.Services.Configure<FaceRecognitionOptions>(builder.Configuration.GetSection(FaceRecognitionOptions.SectionName));
+builder.Services.AddSingleton(builder.Configuration.GetSection(CampusLocationSettings.SectionName)
+    .Get<CampusLocationSettings>() ?? new CampusLocationSettings());
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAccountProvisioningService, AccountProvisioningService>();
 builder.Services.AddScoped<UserManagementService>();

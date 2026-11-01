@@ -14,7 +14,7 @@ namespace QuanLySinhVien.Api.Controllers;
 [ApiController, Route("api/v1/qr-diem-danh"), Authorize, EnableRateLimiting("face-recognition")]
 public sealed class QrAttendanceController(AppDbContext db, AttendanceQrTokens qr, IFaceEvidenceService evidence,
     IFaceRecognitionService faces, FaceReviewPhotos reviewPhotos, IFacePhotoStorage photoStorage,
-    ILogger<QrAttendanceController> logger) : ControllerBase
+    CampusLocationSettings campus, ILogger<QrAttendanceController> logger) : ControllerBase
 {
     private const string Managers = RoleNames.GiangVien + "," + RoleNames.Admin + "," + RoleNames.CanBoQuanLy;
     private const string FaceApprovers = RoleNames.Admin + "," + RoleNames.CanBoQuanLy;
@@ -110,7 +110,7 @@ public sealed class QrAttendanceController(AppDbContext db, AttendanceQrTokens q
         if (session is null) return NotFound();
         if (!await ManagedLessons().AnyAsync(x => x.MaBuoiHoc == session.MaBuoiHoc, ct)) return Forbid();
         return Ok(await db.ChiTietDiemDanhs.AsNoTracking().Where(x => x.MaBuoiHoc == session.MaBuoiHoc)
-            .OrderByDescending(x => x.ThoiGianCheckIn).Select(x => new { x.MaSinhVien, x.SinhVien.HoTen, x.TrangThai, x.ThoiGianCheckIn }).ToListAsync(ct));
+            .OrderByDescending(x => x.ThoiGianCheckIn).Select(x => new { x.MaSinhVien, x.SinhVien.HoTen, x.TrangThai, x.ThoiGianCheckIn, x.KetQuaViTri, x.KhoangCachMet }).ToListAsync(ct));
     }
 
     [HttpPost("quet"), Authorize(Roles = RoleNames.SinhVien)]
@@ -169,9 +169,12 @@ public sealed class QrAttendanceController(AppDbContext db, AttendanceQrTokens q
                 if (record?.TrangThai is "CoMat" or "DiTre") return Error("AlreadyCheckedIn", "Bạn đã điểm danh buổi này.", 409);
                 if (record is null) { record = new() { MaBuoiHoc = session.MaBuoiHoc, MaSinhVien = Student }; db.ChiTietDiemDanhs.Add(record); }
                 record.TrangThai = "CoMat"; record.ThoiGianCheckIn = DateTime.UtcNow;
+                // Vị trí chỉ để ghi nhận và cảnh báo, không chặn điểm danh.
+                var viTri = CampusLocation.GhiNhanVao(record, campus, request.ViTri);
                 await db.SaveChangesAsync(ct); await transaction.CommitAsync(ct);
-                logger.LogInformation("QR attendance accepted for {StudentCode}, lesson {LessonCode}, challenge {ChallengeId}", Student, session.MaBuoiHoc, challenge.Id);
-                return (IActionResult)Ok(new { maSinhVien = Student, maBuoiHoc = session.MaBuoiHoc, trangThai = record.TrangThai, thoiGianCheckInUtc = record.ThoiGianCheckIn });
+                logger.LogInformation("QR attendance accepted for {StudentCode}, lesson {LessonCode}, challenge {ChallengeId}, location {Location}", Student, session.MaBuoiHoc, challenge.Id, viTri.KetQua);
+                return (IActionResult)Ok(new { maSinhVien = Student, maBuoiHoc = session.MaBuoiHoc, trangThai = record.TrangThai, thoiGianCheckInUtc = record.ThoiGianCheckIn,
+                    ketQuaViTri = viTri.KetQua.ToString(), khoangCachMet = viTri.KhoangCachMet is { } m ? Math.Round(m) : (double?)null, ghiChuViTri = viTri.LyDo });
             });
         }
         catch (FaceEvidenceException e)

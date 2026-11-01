@@ -9,6 +9,21 @@
     let liveRunning = false, captureRun = 0, guidanceTimer, poseGate;
 
     const message = (text, error = false) => { $('attendance-status').textContent = text; $('attendance-status').style.color = error ? '#b42318' : '#087443'; };
+
+    // Vị trí chỉ là thông tin kèm theo: từ chối quyền hay định vị hỏng thì vẫn
+    // điểm danh được, backend ghi lại là chưa xác minh.
+    function layViTri() {
+        if (!navigator.geolocation || !window.isSecureContext) return Promise.resolve(null);
+        return new Promise(resolve => {
+            navigator.geolocation.getCurrentPosition(
+                p => resolve({ viDo: p.coords.latitude, kinhDo: p.coords.longitude, doChinhXacMet: p.coords.accuracy }),
+                () => resolve(null),
+                { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 });
+        });
+    }
+    const ghiChuViTri = result => result.ketQuaViTri === 'NgoaiKhuonVien'
+        ? ` Lưu ý: vị trí của bạn cách cơ sở khoảng ${result.khoangCachMet} m, giảng viên sẽ thấy ghi chú này.`
+        : '';
     async function api(operation, body, params = {}) {
         const query = new URLSearchParams(params);
         const controller = new AbortController();
@@ -93,9 +108,10 @@
         try {
             if (Date.now() >= Date.parse(challenge.expiresAtUtc)) throw new Error('Lượt xác minh hết hạn. Hãy bắt đầu lại.');
             stopCamera(); message('Đang xác minh người thật và khuôn mặt…');
-            const result = await api(mode, { challengeId: challenge.challengeId, frames, consent: true, ...(mode === 'enroll' ? { storeReviewPhotosConsent: true } : {}) });
+            const viTri = mode === 'confirm' ? await layViTri() : null;
+            const result = await api(mode, { challengeId: challenge.challengeId, frames, consent: true, ...(viTri ? { viTri } : {}), ...(mode === 'enroll' ? { storeReviewPhotosConsent: true } : {}) });
             cancelCapture();
-            message(result.message || `Đã ghi nhận có mặt lúc ${new Date(result.thoiGianCheckInUtc).toLocaleTimeString('vi-VN')}.`);
+            message((result.message || `Đã ghi nhận có mặt lúc ${new Date(result.thoiGianCheckInUtc).toLocaleTimeString('vi-VN')}.`) + ghiChuViTri(result));
             if (mode === 'enroll') await loadProfile();
             if (mode === 'confirm') await loadHistory();
         } catch (e) { cancelCapture(); message(`${e.message} Hãy bắt đầu lại để lấy lượt xác minh mới.`, true); }

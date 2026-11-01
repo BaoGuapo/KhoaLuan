@@ -8,6 +8,7 @@ using QuanLySinhVien.Api.Contracts.Training;
 using QuanLySinhVien.Api.Services;
 
 if (args.Contains("--class-periods")) { ClassPeriodChecks.Run(); return; }
+if (args.Contains("--campus-location")) { CampusLocationChecks.Run(); return; }
 if (args.Contains("--cloudinary")) { await CloudinaryPhotoChecks.Run(); return; }
 if (args.Contains("--email")) { await EmailSenderChecks.Run(); return; }
 if (args.Contains("--attendance")) { await AttendanceChecks.Run(); return; }

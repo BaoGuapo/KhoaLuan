@@ -15,6 +15,7 @@ namespace QuanLySinhVien.Api.Controllers;
 public sealed class DiemDanhController(
     AppDbContext db,
     IFaceRecognitionService faces,
+    CampusLocationSettings campus,
     ILogger<DiemDanhController> logger) : ControllerBase
 {
     [HttpPost("buoi-hoc/{maBuoiHoc}/phien-diem-danh")]
@@ -76,7 +77,7 @@ public sealed class DiemDanhController(
         if (!await CanManageSessionAsync(maBuoiHoc, ct)) return Forbid();
         return Ok(await db.ChiTietDiemDanhs.AsNoTracking()
             .Where(x => x.MaBuoiHoc == maBuoiHoc)
-            .Select(x => new { x.MaSinhVien, x.SinhVien.HoTen, x.TrangThai, x.ThoiGianCheckIn })
+            .Select(x => new { x.MaSinhVien, x.SinhVien.HoTen, x.TrangThai, x.ThoiGianCheckIn, x.KetQuaViTri, x.KhoangCachMet })
             .ToListAsync(ct));
     }
 
@@ -209,19 +210,23 @@ public sealed class DiemDanhController(
             db.ChiTietDiemDanhs.Add(attendance);
         }
 
+        // Vị trí chỉ để ghi nhận và cảnh báo, không chặn điểm danh.
+        var viTri = CampusLocation.GhiNhanVao(attendance, campus, request.ViTri);
+
         if (!alreadyCheckedIn)
         {
             attendance.TrangThai = "CoMat";
             attendance.ThoiGianCheckIn = DateTime.UtcNow;
-            await db.SaveChangesAsync(ct);
         }
+        await db.SaveChangesAsync(ct);
 
         var checkedInAt = attendance.ThoiGianCheckIn ?? DateTime.UtcNow;
         logger.LogInformation(
-            "Student face check-in {Result} for student {StudentCode}, session {SessionCode}.",
+            "Student face check-in {Result} for student {StudentCode}, session {SessionCode}, location {Location}.",
             alreadyCheckedIn ? "already-recorded" : "recorded",
             match.Value.MaSinhVien,
-            maBuoiHoc);
+            maBuoiHoc,
+            viTri.KetQua);
 
         return Ok(new FaceAttendanceResponse(
             match.Value.MaSinhVien,
@@ -229,7 +234,10 @@ public sealed class DiemDanhController(
             maBuoiHoc,
             attendance.TrangThai,
             checkedInAt,
-            alreadyCheckedIn));
+            alreadyCheckedIn,
+            viTri.KetQua.ToString(),
+            viTri.KhoangCachMet is { } m ? Math.Round(m) : null,
+            viTri.LyDo));
     }
 
     private static string Hash(string value) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value)));
