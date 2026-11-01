@@ -1,0 +1,8 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>@ViewData["Title"] - Quản lý sinh viên</title><link rel="stylesheet" href="~/css/site.css" asp-append-version="true" /></head>
+<body>
+<header class="topbar"><a class="brand" asp-controller="Home" asp-action="Index"><span class="brand-mark">HUIT</span><span>Quản lý sinh viên</span></a>
+@if (User.Identity?.IsAuthenticated == true) { <nav><span>@User.Identity.Name</span>@if (User.IsInRole(RoleNames.Admin)) { <a asp-controller="Home" asp-action="Admin">Quản trị</a> } else if (User.IsInRole(RoleNames.CanBoQuanLy)) { <a asp-controller="Home" asp-action="CanBoQuanLy">Cán bộ quản lý</a> } else if (User.IsInRole(RoleNames.GiangVien)) { <a asp-controller="Home" asp-action="GiangVien">Giảng viên</a> } else if (User.IsInRole(RoleNames.SinhVien)) { <a asp-controller="Home" asp-action="SinhVien">Sinh viên</a> }<a asp-controller="Account" asp-action="ChangePassword">Đổi mật khẩu</a><form asp-controller="Account" asp-action="Logout" method="post"><button type="submit">Đăng xuất</button></form></nav> }
+</header><main class="container">@RenderBody()</main>
+</body></html>
