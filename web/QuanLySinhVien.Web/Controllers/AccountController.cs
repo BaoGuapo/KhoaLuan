@@ -1,6 +1,9 @@
 using System.Security.Claims;
+<<<<<<< HEAD
+=======
 using System.Text.Json;
 using System.Globalization;
+>>>>>>> origin/main
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -11,6 +14,14 @@ using QuanLySinhVien.Web.Services;
 namespace QuanLySinhVien.Web.Controllers;
 
 [Route("tai-khoan")]
+<<<<<<< HEAD
+public sealed class AccountController(IAuthApiClient authApi) : Controller
+{
+    [AllowAnonymous, HttpGet("dang-nhap")]
+    public IActionResult Login(string? returnUrl = null)
+    {
+        if (User.Identity?.IsAuthenticated == true) return RedirectToAction("Index", "Home");
+=======
 public sealed class AccountController(IAuthApiClient authApi, IFaceRecognitionApiClient faces) : Controller
 {
     public const string MustChangePasswordClaim = "must_change_password";
@@ -33,6 +44,7 @@ public sealed class AccountController(IAuthApiClient authApi, IFaceRecognitionAp
             await SignOutLocalAsync();
         }
         ClearPendingFace();
+>>>>>>> origin/main
         ViewData["ReturnUrl"] = returnUrl;
         return View(new LoginViewModel());
     }
@@ -56,6 +68,16 @@ public sealed class AccountController(IAuthApiClient authApi, IFaceRecognitionAp
             return View(model);
         }
 
+<<<<<<< HEAD
+        var claims = new List<Claim> { new(ClaimTypes.Name, auth.UserName) };
+        claims.AddRange(auth.Roles.Select(role => new Claim(ClaimTypes.Role, role)));
+        var principal = new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme));
+        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal,
+            new AuthenticationProperties { IsPersistent = model.RememberMe, ExpiresUtc = auth.AccessTokenExpiresAtUtc });
+        HttpContext.Session.SetString("AccessToken", auth.AccessToken);
+        HttpContext.Session.SetString("RefreshToken", auth.RefreshToken);
+        return LocalRedirect(Url.IsLocalUrl(returnUrl) ? returnUrl! : "/");
+=======
         if (!auth.MustChangePassword && auth.Roles.Contains(RoleNames.SinhVien))
         {
             ApiResult<FaceProfileMetadataModel> profile;
@@ -220,6 +242,7 @@ public sealed class AccountController(IAuthApiClient authApi, IFaceRecognitionAp
             return true;
         }
         catch (JsonException) { return false; }
+>>>>>>> origin/main
     }
 
     [Authorize, HttpGet("doi-mat-khau")]

@@ -17,12 +17,15 @@ public sealed class LoginViewModel
     public bool RememberMe { get; set; }
 }
 
+<<<<<<< HEAD
+=======
 public sealed class FaceVerificationViewModel
 {
     public string MaDangNhap { get; set; } = string.Empty;
     public string DescriptorsJson { get; set; } = string.Empty;
 }
 
+>>>>>>> origin/main
 public sealed class ChangePasswordViewModel
 {
     [Required, DataType(DataType.Password), Display(Name = "Mật khẩu hiện tại")]
@@ -36,6 +39,9 @@ public sealed class ChangePasswordViewModel
     public string ConfirmPassword { get; set; } = string.Empty;
 }
 
+<<<<<<< HEAD
+public sealed record AuthApiResponse(string AccessToken, string RefreshToken, DateTime AccessTokenExpiresAtUtc, string UserName, IReadOnlyCollection<string> Roles);
+=======
 public sealed record AuthApiResponse(
     string AccessToken,
     string RefreshToken,
@@ -44,3 +50,4 @@ public sealed record AuthApiResponse(
     string FullName,
     IReadOnlyCollection<string> Roles,
     bool MustChangePassword);
+>>>>>>> origin/main

@@ -32,9 +32,12 @@ try {
     if (-not (Test-Path 'mobile/quan_ly_sinh_vien_app/pubspec.yaml')) {
         flutter create mobile/quan_ly_sinh_vien_app
     }
+<<<<<<< HEAD
+=======
     elseif (-not (Test-Path 'mobile/quan_ly_sinh_vien_app/android')) {
         & 'mobile/quan_ly_sinh_vien_app/tool/bootstrap_platforms.ps1'
     }
+>>>>>>> origin/main
 
     $exampleSettingsSource = Join-Path $repositoryRoot 'backend/appsettings.example.json'
     $exampleSettingsDestination = Join-Path $repositoryRoot 'backend/QuanLySinhVien.Api/appsettings.example.json'

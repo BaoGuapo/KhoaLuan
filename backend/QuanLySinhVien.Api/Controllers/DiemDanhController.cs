@@ -3,27 +3,39 @@ using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+<<<<<<< HEAD
+using QuanLySinhVien.Api.Data;
+using QuanLySinhVien.Api.Models.Entities;
+=======
 using QuanLySinhVien.Api.Contracts.Faces;
 using QuanLySinhVien.Api.Data;
 using QuanLySinhVien.Api.Models.Entities;
 using QuanLySinhVien.Api.Services;
+>>>>>>> origin/main
 
 namespace QuanLySinhVien.Api.Controllers;
 
 [ApiController]
 [Route("api/v1")]
+<<<<<<< HEAD
+public sealed class DiemDanhController(AppDbContext db) : ControllerBase
+=======
 public sealed class DiemDanhController(
     AppDbContext db,
     IFaceRecognitionService faces,
     CampusLocationSettings campus,
     ILogger<DiemDanhController> logger) : ControllerBase
+>>>>>>> origin/main
 {
     [HttpPost("buoi-hoc/{maBuoiHoc}/phien-diem-danh")]
     [Authorize(Roles = RoleNames.GiangVien + "," + RoleNames.CanBoQuanLy + "," + RoleNames.Admin)]
     public async Task<ActionResult<object>> MoPhien(string maBuoiHoc, MoPhienRequest request, CancellationToken ct)
     {
         if (!await db.BuoiHocs.AnyAsync(x => x.MaBuoiHoc == maBuoiHoc, ct)) return NotFound();
+<<<<<<< HEAD
+=======
         if (!await CanManageSessionAsync(maBuoiHoc, ct)) return Forbid();
+>>>>>>> origin/main
         var qrToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)); var now = DateTime.UtcNow;
         var session = new PhienDiemDanh { MaBuoiHoc = maBuoiHoc, QrTokenHash = Hash(qrToken), MoLucUtc = now, HetHanLucUtc = now.AddMinutes(Math.Clamp(request.SoPhutHieuLuc, 1, 30)) };
         db.PhienDiemDanhs.Add(session); await db.SaveChangesAsync(ct);
@@ -35,7 +47,10 @@ public sealed class DiemDanhController(
     public async Task<IActionResult> DongPhien(Guid maPhien, CancellationToken ct)
     {
         var session = await db.PhienDiemDanhs.FindAsync([maPhien], ct); if (session is null) return NotFound();
+<<<<<<< HEAD
+=======
         if (!await CanManageSessionAsync(session.MaBuoiHoc, ct)) return Forbid();
+>>>>>>> origin/main
         session.DongLucUtc = DateTime.UtcNow; await db.SaveChangesAsync(ct); return NoContent();
     }
 
@@ -43,6 +58,11 @@ public sealed class DiemDanhController(
     [Authorize(Roles = RoleNames.GiangVien + "," + RoleNames.CanBoQuanLy + "," + RoleNames.Admin)]
     public async Task<IActionResult> DieuChinh(string maBuoiHoc, string maSinhVien, DieuChinhDiemDanhRequest request, CancellationToken ct)
     {
+<<<<<<< HEAD
+        var record = await db.ChiTietDiemDanhs.FindAsync([maBuoiHoc, maSinhVien], ct);
+        if (record is null) { record = new ChiTietDiemDanh { MaBuoiHoc = maBuoiHoc, MaSinhVien = maSinhVien }; db.ChiTietDiemDanhs.Add(record); }
+        record.TrangThai = request.TrangThai; record.ThoiGianCheckIn = request.ThoiGianCheckInUtc ?? DateTime.UtcNow;
+=======
         if (request.TrangThai is not ("CoMat" or "DiTre" or "CoPhep" or "Vang"))
             return BadRequest(new { message = "Trạng thái điểm danh không hợp lệ." });
         if (!await CanManageSessionAsync(maBuoiHoc, ct)) return Forbid();
@@ -66,11 +86,17 @@ public sealed class DiemDanhController(
         record.ThoiGianCheckIn = request.TrangThai is "CoMat" or "DiTre"
             ? request.ThoiGianCheckInUtc ?? DateTime.UtcNow
             : null;
+>>>>>>> origin/main
         await db.SaveChangesAsync(ct); return NoContent();
     }
 
     [HttpGet("buoi-hoc/{maBuoiHoc}/diem-danh")]
     [Authorize(Roles = RoleNames.GiangVien + "," + RoleNames.CanBoQuanLy + "," + RoleNames.Admin)]
+<<<<<<< HEAD
+    public async Task<ActionResult<object>> KetQua(string maBuoiHoc, CancellationToken ct) => Ok(await db.ChiTietDiemDanhs.AsNoTracking().Where(x => x.MaBuoiHoc == maBuoiHoc).Select(x => new { x.MaSinhVien, x.SinhVien.HoTen, x.TrangThai, x.ThoiGianCheckIn }).ToListAsync(ct));
+
+    private static string Hash(string value) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value)));
+=======
     public async Task<ActionResult<object>> KetQua(string maBuoiHoc, CancellationToken ct)
     {
         if (!await db.BuoiHocs.AnyAsync(x => x.MaBuoiHoc == maBuoiHoc, ct)) return NotFound();
@@ -250,6 +276,7 @@ public sealed class DiemDanhController(
             && await db.BuoiHocs.AnyAsync(x => x.MaBuoiHoc == maBuoiHoc
                 && x.LichHoc.LopHocPhan.MaGiangVien == lecturerCode, ct);
     }
+>>>>>>> origin/main
 }
 
 public sealed record MoPhienRequest(int SoPhutHieuLuc = 10);

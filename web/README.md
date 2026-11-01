@@ -1,7 +1,10 @@
 # QuanLySinhVien.Web
 
+<<<<<<< HEAD
+=======
 Đăng ký học phần theo học kỳ/đợt hiện tại, học mới/học lại/cải thiện/học vượt: xem [thiết kế, API và yêu cầu schema](../docs/DANG_KY_HOC_PHAN.md).
 
+>>>>>>> origin/main
 ASP.NET Core MVC cho nội dung tuần 6: đăng nhập, đăng xuất, đổi mật khẩu và phân quyền người dùng. Web không truy cập database; mọi thao tác xác thực đều gọi backend API.
 
 ## Chạy ứng dụng
@@ -22,6 +25,12 @@ JWT access token và refresh token được giữ trong session phía server; co
 - Đăng nhập bằng mã sinh viên, mã giảng viên hoặc mã tài khoản quản trị/cán bộ.
 - Đăng xuất và thu hồi refresh token.
 - Đổi mật khẩu; sau khi đổi phải đăng nhập lại.
+<<<<<<< HEAD
+- Phân quyền bốn role: `Admin`, `CanBoQuanLy`, `GiangVien`, `SinhVien`.
+- Điều hướng tới dashboard tương ứng và chặn truy cập chéo bằng authorization policy.
+
+Các nghiệp vụ quản lý hồ sơ, lớp học, lịch học, khuôn mặt, điểm danh, báo cáo và thông báo thuộc các tuần triển khai chức năng website tiếp theo, không nằm trong phạm vi tuần 6.
+=======
 - Tài khoản mới được chuyển bắt buộc tới trang đổi mật khẩu ở lần đăng nhập đầu tiên;
   các trang chức năng bị chặn cho đến khi đổi mật khẩu tạm thành công.
 - Phân quyền bốn role: `Admin`, `CanBoQuanLy`, `GiangVien`, `SinhVien`.
@@ -74,6 +83,7 @@ checksum ở `docs/FACE_MODELS.md`. Camera trình duyệt cần HTTPS hoặc loc
 Đây là quy trình demo có giảng viên giám sát: chưa có kiểm tra người thật/chống ảnh
 chụp (liveness) và chưa được hiệu chỉnh ngưỡng trên tập dữ liệu của trường.
 Các nghiệp vụ thông báo và báo cáo mở rộng thuộc các tuần triển khai tiếp theo.
+>>>>>>> origin/main
 
 ## Tài khoản kiểm thử Development
 
@@ -87,9 +97,12 @@ Các tài khoản này chỉ được backend seed khi chạy môi trường `De
 | SinhVien | `2001230048` | `SinhVien@123` |
 
 Không sử dụng các mật khẩu này ngoài môi trường phát triển.
+<<<<<<< HEAD
+=======
 
 ## Chương trình đào tạo, mở lớp và phân công
 
 Admin/CanBoQuanLy chọn **Đào tạo** hoặc vào `/dao-tao`. Luồng: nhập chương trình (form hoặc Excel xem trước) → áp dụng học kỳ → mở nhiều lớp cùng môn → phân công giảng viên/lịch học → mở đăng ký. Hướng dẫn đầy đủ và migration tại [backend/TRAINING-WORKFLOW.md](../backend/TRAINING-WORKFLOW.md).
 
 Development có sẵn ngành `DEMO-CNTT`, khóa `DEMO-K2026`, chương trình HK1 và 8 lớp cùng môn `DEMO-LTCB-01`…`-08`. Lớp 01 mở đăng ký, lớp 02 đã phân công nhưng đóng đăng ký, lớp 03–08 chờ phân công. Tài khoản `DEMO-GV01` và `DEMO-SV01` dùng mật khẩu ban đầu `Demo@12345`, bắt buộc đổi lần đầu; seed không reset mật khẩu đã đổi. Xem kịch bản chi tiết trong hướng dẫn trên.
+>>>>>>> origin/main

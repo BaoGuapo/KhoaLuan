@@ -1,12 +1,18 @@
+<<<<<<< HEAD
+using Microsoft.AspNetCore.Authentication.Cookies;
+=======
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.FileProviders;
+>>>>>>> origin/main
 using QuanLySinhVien.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
+<<<<<<< HEAD
+=======
 builder.Services.AddHttpClient("Attendance", client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["BackendApi:BaseUrl"] ?? throw new InvalidOperationException("BackendApi:BaseUrl is missing."));
@@ -29,6 +35,7 @@ builder.Services.AddHttpClient<AttendanceReportApiClient>(client =>
         ?? throw new InvalidOperationException("BackendApi:BaseUrl is missing."));
     client.Timeout = TimeSpan.FromSeconds(30);
 });
+>>>>>>> origin/main
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
@@ -60,6 +67,8 @@ builder.Services.AddHttpClient<IAuthApiClient, AuthApiClient>(client =>
     client.BaseAddress = new Uri(baseUrl);
     client.Timeout = TimeSpan.FromSeconds(30);
 });
+<<<<<<< HEAD
+=======
 builder.Services.AddHttpClient<IUserManagementApiClient, UserManagementApiClient>(client =>
 {
     var baseUrl = builder.Configuration["BackendApi:BaseUrl"]
@@ -81,6 +90,7 @@ builder.Services.AddHttpClient<IFaceRecognitionApiClient, FaceRecognitionApiClie
     client.BaseAddress = new Uri(baseUrl);
     client.Timeout = TimeSpan.FromSeconds(30);
 });
+>>>>>>> origin/main
 
 var app = builder.Build();
 
@@ -91,6 +101,12 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+<<<<<<< HEAD
+app.UseStaticFiles();
+app.UseRouting();
+app.UseSession();
+app.UseAuthentication();
+=======
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(Path.Combine(app.Environment.WebRootPath, "models", "face")),
@@ -131,6 +147,7 @@ app.Use(async (context, next) =>
 
     await next();
 });
+>>>>>>> origin/main
 app.UseAuthorization();
 app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
 app.Run();

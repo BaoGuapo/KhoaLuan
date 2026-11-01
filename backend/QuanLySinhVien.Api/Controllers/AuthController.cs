@@ -1,17 +1,25 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+<<<<<<< HEAD
+using QuanLySinhVien.Api.Contracts.Auth;
+=======
 using Microsoft.AspNetCore.RateLimiting;
 using QuanLySinhVien.Api.Contracts.Auth;
 using QuanLySinhVien.Api.Contracts.Faces;
 using QuanLySinhVien.Api.Models.Entities;
+>>>>>>> origin/main
 using QuanLySinhVien.Api.Services;
 
 namespace QuanLySinhVien.Api.Controllers;
 
 [ApiController]
 [Route("api/auth")]
+<<<<<<< HEAD
+public sealed class AuthController(IAuthService authService) : ControllerBase
+=======
 public sealed class AuthController(IAuthService authService, IFaceRecognitionService faces) : ControllerBase
+>>>>>>> origin/main
 {
     [AllowAnonymous]
     [HttpPost("login")]
@@ -21,6 +29,8 @@ public sealed class AuthController(IAuthService authService, IFaceRecognitionSer
         return response is null ? Unauthorized(new { message = "Invalid credentials." }) : Ok(response);
     }
 
+<<<<<<< HEAD
+=======
     [Authorize(Roles = RoleNames.SinhVien)]
     [EnableRateLimiting("face-login")]
     [RequestSizeLimit(64 * 1024)]
@@ -39,6 +49,7 @@ public sealed class AuthController(IAuthService authService, IFaceRecognitionSer
             : Unauthorized(new { code = "FaceNotMatched", message = "Khuôn mặt không khớp hồ sơ đã đăng ký." });
     }
 
+>>>>>>> origin/main
     [Authorize]
     [HttpPost("change-password")]
     public async Task<IActionResult> ChangePassword(ChangePasswordRequest request, CancellationToken cancellationToken)
