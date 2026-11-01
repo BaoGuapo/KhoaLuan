@@ -94,6 +94,7 @@ public sealed class AuthService(AppDbContext db, IOptions<JwtSettings> jwtOption
             refreshToken,
             expiresAt,
             user.UserName,
+            user.FullName,
             roles,
             user.MustChangePassword);
     }

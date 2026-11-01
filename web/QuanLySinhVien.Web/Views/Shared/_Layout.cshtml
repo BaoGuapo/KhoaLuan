@@ -52,7 +52,10 @@
         <button class="nav-toggle" type="button" aria-controls="primary-nav" aria-expanded="false" aria-label="Mở menu tài khoản" data-nav-toggle>Tài khoản</button>
         <nav id="primary-nav" aria-label="Tài khoản">
             @* Các mục chức năng nằm ở thanh bên, thanh trên chỉ giữ tên tài khoản và nút đăng xuất. *@
-            <span>@User.Identity!.Name</span>
+            <span class="pt-user">
+                <span class="pt-avatar" aria-hidden="true">@User.ChuDaiDien()<img src="@User.AnhDaiDien()" alt="" loading="lazy" referrerpolicy="no-referrer" /></span>
+                @User.TenHienThi()
+            </span>
             <form asp-controller="Account" asp-action="Logout" method="post">
                 <button type="submit">Đăng xuất</button>
             </form>

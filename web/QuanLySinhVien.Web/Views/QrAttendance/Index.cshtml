@@ -21,7 +21,7 @@
     }
     else if (!enrollment)
     {
-        <section class="panel section-gap" id="scan-section"><h2>1. Quét QR của giảng viên</h2><p>Tài khoản đang đăng nhập: <strong>@User.Identity?.Name</strong></p>
+        <section class="panel section-gap" id="scan-section"><h2>1. Quét QR của giảng viên</h2><p>Tài khoản đang đăng nhập: <strong>@User.TenHienThi()</strong> (@User.MaDangNhap())</p>
         <button id="scan-qr" class="button primary-link" type="button">Mở camera quét QR</button>
         <p><a href="/diem-danh/ho-so">Đăng ký hoặc xem hồ sơ khuôn mặt</a></p></section>
     }

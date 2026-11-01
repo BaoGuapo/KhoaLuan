@@ -17,6 +17,7 @@ public sealed class AccountController(IAuthApiClient authApi, IFaceRecognitionAp
     private const string PendingFaceAccessToken = "PendingFaceAccessToken";
     private const string PendingFaceRefreshToken = "PendingFaceRefreshToken";
     private const string PendingFaceUserName = "PendingFaceUserName";
+    private const string PendingFaceFullName = "PendingFaceFullName";
     private const string PendingFaceExpiresAt = "PendingFaceExpiresAt";
     private const string PendingFaceStartedAt = "PendingFaceStartedAt";
     private const string PendingFaceRememberMe = "PendingFaceRememberMe";
@@ -80,6 +81,7 @@ public sealed class AccountController(IAuthApiClient authApi, IFaceRecognitionAp
                 HttpContext.Session.SetString(PendingFaceAccessToken, auth.AccessToken);
                 HttpContext.Session.SetString(PendingFaceRefreshToken, auth.RefreshToken);
                 HttpContext.Session.SetString(PendingFaceUserName, auth.UserName);
+                HttpContext.Session.SetString(PendingFaceFullName, auth.FullName);
                 HttpContext.Session.SetString(PendingFaceExpiresAt, auth.AccessTokenExpiresAtUtc.ToString("O"));
                 HttpContext.Session.SetString(PendingFaceStartedAt, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString());
                 HttpContext.Session.SetString(PendingFaceRememberMe, model.RememberMe ? "1" : "0");
@@ -149,6 +151,7 @@ public sealed class AccountController(IAuthApiClient authApi, IFaceRecognitionAp
             HttpContext.Session.GetString(PendingFaceRefreshToken)!,
             DateTimeOffset.Parse(HttpContext.Session.GetString(PendingFaceExpiresAt)!, CultureInfo.InvariantCulture).UtcDateTime,
             model.MaDangNhap,
+            HttpContext.Session.GetString(PendingFaceFullName) ?? string.Empty,
             [RoleNames.SinhVien],
             false);
         var rememberMe = HttpContext.Session.GetString(PendingFaceRememberMe) == "1";
@@ -171,6 +174,8 @@ public sealed class AccountController(IAuthApiClient authApi, IFaceRecognitionAp
     private async Task SignInLocalAsync(AuthApiResponse auth, bool rememberMe)
     {
         var claims = new List<Claim> { new(ClaimTypes.Name, auth.UserName) };
+        if (!string.IsNullOrWhiteSpace(auth.FullName))
+            claims.Add(new Claim(UserDisplay.FullNameClaim, auth.FullName));
         claims.AddRange(auth.Roles.Select(role => new Claim(ClaimTypes.Role, role)));
         claims.Add(new Claim(MustChangePasswordClaim, auth.MustChangePassword.ToString().ToLowerInvariant()));
         var principal = new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme));
@@ -197,7 +202,7 @@ public sealed class AccountController(IAuthApiClient authApi, IFaceRecognitionAp
     private void ClearPendingFace()
     {
         var session = HttpContext.Session;
-        foreach (var key in new[] { PendingFaceAccessToken, PendingFaceRefreshToken, PendingFaceUserName,
+        foreach (var key in new[] { PendingFaceAccessToken, PendingFaceRefreshToken, PendingFaceUserName, PendingFaceFullName,
                      PendingFaceExpiresAt, PendingFaceStartedAt, PendingFaceRememberMe, PendingFaceReturnUrl })
             session.Remove(key);
     }

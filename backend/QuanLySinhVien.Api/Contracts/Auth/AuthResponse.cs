@@ -5,5 +5,6 @@ public sealed record AuthResponse(
     string RefreshToken,
     DateTime AccessTokenExpiresAtUtc,
     string UserName,
+    string FullName,
     IReadOnlyCollection<string> Roles,
     bool MustChangePassword);

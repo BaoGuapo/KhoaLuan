@@ -50,8 +50,6 @@
     }
     items.Add(("Account", "ChangePassword", "Đổi mật khẩu", "↳"));
 
-    var vaiTro = quanLy ? (admin ? "Tài khoản quản trị" : "Tài khoản cán bộ quản lý")
-        : giangVien ? "Tài khoản giảng viên" : "Tài khoản sinh viên";
 }
 <aside class="pt-sidebar">
     <div class="pt-sidebar-title">@title</div>
@@ -64,5 +62,9 @@
         <a asp-controller="@item.Controller" asp-action="@item.Action" class="@(active ? "is-current" : null)" aria-current="@(active ? "page" : null)"><span aria-hidden="true">@item.Glyph</span>@item.Label</a>
     }
     </nav>
-    <div class="pt-sidebar-note">@vaiTro<br /><strong>@User.Identity?.Name</strong></div>
+    <div class="pt-sidebar-note">
+        <span class="pt-avatar" aria-hidden="true">@User.ChuDaiDien()<img src="@User.AnhDaiDien()" alt="" loading="lazy" referrerpolicy="no-referrer" /></span>
+        @* Tên đứng trước, mã đăng nhập để bên dưới vì vẫn cần khi tra cứu. *@
+        <div><strong>@User.TenHienThi()</strong>@User.MaDangNhap()</div>
+    </div>
 </aside>

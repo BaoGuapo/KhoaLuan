@@ -41,5 +41,6 @@ public sealed record AuthApiResponse(
     string RefreshToken,
     DateTime AccessTokenExpiresAtUtc,
     string UserName,
+    string FullName,
     IReadOnlyCollection<string> Roles,
     bool MustChangePassword);
