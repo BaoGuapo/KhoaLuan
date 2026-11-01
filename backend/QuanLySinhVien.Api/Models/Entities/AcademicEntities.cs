@@ -12,6 +12,36 @@ public sealed class SinhVien
     public string? SoDienThoai { get; set; }
     public string Email { get; set; } = string.Empty;
     public bool TrangThaiTaiKhoan { get; set; } = true;
+<<<<<<< HEAD
+=======
+    public string? AnhDaiDien { get; set; }
+    public string? GioiTinh { get; set; }
+    public DateTime? NgaySinh { get; set; }
+    public string? NoiSinh { get; set; }
+    public string? DanToc { get; set; }
+    public string? TonGiao { get; set; }
+    public string? QuocTich { get; set; }
+    public string? KhuVuc { get; set; }
+    public string? SoCCCD { get; set; }
+    public DateTime? NgayCapCCCD { get; set; }
+    public string? NoiCapCCCD { get; set; }
+    public string? DiaChiLienHe { get; set; }
+    public string? HoKhauThuongTru { get; set; }
+    public string? MaHoSo { get; set; }
+    public DateTime? NgayVaoTruong { get; set; }
+    public string? LopHoc { get; set; }
+    public string? CoSo { get; set; }
+    public string? BacDaoTao { get; set; }
+    public string? LoaiHinhDaoTao { get; set; }
+    public string? Khoa { get; set; }
+    public string? Nganh { get; set; }
+    public string? ChuyenNganh { get; set; }
+    public string? KhoaHoc { get; set; }
+    public string? DoiTuong { get; set; }
+    public string? DienChinhSach { get; set; }
+    public DateTime? NgayVaoDoan { get; set; }
+    public DateTime? NgayVaoDang { get; set; }
+>>>>>>> origin/main
     public ICollection<DanhSachSinhVienLop> DangKyLop { get; set; } = new List<DanhSachSinhVienLop>();
     public HoSoKhuonMat? HoSoKhuonMat { get; set; }
 }
@@ -24,6 +54,30 @@ public sealed class GiangVien
     public string MatKhauLegacy { get; set; } = string.Empty;
     public string HoTen { get; set; } = string.Empty;
     public bool TrangThaiTaiKhoan { get; set; } = true;
+<<<<<<< HEAD
+=======
+    public string? SoDienThoai { get; set; }
+    public string? Email { get; set; }
+    public string? AnhDaiDien { get; set; }
+    public string? GioiTinh { get; set; }
+    public DateTime? NgaySinh { get; set; }
+    public string? NoiSinh { get; set; }
+    public string? DanToc { get; set; }
+    public string? TonGiao { get; set; }
+    public string? QuocTich { get; set; }
+    public string? SoCCCD { get; set; }
+    public DateTime? NgayCapCCCD { get; set; }
+    public string? NoiCapCCCD { get; set; }
+    public string? DiaChiLienHe { get; set; }
+    public string? HoKhauThuongTru { get; set; }
+    public DateTime? NgayBatDauCongTac { get; set; }
+    public string? CoSo { get; set; }
+    public string? Khoa { get; set; }
+    public string? ChuyenNganh { get; set; }
+    public string? TrinhDoHocVan { get; set; }
+    public string? ChucDanh { get; set; }
+    public DateTime? NgayVaoDang { get; set; }
+>>>>>>> origin/main
 }
 
 public sealed class MonHoc
@@ -38,9 +92,15 @@ public sealed class HocKyThucTe
 {
     public string MaHocKy { get; set; } = string.Empty;
     public string TenHocKy { get; set; } = string.Empty;
+<<<<<<< HEAD
     public string LoaiHocKy { get; set; } = string.Empty;
     public DateTime NgayBatDau { get; set; }
     public DateTime NgayKetThuc { get; set; }
+=======
+    public string LoaiHocKy { get; set; } = "0";
+    public DateTime? NgayBatDau { get; set; }
+    public DateTime? NgayKetThuc { get; set; }
+>>>>>>> origin/main
 }
 
 public sealed class PhongHoc
@@ -58,7 +118,11 @@ public sealed class LopHocPhan
     public string MaHocKy { get; set; } = string.Empty;
     public string MaGiangVien { get; set; } = string.Empty;
     public int SiSoToiDa { get; set; }
+<<<<<<< HEAD
     public string TrangThai { get; set; } = string.Empty;
+=======
+    public string TrangThai { get; set; } = "1";
+>>>>>>> origin/main
     public MonHoc MonHoc { get; set; } = null!;
     public GiangVien GiangVien { get; set; } = null!;
     public ICollection<LichHoc> LichHocs { get; set; } = new List<LichHoc>();
@@ -67,6 +131,10 @@ public sealed class LopHocPhan
 
 public sealed class DanhSachSinhVienLop
 {
+<<<<<<< HEAD
+=======
+    public string LoaiDangKy { get; set; } = "moi";
+>>>>>>> origin/main
     public string MaSinhVien { get; set; } = string.Empty;
     public string MaLopHocPhan { get; set; } = string.Empty;
     public DateTime ThoiGianDangKy { get; set; }
@@ -106,12 +174,35 @@ public sealed class ChiTietDiemDanh
     public string MaSinhVien { get; set; } = string.Empty;
     public DateTime? ThoiGianCheckIn { get; set; }
     public string TrangThai { get; set; } = "Vang";
+<<<<<<< HEAD
+=======
+
+    // Vị trí lúc điểm danh. Null khi thiết bị không gửi hoặc điểm danh thủ công.
+    public double? ViDo { get; set; }
+    public double? KinhDo { get; set; }
+    public double? DoChinhXacMet { get; set; }
+    public double? KhoangCachMet { get; set; }
+    /// <summary>"TrongKhuonVien", "NgoaiKhuonVien" hoặc null khi chưa xác minh được.</summary>
+    public string? KetQuaViTri { get; set; }
+
+>>>>>>> origin/main
     public BuoiHoc BuoiHoc { get; set; } = null!;
     public SinhVien SinhVien { get; set; } = null!;
 }
 
 public sealed class HoSoKhuonMat
 {
+<<<<<<< HEAD
+=======
+    public string? RegistrationPhotosProtected { get; set; }
+    public Guid? ReviewVersion { get; set; }
+    public DateTime? RejectedAtUtc { get; set; }
+    public string? RejectedBy { get; set; }
+    public string? RejectionReason { get; set; }
+    public string? ReviewNote { get; set; }
+    public DateTime? ApprovedAtUtc { get; set; }
+    public string? ApprovedBy { get; set; }
+>>>>>>> origin/main
     public string MaHoSo { get; set; } = string.Empty;
     public string MaSinhVien { get; set; } = string.Empty;
     public string VectorJson { get; set; } = string.Empty;

@@ -1,0 +1,28 @@
+@model IReadOnlyCollection<GiangVienModel>
+@{ ViewData["Title"] = "Quản lý giảng viên"; }
+<div class="page-heading"><div><p class="eyebrow blue">GIẢNG VIÊN</p><h1>Quản lý giảng viên</h1><p>Hồ sơ, khoa – chuyên ngành, tài khoản và phân công giảng dạy.</p></div><a class="button primary-link" asp-action="CreateLecturer">Thêm giảng viên</a></div>
+<nav class="management-tabs" aria-label="Các mục quản lý người dùng"><a asp-action="Index">Tài khoản</a><a asp-action="Students">Hồ sơ sinh viên</a><a class="active" aria-current="page" asp-action="Lecturers">Hồ sơ giảng viên</a></nav>
+<form method="get" class="filter-bar lecturer-filter">
+    <div class="filter-field"><label for="lecturer-search">Tìm giảng viên</label><input id="lecturer-search" name="search" value="@ViewData["Search"]" placeholder="Mã hoặc họ tên" /></div>
+    <div class="filter-field"><label for="lecturer-department">Khoa</label><input id="lecturer-department" name="khoa" value="@ViewData["Khoa"]" placeholder="Tên khoa" /></div>
+    <div class="filter-field"><label for="lecturer-major">Chuyên ngành</label><input id="lecturer-major" name="chuyenNganh" value="@ViewData["ChuyenNganh"]" placeholder="Tên chuyên ngành" /></div>
+    <div class="filter-actions"><button class="button primary-link" type="submit">Áp dụng</button><a class="button secondary" asp-action="Lecturers">Xóa lọc</a></div>
+</form>
+<p class="result-count" role="status">@Model.Count hồ sơ giảng viên phù hợp</p>
+<div class="table-card" role="region" aria-label="Danh sách giảng viên" tabindex="0"><table><thead><tr><th scope="col">Mã giảng viên</th><th scope="col">Giảng viên</th><th scope="col">Khoa – chuyên ngành</th><th scope="col">Tài khoản</th><th scope="col">Thao tác</th></tr></thead><tbody>
+@foreach (var item in Model)
+{
+    <tr>
+        <td><strong>@item.MaGiangVien</strong><small>@(item.TrangThaiTaiKhoan ? "Đang hoạt động" : "Đã khóa")</small></td>
+        <td>@item.HoTen<small>@(item.Email ?? "Chưa cập nhật email")</small></td>
+        <td>@(item.Khoa ?? "Chưa cập nhật khoa")<small>@(item.ChuyenNganh ?? "Chưa cập nhật chuyên ngành")</small></td>
+        <td>@if (item.UserId.HasValue) { <span class="badge badge-success">Đã cấp</span> } else { <span class="badge badge-warning">Chưa cấp</span> }</td>
+        <td class="actions">
+            <a asp-action="EditLecturer" asp-route-code="@item.MaGiangVien">Sửa hồ sơ</a>
+            <a asp-action="TeachingAssignment" asp-route-code="@item.MaGiangVien">Phân công</a>
+            @if (!item.UserId.HasValue) { <a asp-action="ProvisionLecturer" asp-route-code="@item.MaGiangVien">Cấp tài khoản</a> }
+        </td>
+    </tr>
+}
+@if (Model.Count == 0) { <tr><td colspan="5" class="empty-state">Chưa có giảng viên phù hợp bộ lọc.</td></tr> }
+</tbody></table></div>

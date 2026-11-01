@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="vi">
 <head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>@ViewData["Title"] - Quản lý sinh viên</title><link rel="stylesheet" href="~/css/site.css" asp-append-version="true" /></head>
@@ -6,3 +7,91 @@
 @if (User.Identity?.IsAuthenticated == true) { <nav><span>@User.Identity.Name</span>@if (User.IsInRole(RoleNames.Admin)) { <a asp-controller="Home" asp-action="Admin">Quản trị</a> } else if (User.IsInRole(RoleNames.CanBoQuanLy)) { <a asp-controller="Home" asp-action="CanBoQuanLy">Cán bộ quản lý</a> } else if (User.IsInRole(RoleNames.GiangVien)) { <a asp-controller="Home" asp-action="GiangVien">Giảng viên</a> } else if (User.IsInRole(RoleNames.SinhVien)) { <a asp-controller="Home" asp-action="SinhVien">Sinh viên</a> }<a asp-controller="Account" asp-action="ChangePassword">Đổi mật khẩu</a><form asp-controller="Account" asp-action="Logout" method="post"><button type="submit">Đăng xuất</button></form></nav> }
 </header><main class="container">@RenderBody()</main>
 </body></html>
+=======
+@{
+    // Mọi role đã đăng nhập đều dùng chung bố cục cổng thông tin: thanh trên + thanh điều hướng bên trái.
+    // Các trang đứng riêng (đăng nhập, xác thực khuôn mặt, báo lỗi) không có thanh điều hướng.
+    var portal = User.Identity?.IsAuthenticated == true && ViewData["Standalone"] is not true;
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - Quản lý sinh viên</title>
+    @if (ViewData["UseBootstrap"] is true)
+    {
+        <link rel="stylesheet" href="~/vendor/bootstrap/css/bootstrap.min.css" asp-append-version="true" />
+        <link rel="stylesheet" href="~/vendor/bootstrap-icons/font/bootstrap-icons.min.css" asp-append-version="true" />
+        <script src="~/vendor/bootstrap/js/bootstrap.bundle.min.js" asp-append-version="true"></script>
+    }
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @if (portal)
+    {
+        <link rel="stylesheet" href="~/css/portal.css" asp-append-version="true" />
+    }
+</head>
+<body class="@(portal ? "portal" : null)">
+<a class="skip-link" href="#main-content">Bỏ qua điều hướng</a>
+<div class="toast-region" aria-live="polite" aria-atomic="true">
+    @if (TempData["Success"] is string success)
+    {
+        <div class="toast toast-success" role="status" data-toast>
+            <span class="toast-icon" aria-hidden="true">✓</span>
+            <div><strong>Thành công</strong><p>@success</p></div>
+            <button type="button" class="toast-close" aria-label="Đóng thông báo">×</button>
+            <span class="toast-progress" aria-hidden="true"></span>
+        </div>
+    }
+    @if (TempData["Error"] is string error)
+    {
+        <div class="toast toast-error" role="alert" data-toast>
+            <span class="toast-icon" aria-hidden="true">!</span>
+            <div><strong>Không thể thực hiện</strong><p>@error</p></div>
+            <button type="button" class="toast-close" aria-label="Đóng thông báo">×</button>
+            <span class="toast-progress" aria-hidden="true"></span>
+        </div>
+    }
+</div>
+<header class="topbar">
+    <a class="brand" asp-controller="Home" asp-action="Index">
+        <span class="brand-mark">HUIT</span><span>Quản lý sinh viên</span>
+    </a>
+    @if (portal)
+    {
+        <button class="nav-toggle" type="button" aria-controls="primary-nav" aria-expanded="false" aria-label="Mở menu tài khoản" data-nav-toggle>Tài khoản</button>
+        <nav id="primary-nav" aria-label="Tài khoản">
+            @* Các mục chức năng nằm ở thanh bên, thanh trên chỉ giữ tên tài khoản và nút đăng xuất. *@
+            <span class="pt-user">
+                <span class="pt-avatar" aria-hidden="true">@User.ChuDaiDien()<img src="@User.AnhDaiDien()" alt="" loading="lazy" referrerpolicy="no-referrer" /></span>
+                @User.TenHienThi()
+            </span>
+            <form asp-controller="Account" asp-action="Logout" method="post">
+                <button type="submit">Đăng xuất</button>
+            </form>
+        </nav>
+    }
+</header>
+@if (portal)
+{
+    <div class="pt-shell">
+        <partial name="_PortalNavigation" />
+        <main id="main-content" class="pt-content" tabindex="-1">@RenderBody()</main>
+    </div>
+}
+else
+{
+    <main id="main-content" class="container" tabindex="-1">@RenderBody()</main>
+}
+<dialog class="confirm-dialog" data-confirm-dialog aria-labelledby="confirm-title" aria-describedby="confirm-message">
+    <h2 id="confirm-title">Xác nhận thao tác</h2>
+    <p id="confirm-message" data-confirm-message></p>
+    <div class="confirm-actions">
+        <button class="button secondary" type="button" data-confirm-cancel>Hủy</button>
+        <button class="button primary-link" type="button" data-confirm-accept>Tiếp tục</button>
+    </div>
+</dialog>
+<script src="~/js/site.js" asp-append-version="true"></script>
+</body>
+</html>
+>>>>>>> origin/main

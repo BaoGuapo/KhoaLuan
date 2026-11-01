@@ -1,0 +1,100 @@
+@model LecturerClassWorkspaceModel
+@{
+    ViewData["Title"] = "Quản lý lớp học phần";
+    var selected = Model.BuoiHoc.FirstOrDefault(x => x.MaBuoiHoc == Model.MaBuoiHocDangChon);
+    var moLuc = Model.MoDiemDanhLuc?.ToString("HH:mm");
+    var dongLuc = Model.DongDiemDanhLuc?.ToString("HH:mm");
+}
+<div class="page-heading">
+    <div><p class="eyebrow blue">LỚP PHỤ TRÁCH</p><h1>@Model.LopHocPhan.TenMonHoc</h1><p>@Model.LopHocPhan.MaLopHocPhan · @Model.LopHocPhan.TenHocKy · @Model.LopHocPhan.MaPhong</p></div>
+    <div class="heading-actions">
+        <a class="button secondary" asp-action="LichSuDiemDanh" asp-route-maLop="@Model.LopHocPhan.MaLopHocPhan">Lịch sử điểm danh</a>
+        <a class="button secondary" asp-action="LichGiangDay">Quay lại lịch dạy</a>
+    </div>
+</div>
+
+<section class="class-overview">
+    <article><span>Lịch dạy</span><strong>@(Model.LopHocPhan.ThuTrongTuan == 8 ? "Chủ nhật" : $"Thứ {Model.LopHocPhan.ThuTrongTuan}")</strong><small>Tiết @Model.LopHocPhan.TietBatDau - @Model.LopHocPhan.TietKetThuc · @Model.KhungGioTiet</small></article>
+    <article><span>Phòng học</span><strong>@Model.LopHocPhan.MaPhong</strong><small>@Model.LopHocPhan.TenPhong</small></article>
+    <article><span>Sĩ số</span><strong>@Model.LopHocPhan.SiSoHienTai/@Model.LopHocPhan.SiSoToiDa</strong><small>Sinh viên đã đăng ký</small></article>
+    <article><span>Số buổi học</span><strong>@Model.BuoiHoc.Count</strong><small>@Model.BuoiHoc.Count(x => x.DaChot) buổi đã chốt</small></article>
+</section>
+
+<section class="panel section-gap">
+    <h2>Điểm danh buổi hôm nay</h2>
+
+    @if (selected is null)
+    {
+        <div class="attendance-window closed"><strong>Hôm nay lớp không có buổi học theo lịch.</strong><span>Lớp dạy @(Model.LopHocPhan.ThuTrongTuan == 8 ? "chủ nhật" : $"thứ {Model.LopHocPhan.ThuTrongTuan}") hằng tuần, @Model.KhungGioTiet.</span></div>
+        <p class="section-help">Xem kết quả các buổi đã diễn ra ở <a asp-action="LichSuDiemDanh" asp-route-maLop="@Model.LopHocPhan.MaLopHocPhan">lịch sử điểm danh</a>.</p>
+    }
+    else
+    {
+        <div class="attendance-window @(Model.CoTheDiemDanh ? "open" : "closed")">
+            @if (Model.CoTheDiemDanh)
+            {
+                <strong>Đang mở điểm danh — buổi ngày @selected.NgayHocCuThe.ToString("dd/MM/yyyy")</strong>
+                <span>Nhận điểm danh đến @dongLuc, khi hết tiết @Model.LopHocPhan.TietKetThuc.</span>
+            }
+            else
+            {
+                <strong>@Model.LyDoKhongDiemDanh</strong>
+                @if (moLuc is not null && dongLuc is not null) { <span>Khung giờ điểm danh của buổi này: @moLuc – @dongLuc.</span> }
+            }
+        </div>
+
+        <div class="attendance-toolbar">
+            <div class="session-summary"><span class="muted">Buổi ngày</span><strong>@selected.NgayHocCuThe.ToString("dd/MM/yyyy")</strong>@if (selected.DaChot) { <span class="badge badge-success">Đã chốt</span> } else { <span class="badge badge-warning">Chưa chốt</span> }</div>
+            @if (Model.CoTheDiemDanh)
+            {
+                <div class="toolbar-actions">
+                    <a class="button primary-link" asp-controller="QrAttendance" asp-action="Index" asp-route-maBuoiHoc="@selected.MaBuoiHoc">Mở điểm danh QR</a>
+                    <form method="post" asp-action="ChotDiemDanh" data-confirm="Chốt điểm danh buổi @selected.NgayHocCuThe.ToString("dd/MM/yyyy")? Sau khi chốt, bạn không thể chỉnh sửa kết quả buổi này."><input type="hidden" name="maLop" value="@Model.LopHocPhan.MaLopHocPhan" /><input type="hidden" name="maBuoiHoc" value="@selected.MaBuoiHoc" /><button class="button success-button" type="submit">Chốt điểm danh</button></form>
+                </div>
+            }
+            else if (!selected.DaChot && selected.NgayHocCuThe.Date <= DateTime.Today)
+            {
+                <form method="post" asp-action="ChotDiemDanh" data-confirm="Chốt điểm danh buổi @selected.NgayHocCuThe.ToString("dd/MM/yyyy")? Sinh viên chưa điểm danh sẽ được ghi là vắng."><input type="hidden" name="maLop" value="@Model.LopHocPhan.MaLopHocPhan" /><input type="hidden" name="maBuoiHoc" value="@selected.MaBuoiHoc" /><button class="button success-button" type="submit">Chốt điểm danh</button></form>
+            }
+        </div>
+
+        <p class="section-help">@(Model.CoTheDiemDanh ? "Chọn trạng thái cho từng sinh viên rồi bấm Lưu. Chỉ chốt buổi học sau khi đã kiểm tra toàn bộ danh sách." : "Buổi học này chỉ xem được, không sửa được trạng thái điểm danh.")</p>
+        <div class="table-card" role="region" aria-label="Điểm danh sinh viên" tabindex="0"><table><thead><tr><th scope="col">Sinh viên</th><th scope="col">Liên hệ</th><th scope="col">Trạng thái buổi này</th>@if (Model.CoTheDiemDanh) { <th scope="col">Thao tác</th> }</tr></thead><tbody>
+        @foreach (var item in Model.SinhVien)
+        {
+            <tr>
+                <td><strong>@item.MaSinhVien</strong><small>@item.HoTen</small></td>
+                <td>@item.Email<small>@(item.SoDienThoai ?? "Chưa có SĐT")</small></td>
+                <td><span class="badge @AttendanceBadge(item.TrangThaiBuoiHoc)">@AttendanceLabel(item.TrangThaiBuoiHoc)</span>@if (item.ThoiGianCheckIn.HasValue) { <small>@item.ThoiGianCheckIn.Value.ToLocalTime().ToString("HH:mm dd/MM")</small> }@if (item.KetQuaViTri == "NgoaiKhuonVien") { <span class="badge badge-warning" title="GPS chỉ xác định được là ngoài khuôn viên, không phân biệt được phòng học. Hãy tự kiểm tra lại.">Ngoài khuôn viên@(item.KhoangCachMet.HasValue ? $" · {item.KhoangCachMet.Value:0} m" : "")</span>}</td>
+                @if (Model.CoTheDiemDanh)
+                {
+                    <td>
+                        <form method="post" asp-action="CapNhatDiemDanh" class="inline-form attendance-form">
+                            <input type="hidden" name="maLop" value="@Model.LopHocPhan.MaLopHocPhan" /><input type="hidden" name="maBuoiHoc" value="@selected.MaBuoiHoc" /><input type="hidden" name="maSinhVien" value="@item.MaSinhVien" />
+                            <select name="trangThai" aria-label="Trạng thái điểm danh của @item.HoTen (@item.MaSinhVien)" required><option value="" disabled selected="@(item.TrangThaiBuoiHoc is not ("CoMat" or "DiTre" or "CoPhep" or "Vang"))">Chọn trạng thái</option><option value="CoMat" selected="@(item.TrangThaiBuoiHoc == "CoMat")">Có mặt</option><option value="DiTre" selected="@(item.TrangThaiBuoiHoc == "DiTre")">Đi trễ</option><option value="CoPhep" selected="@(item.TrangThaiBuoiHoc == "CoPhep")">Vắng có phép</option><option value="Vang" selected="@(item.TrangThaiBuoiHoc == "Vang")">Vắng</option></select><button class="button" type="submit" aria-label="Lưu điểm danh của @item.HoTen">Lưu</button>
+                        </form>
+                    </td>
+                }
+            </tr>
+        }
+        @if (Model.SinhVien.Count == 0) { <tr><td colspan="@(Model.CoTheDiemDanh ? 4 : 3)" class="empty-state">Lớp chưa có sinh viên đăng ký.</td></tr> }
+        </tbody></table></div>
+    }
+</section>
+
+<section class="panel section-gap">
+    <h2>Tổng hợp chuyên cần</h2>
+    <p class="section-help">Tính trên toàn bộ @Model.BuoiHoc.Count buổi của lớp. Thống kê từng buổi xem ở <a asp-action="LichSuDiemDanh" asp-route-maLop="@Model.LopHocPhan.MaLopHocPhan">lịch sử điểm danh</a>.</p>
+    <div class="table-card"><table><thead><tr><th>Sinh viên</th><th>Có mặt</th><th>Đi trễ</th><th>Có phép</th><th>Vắng</th><th>Cảnh báo</th></tr></thead><tbody>
+    @foreach (var item in Model.SinhVien)
+    {
+        <tr><td><strong>@item.MaSinhVien</strong><small>@item.HoTen</small></td><td>@item.CoMat</td><td>@item.DiTre</td><td>@item.CoPhep</td><td><strong>@item.Vang</strong>/@item.TongSoBuoi</td><td><span class="badge @(item.TrangThaiCanhBao == "CamThi" ? "badge-danger" : item.TrangThaiCanhBao == "CanhBao" ? "badge-warning" : "badge-success")">@(item.TrangThaiCanhBao == "CamThi" ? "Cấm thi" : item.TrangThaiCanhBao == "CanhBao" ? "Cảnh báo" : "Bình thường")</span></td></tr>
+    }
+    @if (Model.SinhVien.Count == 0) { <tr><td colspan="6" class="empty-state">Lớp chưa có sinh viên đăng ký.</td></tr> }
+    </tbody></table></div>
+</section>
+
+@functions {
+    static string AttendanceLabel(string value) => value switch { "CoMat" => "Có mặt", "DiTre" => "Đi trễ", "CoPhep" => "Vắng có phép", "Vang" => "Vắng", _ => "Chưa điểm danh" };
+    static string AttendanceBadge(string value) => value switch { "CoMat" => "badge-success", "DiTre" or "CoPhep" => "badge-warning", "Vang" => "badge-danger", _ => "" };
+}

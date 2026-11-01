@@ -1,0 +1,53 @@
+@model FaceVerificationViewModel
+@{
+    ViewData["Title"] = "Xác thực khuôn mặt";
+    ViewData["Standalone"] = true;
+    var autoStart = ViewData["AutoStartFace"] is not false;
+}
+
+<section class="face-login-shell">
+    <div class="face-login-intro">
+        <p class="eyebrow">BẢO MẬT TÀI KHOẢN</p>
+        <h1>Chào mừng trở lại</h1>
+        <p class="face-login-lead">Mật khẩu đã được xác nhận. Hãy nhìn vào camera để hoàn tất đăng nhập.</p>
+        <div class="face-login-steps" aria-label="Tiến trình đăng nhập">
+            <div class="face-login-step complete"><span aria-hidden="true">✓</span><div><strong>Mã và mật khẩu</strong><small>Đã xác thực</small></div></div>
+            <div class="face-login-step active"><span aria-hidden="true">2</span><div><strong>Khuôn mặt</strong><small>Đang xác thực</small></div></div>
+        </div>
+        <p class="face-login-account">Tài khoản <strong>@Model.MaDangNhap</strong></p>
+    </div>
+
+    <div class="face-login-card">
+        <div class="face-login-card-heading">
+            <div>
+                <p class="eyebrow blue">BƯỚC 2 / 2</p>
+                <h2>Quét khuôn mặt</h2>
+                <p>Camera sẽ tự bật và quét khi bạn vào trang.</p>
+            </div>
+            <span class="face-login-live" aria-hidden="true"><span></span> CAMERA</span>
+        </div>
+        <div asp-validation-summary="ModelOnly" class="validation summary"></div>
+        <div class="camera-frame face-login-frame" data-camera-frame data-state="loading">
+            <video data-face-video autoplay muted playsinline></video>
+            <div class="face-guide" aria-hidden="true"></div>
+            <div class="camera-placeholder" data-camera-placeholder aria-hidden="true"><span class="camera-placeholder-icon">◎</span><span>Đang chuẩn bị camera</span></div>
+            <span class="face-login-frame-caption">Giữ một khuôn mặt trong khung</span>
+        </div>
+        <p class="camera-message face-login-message" data-face-message role="status">
+            @(autoStart ? "Đang chuẩn bị camera. Vui lòng cho phép truy cập nếu trình duyệt hỏi." : "Hãy nhấn “Thử quét lại” khi bạn đã sẵn sàng.")
+        </p>
+
+        <form asp-action="VerifyFace" method="post" data-face-form data-auto-face-capture data-auto-start="@(autoStart ? "true" : "false")">
+            <input type="hidden" asp-for="DescriptorsJson" data-face-descriptors />
+            <div class="face-login-actions">
+                <button class="button primary-link" type="button" data-camera-start hidden="@autoStart">Thử quét lại</button>
+                <a asp-action="Login">Đăng nhập bằng tài khoản khác</a>
+            </div>
+        </form>
+        <p class="face-login-privacy">Ảnh camera không được lưu. Phiên quét tự hết hạn sau 5 phút.</p>
+    </div>
+</section>
+
+<script defer src="~/vendor/face-api/face-api.min.js" asp-append-version="true"></script>
+<script defer src="~/vendor/onnxruntime/ort.min.js" asp-append-version="true"></script>
+<script defer src="~/js/face-capture.js" asp-append-version="true"></script>

@@ -1,0 +1,18 @@
+@model IReadOnlyCollection<TeachingAssignmentModel>
+@{ ViewData["Title"] = "Lịch giảng dạy"; }
+<div class="page-heading"><div><p class="eyebrow blue">GIẢNG VIÊN</p><h1>Lịch giảng dạy và lớp phụ trách</h1><p>Dữ liệu được tải theo tài khoản giảng viên đang đăng nhập.</p></div></div>
+
+<div class="schedule-cards">
+@foreach (var item in Model)
+{
+    <article class="schedule-item">
+        <div class="schedule-day">@(item.ThuTrongTuan == 8 ? "CN" : $"T{item.ThuTrongTuan}")<small>Tiết @item.TietBatDau-@item.TietKetThuc</small></div>
+        <div class="schedule-content"><p class="eyebrow blue">@item.MaLopHocPhan</p><h2>@item.TenMonHoc</h2><p>@item.TenHocKy · @item.MaPhong - @item.TenPhong</p><span class="badge badge-success">Sĩ số @item.SiSoHienTai/@item.SiSoToiDa</span></div>
+        <a class="button primary-link" asp-action="QuanLyLop" asp-route-maLop="@item.MaLopHocPhan">Quản lý lớp</a>
+    </article>
+}
+@if (Model.Count == 0)
+{
+    <div class="panel empty-state">Bạn chưa được phân công lớp học phần nào.</div>
+}
+</div>

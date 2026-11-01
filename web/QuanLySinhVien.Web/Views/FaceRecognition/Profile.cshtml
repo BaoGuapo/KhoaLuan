@@ -1,0 +1,55 @@
+@model FaceCaptureViewModel
+@{
+    ViewData["Title"] = "Hồ sơ khuôn mặt";
+}
+
+<div class="page-heading">
+    <div>
+        <p class="eyebrow blue">Tài khoản / Hồ sơ khuôn mặt</p>
+        <h1>Hồ sơ khuôn mặt</h1>
+        <p>Mã sinh viên: <strong>@(Model.Profile.MaSinhVien.Length > 0 ? Model.Profile.MaSinhVien : User.Identity?.Name)</strong></p>
+    </div>
+    <a class="button secondary" asp-controller="Home" asp-action="SinhVien">Quay lại</a>
+</div>
+
+<section class="face-layout">
+    <div class="panel face-camera-panel">
+        <div class="face-status-card @(Model.Profile.DaDangKy ? "registered" : "pending")">
+            <strong>@(Model.Profile.DaDangKy ? "Đã đăng ký" : "Chưa đăng ký")</strong>
+            <span>@(Model.Profile.ThoiGianCapNhat.HasValue ? $"Cập nhật lúc {Model.Profile.ThoiGianCapNhat.Value.ToLocalTime():HH:mm dd/MM/yyyy}" : "Chưa có dữ liệu nhận diện")</span>
+        </div>
+
+        <div class="camera-frame" data-camera-frame data-state="idle">
+            <video data-face-video autoplay muted playsinline></video>
+            <div class="face-guide" aria-hidden="true"></div>
+            <div class="camera-placeholder" data-camera-placeholder aria-hidden="true"><span class="camera-placeholder-icon">◎</span><span>Camera chưa bật</span></div>
+        </div>
+        <p class="camera-message" data-face-message role="status" aria-live="polite">Nhấn “Bật camera” để tải mô hình nhận diện.</p>
+
+        <form asp-action="Save" method="post" data-face-form>
+            <input type="hidden" name="replace" value="@Model.Profile.DaDangKy.ToString().ToLowerInvariant()" />
+            <input type="hidden" name="descriptorsJson" data-face-descriptors />
+            <div class="form-actions">
+                <button class="button secondary" type="button" data-camera-start>Bật camera</button>
+                <button class="button primary-link" type="button" data-face-capture disabled>
+                    @(Model.Profile.DaDangKy ? "Chụp và cập nhật" : "Chụp và đăng ký")
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <aside class="panel face-help">
+        <h2>Trước khi chụp</h2>
+        <ol>
+            <li>Cho phép trình duyệt sử dụng camera.</li>
+            <li>Chỉ để một khuôn mặt trong khung, nhìn thẳng và giữ đủ sáng.</li>
+            <li>Giữ yên trong lúc lấy 3 mẫu. Đợi thông báo thành công trước khi rời trang.</li>
+        </ol>
+        <p>Ảnh camera không được lưu. Hệ thống chỉ lưu mẫu đặc trưng đã mã hóa để đối chiếu khi đăng nhập và điểm danh.</p>
+        @if (Model.Profile.DaDangKy) { <p>Cập nhật sẽ thay thế mẫu cũ. Nên chụp lại khi ánh sáng tốt và không che khuôn mặt.</p> }
+    </aside>
+</section>
+
+<script defer src="~/vendor/face-api/face-api.min.js" asp-append-version="true"></script>
+<script defer src="~/vendor/onnxruntime/ort.min.js" asp-append-version="true"></script>
+<script defer src="~/js/face-capture.js" asp-append-version="true"></script>

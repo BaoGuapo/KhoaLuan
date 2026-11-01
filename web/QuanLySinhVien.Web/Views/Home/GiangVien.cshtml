@@ -1,3 +1,34 @@
+<<<<<<< HEAD
 @{ ViewData["Title"] = "Giảng viên"; }
 <section class="dashboard-heading"><p class="eyebrow blue">GIẢNG VIÊN</p><h1>Cổng thông tin giảng viên</h1><p>Chào @User.Identity?.Name. Phiên đăng nhập đã được xác thực đúng role giảng viên.</p></section>
 <div class="role-grid"><article><h2>Phạm vi quyền</h2><p>Lớp phụ trách, lịch học, điểm danh và chuyên cần thuộc các tuần triển khai tiếp theo.</p></article><article><h2>Bảo mật tài khoản</h2><a asp-controller="Account" asp-action="ChangePassword">Đổi mật khẩu</a></article></div>
+=======
+@{ ViewData["Title"] = "Cổng thông tin giảng viên"; }
+<header class="pt-heading">
+    <div>
+        <p class="pt-breadcrumb">Cổng giảng viên / Trang chủ</p>
+        <h1>Trang chủ</h1>
+        <p>Xin chào, @User.TenHienThi(). Tài khoản của bạn có quyền giảng viên.</p>
+    </div>
+    <a class="pt-link" asp-controller="PersonalProfile" asp-action="Index">Thông tin cá nhân →</a>
+</header>
+<section class="pt-section"><div class="pt-section-heading"><h2>Phạm vi quyền</h2><span>Giảng viên</span></div>
+    <dl class="pt-facts">
+        <div><dt>Lớp phụ trách</dt><dd>Các lớp học phần được phân công</dd></div>
+        <div><dt>Lịch giảng dạy</dt><dd>Thứ, tiết và phòng học theo tuần</dd></div>
+        <div><dt>Điểm danh</dt><dd>Điểm danh theo buổi, chốt buổi và xem lịch sử</dd></div>
+        <div><dt>Chuyên cần</dt><dd>Theo dõi tình trạng chuyên cần của sinh viên</dd></div>
+        <div><dt>Điểm danh QR</dt><dd>Mở phiên quét mã cho lớp đang dạy</dd></div>
+        <div><dt>Tài khoản</dt><dd>Cập nhật thông tin cá nhân, đổi mật khẩu</dd></div>
+    </dl>
+</section>
+<div class="pt-home-actions">
+    <section class="pt-section"><h2>Lớp phụ trách</h2><p>Xem lịch giảng dạy, danh sách sinh viên, điểm danh theo buổi và tổng hợp chuyên cần của lớp.</p><a class="button primary-link" asp-controller="GiangVien" asp-action="LichGiangDay">Mở lớp phụ trách</a></section>
+    <section class="pt-section"><h2>Điểm danh QR</h2><p>Mở phiên điểm danh bằng mã QR hoặc nhận diện khuôn mặt cho buổi học đang diễn ra.</p><a class="button" asp-controller="QrAttendance" asp-action="Index">Mở điểm danh QR</a></section>
+</div>
+<section class="pt-section pt-home-account"><h2>Hồ sơ và tài khoản</h2>
+    <a asp-controller="PersonalProfile" asp-action="Index">Thông tin cá nhân <span aria-hidden="true">→</span></a>
+    <a asp-controller="PersonalProfile" asp-action="Edit">Cập nhật thông tin liên hệ <span aria-hidden="true">→</span></a>
+    <a asp-controller="Account" asp-action="ChangePassword">Đổi mật khẩu <span aria-hidden="true">→</span></a>
+</section>
+>>>>>>> origin/main

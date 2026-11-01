@@ -1,3 +1,25 @@
 @{ ViewData["Title"] = "Quản trị"; }
+<<<<<<< HEAD
 <section class="dashboard-heading"><p class="eyebrow blue">QUẢN TRỊ VIÊN</p><h1>Trang quản trị hệ thống</h1><p>Chào @User.Identity?.Name. Tài khoản của bạn được xác thực với quyền quản trị viên.</p></section>
 <div class="role-grid"><article><h2>Quản lý tài khoản</h2><p>Chức năng quản lý tài khoản và gán role sẽ được triển khai ở nội dung website tiếp theo.</p></article><article><h2>Bảo mật tài khoản</h2><a asp-controller="Account" asp-action="ChangePassword">Đổi mật khẩu</a></article></div>
+=======
+<header class="pt-heading">
+    <div>
+        <p class="pt-breadcrumb">Cổng quản trị / Trang chủ</p>
+        <h1>Trang chủ</h1>
+        <p>Xin chào, @User.TenHienThi(). Tài khoản của bạn có quyền quản trị viên.</p>
+    </div>
+    <a class="pt-link" asp-controller="PersonalProfile" asp-action="Index">Thông tin cá nhân →</a>
+</header>
+<div class="pt-home-actions">
+    <section class="pt-section"><h2>Quản lý người dùng</h2><p>Tạo và sửa tài khoản, phân quyền, quản lý hồ sơ sinh viên và giảng viên.</p><a class="button primary-link" asp-controller="UserManagement" asp-action="Index">Mở quản lý người dùng</a></section>
+    <section class="pt-section"><h2>Chương trình đào tạo</h2><p>Ngành học, khóa tuyển sinh, học kỳ, mở lớp học phần và phân công giảng dạy.</p><a class="button" asp-controller="TrainingWorkflow" asp-action="Index">Mở quy trình đào tạo</a></section>
+    <section class="pt-section"><h2>Thống kê điểm danh</h2><p>Tỷ lệ chuyên cần theo học kỳ, môn học và lớp học phần, kèm biểu đồ và xuất Excel.</p><a class="button" asp-controller="BaoCao" asp-action="Index">Xem báo cáo</a></section>
+    <section class="pt-section"><h2>Duyệt hồ sơ khuôn mặt</h2><p>Xác minh và duyệt hồ sơ sinh viên một lần để dùng cho tất cả lớp.</p><a class="button" asp-controller="FaceProfileManagement" asp-action="Index">Mở trang duyệt hồ sơ</a></section>
+</div>
+<section class="pt-section pt-home-account"><h2>Hồ sơ và tài khoản</h2>
+    <a asp-controller="QrAttendance" asp-action="Index">Điểm danh QR <span aria-hidden="true">→</span></a>
+    <a asp-controller="PersonalProfile" asp-action="Index">Thông tin cá nhân <span aria-hidden="true">→</span></a>
+    <a asp-controller="Account" asp-action="ChangePassword">Đổi mật khẩu <span aria-hidden="true">→</span></a>
+</section>
+>>>>>>> origin/main

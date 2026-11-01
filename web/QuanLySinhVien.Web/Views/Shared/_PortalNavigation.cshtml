@@ -1,0 +1,70 @@
+@{
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+
+    var admin = User.IsInRole(RoleNames.Admin);
+    var canBo = User.IsInRole(RoleNames.CanBoQuanLy);
+    var giangVien = User.IsInRole(RoleNames.GiangVien);
+    // Role quản lý được ưu tiên: một tài khoản vừa là quản lý vừa là sinh viên vẫn thấy menu quản lý.
+    var quanLy = admin || canBo;
+    var sinhVien = !quanLy && !giangVien && User.IsInRole(RoleNames.SinhVien);
+
+    // Mỗi dòng: controller, action, nhãn, ký hiệu.
+    var items = new List<(string Controller, string Action, string Label, string Glyph)>();
+    string title;
+
+    if (quanLy)
+    {
+        title = admin ? "CỔNG QUẢN TRỊ" : "CỔNG QUẢN LÝ";
+        items.Add(("Home", admin ? "Admin" : "CanBoQuanLy", "Trang chủ", "⌂"));
+        items.Add(("UserManagement", "Index", "Người dùng", "☰"));
+        items.Add(("TrainingWorkflow", "Index", "Đào tạo", "▤"));
+        if (canBo)
+        {
+            items.Add(("CanBoQuanLy", "QuanLyMonHoc", "Môn học", "▦"));
+        }
+        items.Add(("BaoCao", "Index", "Thống kê", "◫"));
+        items.Add(("FaceProfileManagement", "Index", "Hồ sơ khuôn mặt", "◎"));
+        items.Add(("QrAttendance", "Index", "Điểm danh QR", "▣"));
+    }
+    else if (giangVien)
+    {
+        title = "CỔNG GIẢNG VIÊN";
+        items.Add(("Home", "GiangVien", "Trang chủ", "⌂"));
+        items.Add(("GiangVien", "LichGiangDay", "Lớp phụ trách", "▤"));
+        items.Add(("QrAttendance", "Index", "Điểm danh QR", "▣"));
+    }
+    else
+    {
+        title = "CỔNG SINH VIÊN";
+        items.Add(("Home", "SinhVien", "Trang chủ", "⌂"));
+        items.Add(("QrAttendance", "Index", "Điểm danh QR", "▦"));
+        items.Add(("SinhVien", "DangKyHocPhan", "Đăng ký học phần", "+"));
+        items.Add(("SinhVien", "XemLichHoc", "Lịch học", "▦"));
+    }
+
+    items.Add(("PersonalProfile", "Index", "Thông tin cá nhân", "○"));
+    if (sinhVien)
+    {
+        items.Add(("QrAttendance", "Profile", "Hồ sơ khuôn mặt", "◎"));
+    }
+    items.Add(("Account", "ChangePassword", "Đổi mật khẩu", "↳"));
+
+}
+<aside class="pt-sidebar">
+    <div class="pt-sidebar-title">@title</div>
+    <nav aria-label="Chức năng theo vai trò">
+    @foreach (var item in items)
+    {
+        // Trang hồ sơ cá nhân có nhiều action (Index/Edit) nên coi cả controller là đang mở.
+        var active = controller == item.Controller
+            && (action == item.Action || controller == "PersonalProfile" || controller == "GiangVien");
+        <a asp-controller="@item.Controller" asp-action="@item.Action" class="@(active ? "is-current" : null)" aria-current="@(active ? "page" : null)"><span aria-hidden="true">@item.Glyph</span>@item.Label</a>
+    }
+    </nav>
+    <div class="pt-sidebar-note">
+        <span class="pt-avatar" aria-hidden="true">@User.ChuDaiDien()<img src="@User.AnhDaiDien()" alt="" loading="lazy" referrerpolicy="no-referrer" /></span>
+        @* Tên đứng trước, mã đăng nhập để bên dưới vì vẫn cần khi tra cứu. *@
+        <div><strong>@User.TenHienThi()</strong>@User.MaDangNhap()</div>
+    </div>
+</aside>

@@ -1,0 +1,8 @@
+<section id="capture-section" class="panel section-gap" hidden>
+    <h2 id="capture-title">Xác minh khuôn mặt</h2><p id="verified-account"></p>
+    <div class="camera-frame" style="position:relative"><video id="attendance-video" autoplay muted playsinline style="width:100%;max-height:420px;object-fit:contain"></video><div id="pose-oval" hidden style="pointer-events:none;position:absolute;top:12%;bottom:12%;left:25%;right:25%;border:3px solid #92c5cf;border-radius:50%"></div></div>
+    <p id="capture-instruction" role="status" aria-live="polite"></p>
+    <p id="pose-feedback" role="status" aria-live="polite"></p><div id="captured-photos" style="display:flex;gap:12px;margin:12px 0"></div>
+    <button id="capture-frame" class="button primary-link" type="button" disabled>Bắt đầu xác thực trực tiếp</button>
+    <button id="cancel-capture" class="button secondary" type="button">Hủy</button>
+</section>

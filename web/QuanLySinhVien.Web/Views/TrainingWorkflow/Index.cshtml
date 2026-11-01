@@ -1,0 +1,129 @@
+@model TrainingWorkspaceModel
+@{ ViewData["Title"] = "Chương trình đào tạo và mở lớp"; }
+<link rel="stylesheet" href="~/css/training-workflow.css" asp-append-version="true" />
+<section class="page-heading">
+    <div><p class="eyebrow blue">HỌC VỤ · QUẢN LÝ ĐÀO TẠO</p><h1>Chương trình đào tạo & mở lớp</h1><p>Chuẩn bị môn học theo ngành và khóa, mở lớp theo nhu cầu rồi phân công lịch học.</p></div>
+</section>
+<nav class="training-steps" aria-label="Các bước đào tạo">
+    <a href="#curriculum"><span>1</span> Nhập chương trình</a><a href="#semester"><span>2</span> Áp dụng học kỳ</a>
+    <a href="#classes"><span>3</span> Mở lớp học phần</a><a href="#assignment"><span>4</span> Phân công giảng viên</a>
+</nav>
+@if (!Model.Loaded)
+{
+    <section class="panel"><h2>Chưa tải được dữ liệu đào tạo</h2><p>Kiểm tra backend, kết nối Azure SQL và migration. Không có dữ liệu nào được thay đổi.</p><a class="button" asp-action="Index">Thử lại</a></section>
+}
+else
+{
+<details class="panel training-section"><summary>Danh mục ngành và khóa tuyển sinh</summary>
+    <div class="training-two">
+        <form asp-action="Major" method="post" class="training-form"><h2>Thêm ngành</h2>
+            <label>Mã ngành<input name="maNganh" required maxlength="50" pattern="[A-Za-z0-9_-]+" placeholder="Ví dụ: CNTT" /></label>
+            <label>Tên ngành<input name="tenNganh" required maxlength="100" placeholder="Công nghệ thông tin" /></label>
+            <button class="button primary-link" type="submit">Tạo ngành</button>
+        </form>
+        <form asp-action="Intake" method="post" class="training-form"><h2>Thêm khóa tuyển sinh</h2>
+            <label>Mã khóa<input name="maKhoa" required maxlength="50" pattern="[A-Za-z0-9_-]+" placeholder="Ví dụ: K2026" /></label>
+            <div class="training-two"><label>Năm bắt đầu<input name="namBatDau" type="number" min="2000" max="2100" value="2026" required /></label>
+            <label>Năm kết thúc<input name="namKetThuc" type="number" min="2000" max="2110" value="2030" required /></label></div>
+            <button class="button primary-link" type="submit">Tạo khóa</button>
+        </form>
+    </div>
+    <form asp-action="Semester" method="post" class="training-form"><h2>Thêm học kỳ thực tế</h2><div class="training-two">
+        <label>Mã học kỳ<input name="maHocKy" maxlength="30" pattern="[A-Za-z0-9_-]+" required placeholder="HK1-2026" /></label>
+        <label>Tên học kỳ<input name="tenHocKy" maxlength="100" required placeholder="Học kỳ 1 (2026–2027)" /></label>
+        <label>Ngày bắt đầu<input name="ngayBatDau" type="date" required /></label>
+        <label>Ngày kết thúc<input name="ngayKetThuc" type="date" required /></label>
+    </div><button class="button primary-link" type="submit">Tạo học kỳ</button></form>
+</details>
+<section class="panel training-section" id="curriculum">
+    <h2>1. Nhập chương trình đào tạo</h2><p class="muted">Khoa chuyên môn quản lý chương trình theo ngành và khóa tuyển sinh. Mã môn phải có trong danh mục môn học.</p>
+    @if (Model.ImportErrors.Count > 0) { <div class="validation" role="alert"><ul>@foreach (var error in Model.ImportErrors) { <li>@error</li> }</ul></div> }
+    <form asp-action="Curriculum" method="post" enctype="multipart/form-data" class="training-form" id="curriculum-form">
+        <div class="training-two">
+            <label>Ngành<select name="MaNganh" required><option value="">Chọn ngành</option>@foreach (var item in Model.Catalog.NganhHocs) { <option value="@item.Code" selected="@(Model.Draft.MaNganh == item.Code)">@item.Code · @item.Name</option> }</select></label>
+            <label>Khóa tuyển sinh<select name="MaKhoa" required><option value="">Chọn khóa</option>@foreach (var item in Model.Catalog.KhoaTuyenSinhs) { <option value="@item.Code" selected="@(Model.Draft.MaKhoa == item.Code)">@item.Name</option> }</select></label>
+            <label>Khoa chuyên môn<input name="TenKhoaDaoTao" value="@Model.Draft.TenKhoaDaoTao" maxlength="200" required placeholder="Ví dụ: Khoa Công nghệ thông tin" /></label>
+            <label>Tên chương trình<input name="TenChuongTrinh" value="@Model.Draft.TenChuongTrinh" maxlength="200" required placeholder="Ví dụ: CNTT – khóa 2026" /></label>
+        </div>
+        <div class="training-import"><label>Nhập từ Excel<input type="file" name="file" accept=".xlsx" /></label>
+            <button class="button secondary" type="submit" asp-action="Preview" formnovalidate>Xem trước Excel</button><a class="button" asp-action="Template">Tải mẫu .xlsx</a>
+            <small>Ba cột: MaMonHoc, ThuTuHocKy (1–12), BatBuoc (1/0). Tối đa 200 môn, 2 MB. Xem trước chưa lưu DB.</small>
+        </div>
+        <div class="table-card"><table><thead><tr><th>Môn học</th><th>Học kỳ dự kiến</th><th>Loại môn</th><th>Thao tác</th></tr></thead><tbody id="curriculum-rows">
+        @for (var i = 0; i < Model.Draft.MonHocs.Count; i++)
+        { var course = Model.Draft.MonHocs[i];
+            <tr><td><select name="MonHocs[@i].MaMonHoc" required><option value="">Chọn môn</option>@foreach (var option in Model.Catalog.MonHocs) { <option value="@option.MaMonHoc" selected="@(course.MaMonHoc == option.MaMonHoc)">@option.MaMonHoc · @option.TenMonHoc</option> }</select></td>
+            <td><input name="MonHocs[@i].ThuTuHocKy" type="number" min="1" max="12" required value="@course.ThuTuHocKy" /></td>
+            <td><select name="MonHocs[@i].BatBuoc"><option value="true" selected="@course.BatBuoc">Bắt buộc</option><option value="false" selected="@(!course.BatBuoc)">Tự chọn</option></select></td>
+            <td><button class="button secondary" type="button" data-remove-course aria-label="Xóa môn khỏi form">Xóa</button></td></tr>
+        }
+        </tbody></table></div>
+        <div class="training-actions"><button class="button" type="button" id="add-course">+ Thêm môn</button><button class="button primary-link" type="submit">Lưu chương trình</button></div>
+    </form>
+    <template id="course-row-template"><tr><td><select data-field="MaMonHoc" required><option value="">Chọn môn</option>@foreach (var course in Model.Catalog.MonHocs) { <option value="@course.MaMonHoc">@course.MaMonHoc · @course.TenMonHoc</option> }</select></td><td><input data-field="ThuTuHocKy" type="number" min="1" max="12" value="1" required /></td><td><select data-field="BatBuoc"><option value="true">Bắt buộc</option><option value="false">Tự chọn</option></select></td><td><button class="button secondary" type="button" data-remove-course>Xóa</button></td></tr></template>
+    @foreach (var curriculum in Model.Curricula)
+    {
+        <details class="training-summary"><summary>@curriculum.TenChuongTrinh · @curriculum.MaNganh · @curriculum.MaKhoa (@curriculum.MonHocs.Count môn)</summary>
+            <p>@curriculum.TenKhoaDaoTao</p><div class="table-card"><table><thead><tr><th>Môn học</th><th>Học kỳ</th><th>Loại môn</th></tr></thead><tbody>
+            @foreach (var course in curriculum.MonHocs) { <tr><td>@course.MaMonHoc · @course.TenMonHoc</td><td>@course.ThuTuHocKy</td><td>@(course.BatBuoc ? "Bắt buộc" : "Tự chọn")</td></tr> }
+            </tbody></table></div>
+        </details>
+    }
+</section>
+<section class="panel training-section" id="semester"><h2>2. Áp dụng học kỳ</h2>
+    <p class="muted">Ví dụ: lấy các môn học kỳ dự kiến 1 của chương trình khóa 2026, áp dụng vào học kỳ thực tế HK1 2026–2027.</p>
+    @if (Model.Curricula.Count == 0) { <p>Hãy lưu chương trình ở bước 1 trước.</p> }
+    else
+    {
+        <form asp-action="Apply" method="post" class="training-form"><div class="training-two">
+            <label>Chương trình<select name="keHoachDaoTaoId" required>@foreach (var plan in Model.Curricula) { <option value="@plan.Id">@plan.TenChuongTrinh · @plan.MaNganh · @plan.MaKhoa</option> }</select></label>
+            <label>Học kỳ thực tế<select name="maHocKy" required><option value="">Chọn học kỳ</option>@foreach (var semester in Model.Catalog.HocKys) { <option value="@semester.MaHocKy">@semester.TenHocKy</option> }</select></label>
+            <label>Học kỳ dự kiến trong chương trình<input name="thuTuHocKy" type="number" min="1" max="12" value="1" required /></label>
+        </div><button class="button primary-link" type="submit">Áp dụng chương trình</button></form>
+    }
+</section>
+<section class="panel training-section" id="classes"><h2>3. Mở lớp học phần theo nhu cầu</h2>
+    @if (Model.Selected is not { } selected) { <p>Áp dụng chương trình cho học kỳ ở bước 2 trước khi mở lớp.</p> }
+    else
+    {
+        <form asp-action="Index" method="get" class="training-form"><label>Đợt áp dụng<select name="id">@foreach (var app in Model.Applications) { <option value="@app.Id" selected="@(selected.Id == app.Id)">@app.TenChuongTrinh · @app.MaKhoa · @app.MaHocKy · HK dự kiến @app.ThuTuHocKy</option> }</select></label><button type="submit" class="button">Xem đợt</button></form>
+        <form asp-action="Classes" method="post" class="training-form"><input type="hidden" name="id" value="@selected.Id" /><div class="training-two">
+            <label>Môn trong chương trình<select name="maMonHoc" required>@foreach (var course in selected.MonHocs) { <option value="@course.MaMonHoc">@course.MaMonHoc · @course.TenMonHoc (@(course.BatBuoc ? "Bắt buộc" : "Tự chọn"))</option> }</select><small>Có thể mở môn khác tiến độ để học lại, cải thiện hoặc học vượt trong học kỳ này.</small></label>
+            <label>Tiền tố mã lớp<input name="tienToMaLop" maxlength="24" pattern="[A-Za-z0-9_-]+" required placeholder="Ví dụ: LTCB-K26-HK1" /><small>Tạo mã tiền tố-01, tiền tố-02… Đổi tiền tố khi mở thêm đợt.</small></label>
+            <label>Số lớp cùng môn<input name="soLop" type="number" min="1" max="50" value="8" required /></label>
+            <label>Sĩ số tối đa mỗi lớp<input name="siSoToiDa" type="number" min="1" max="500" value="40" required /></label>
+        </div><button class="button primary-link" type="submit">Mở các lớp chờ phân công</button></form>
+    }
+</section>
+<section class="training-section" id="assignment"><h2>4. Phân công giảng viên & lịch học</h2>
+    <p class="muted">Chỉ giảng viên đúng ngành được phân công. Hệ thống kiểm tra trùng phòng và lịch giảng viên trước khi lưu.</p>
+    @if (Model.Selected is { } application)
+    {
+        @if (application.LopHocPhans.Count == 0) { <div class="panel">Chưa mở lớp học phần trong đợt này.</div> }
+        @foreach (var course in application.LopHocPhans)
+        {
+            <article class="panel training-class"><div class="training-class-heading"><div><h3>@course.MaLopHocPhan</h3><p>@course.MaMonHoc · Tối đa @course.SiSoToiDa sinh viên</p></div><span class="badge @(course.DaPhanCong ? "badge-success" : "badge-warning")">@(course.DaPhanCong ? (course.TrangThai == "0" ? "Đang mở đăng ký" : "Đã phân công") : "Chờ phân công")</span></div>
+            @if (!course.DaPhanCong)
+            {
+                var majorName = Model.Catalog.NganhHocs.FirstOrDefault(x => x.Code == application.MaNganh)?.Name;
+                var lecturers = Model.Catalog.GiangViens.Where(x => string.Equals(x.ChuyenNganh?.Trim(), application.MaNganh, StringComparison.OrdinalIgnoreCase) || string.Equals(x.ChuyenNganh?.Trim(), majorName, StringComparison.OrdinalIgnoreCase)).ToList();
+                <form asp-action="Assign" method="post" class="training-form"><input type="hidden" name="id" value="@application.Id" /><input type="hidden" name="maLopHocPhan" value="@course.MaLopHocPhan" />
+                    <div class="training-two"><label>Giảng viên đúng ngành<select name="maGiangVien" required><option value="">Chọn giảng viên</option>@foreach (var lecturer in lecturers) { <option value="@lecturer.MaGiangVien">@lecturer.MaGiangVien · @lecturer.HoTen</option> }</select></label>
+                    <label>Phòng học<select name="maPhong" required><option value="">Chọn phòng</option>@foreach (var room in Model.Catalog.PhongHocs) { <option value="@room.MaPhong">@room.MaPhong · @room.TenPhong</option> }</select></label></div>
+                    <div class="training-three"><label>Thứ<select name="thuTrongTuan">@for (var day = 2; day <= 8; day++) { <option value="@day">@(day == 8 ? "Chủ nhật" : $"Thứ {day}")</option> }</select></label>
+                    <label>Tiết bắt đầu<input type="number" name="tietBatDau" min="1" max="15" value="1" required /></label><label>Tiết kết thúc<input type="number" name="tietKetThuc" min="1" max="15" value="3" required /></label></div>
+                    @if (lecturers.Count == 0) { <p class="validation">Chưa có giảng viên đúng ngành. Cập nhật chuyên ngành trong hồ sơ giảng viên.</p> }
+                    <button type="submit" class="button primary-link" disabled="@(lecturers.Count == 0)">Phân công & tạo lịch học</button>
+                </form>
+            }
+            else
+            {
+                <p>Giảng viên: @course.MaGiangVien. Lịch học và các buổi học đã được tạo theo khoảng ngày học kỳ.</p>
+                @if (course.TrangThai != "0") { <form asp-action="Publish" method="post"><input type="hidden" name="id" value="@application.Id" /><input type="hidden" name="maLopHocPhan" value="@course.MaLopHocPhan" /><button type="submit" class="button success-button">Mở cho sinh viên đăng ký</button></form> }
+            }
+            </article>
+        }
+    }
+</section>
+<script src="~/js/training-workflow.js" asp-append-version="true"></script>
+}

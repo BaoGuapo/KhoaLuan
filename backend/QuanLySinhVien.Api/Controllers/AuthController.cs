@@ -1,14 +1,25 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+<<<<<<< HEAD
 using QuanLySinhVien.Api.Contracts.Auth;
+=======
+using Microsoft.AspNetCore.RateLimiting;
+using QuanLySinhVien.Api.Contracts.Auth;
+using QuanLySinhVien.Api.Contracts.Faces;
+using QuanLySinhVien.Api.Models.Entities;
+>>>>>>> origin/main
 using QuanLySinhVien.Api.Services;
 
 namespace QuanLySinhVien.Api.Controllers;
 
 [ApiController]
 [Route("api/auth")]
+<<<<<<< HEAD
 public sealed class AuthController(IAuthService authService) : ControllerBase
+=======
+public sealed class AuthController(IAuthService authService, IFaceRecognitionService faces) : ControllerBase
+>>>>>>> origin/main
 {
     [AllowAnonymous]
     [HttpPost("login")]
@@ -18,6 +29,27 @@ public sealed class AuthController(IAuthService authService) : ControllerBase
         return response is null ? Unauthorized(new { message = "Invalid credentials." }) : Ok(response);
     }
 
+<<<<<<< HEAD
+=======
+    [Authorize(Roles = RoleNames.SinhVien)]
+    [EnableRateLimiting("face-login")]
+    [RequestSizeLimit(64 * 1024)]
+    [HttpPost("verify-face")]
+    public async Task<IActionResult> VerifyFace(FaceDescriptorSamplesRequest request, CancellationToken cancellationToken)
+    {
+        var studentCode = User.Identity?.Name;
+        if (string.IsNullOrWhiteSpace(studentCode)) return Unauthorized();
+
+        var normalized = faces.NormalizeSamples(request.Descriptors);
+        if (!normalized.Succeeded)
+            return UnprocessableEntity(new { code = normalized.ErrorCode, message = normalized.ErrorMessage });
+
+        return await faces.VerifyStudentAsync(studentCode, normalized.Value!, cancellationToken)
+            ? NoContent()
+            : Unauthorized(new { code = "FaceNotMatched", message = "Khuôn mặt không khớp hồ sơ đã đăng ký." });
+    }
+
+>>>>>>> origin/main
     [Authorize]
     [HttpPost("change-password")]
     public async Task<IActionResult> ChangePassword(ChangePasswordRequest request, CancellationToken cancellationToken)

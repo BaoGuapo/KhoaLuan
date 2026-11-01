@@ -1,0 +1,10 @@
+@model UserDetailModel
+@{ ViewData["Title"] = "Chi tiết tài khoản"; }
+<div class="page-heading"><div><p class="eyebrow blue">TÀI KHOẢN</p><h1>@Model.UserName</h1><p>@Model.FullName</p></div><a class="button secondary" asp-action="Index">Quay lại</a></div>
+<div class="detail-grid">
+<section class="panel"><h2>Thông tin tài khoản</h2><dl class="detail-list"><dt>Email</dt><dd>@Model.Email</dd><dt>Vai trò</dt><dd>@string.Join(", ", Model.Roles)</dd><dt>Trạng thái</dt><dd>@(Model.IsActive ? "Đang hoạt động" : "Đã khóa")</dd><dt>Hồ sơ liên kết</dt><dd>@(Model.ProfileCode ?? "Không có")</dd><dt>Ngày tạo</dt><dd>@Model.CreatedAtUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</dd></dl></section>
+<section class="panel"><h2>Thao tác quản trị</h2><div class="stack-actions">
+<form asp-action="SetStatus" asp-route-id="@Model.Id" method="post" data-confirm="@(Model.IsActive ? $"Khóa tài khoản {Model.UserName}? Các phiên đăng nhập hiện tại sẽ bị thu hồi." : $"Mở khóa tài khoản {Model.UserName}?")"><input type="hidden" name="isActive" value="@(!Model.IsActive ? "true" : "false")" /><button class="button @(Model.IsActive ? "danger" : "success-button")" type="submit">@(Model.IsActive ? "Khóa tài khoản" : "Mở khóa tài khoản")</button></form>
+<a class="button" asp-action="ResetPassword" asp-route-id="@Model.Id">Cấp lại mật khẩu tạm</a>
+@if (User.IsInRole(RoleNames.Admin) && Model.ProfileType is null) { <form asp-action="ChangeRole" asp-route-id="@Model.Id" method="post" class="inline-form" data-confirm="Đổi vai trò tài khoản @Model.UserName? Quyền mới có hiệu lực sau khi người dùng đăng nhập lại."><label class="visually-hidden" for="account-role">Vai trò mới</label><select id="account-role" name="role"><option value="Admin" selected="@Model.Roles.Contains(RoleNames.Admin)">Quản trị viên</option><option value="CanBoQuanLy" selected="@Model.Roles.Contains(RoleNames.CanBoQuanLy)">Cán bộ quản lý</option></select><button class="button" type="submit">Đổi vai trò</button></form> }
+</div></section></div>

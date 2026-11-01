@@ -65,7 +65,12 @@ public static class DbInitializer
                 {
                     UserName = account.UserName,
                     Email = account.Email,
+<<<<<<< HEAD
                     FullName = account.FullName
+=======
+                    FullName = account.FullName,
+                    MustChangePassword = true
+>>>>>>> origin/main
                 };
                 user.PasswordHash = passwordHasher.HashPassword(user, account.Password);
                 db.Users.Add(user);
@@ -89,6 +94,10 @@ public static class DbInitializer
         }
 
         await db.SaveChangesAsync();
+<<<<<<< HEAD
+=======
+        await DevelopmentTrainingSeed.SeedAsync(db, scope.ServiceProvider.GetRequiredService<IHostEnvironment>());
+>>>>>>> origin/main
     }
 
     private sealed record DevelopmentAccount(

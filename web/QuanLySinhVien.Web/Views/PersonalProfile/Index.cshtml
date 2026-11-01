@@ -1,0 +1,11 @@
+@model UserDetailModel
+@{ ViewData["Title"] = "Thông tin cá nhân"; var profile = Model.AcademicProfile; }
+<div class="page-heading"><div><p class="eyebrow blue">Hồ sơ / Thông tin cá nhân</p><h1>Thông tin cá nhân</h1><p>@Model.FullName · @Model.UserName</p></div><a class="button primary-link" asp-action="Edit">Cập nhật thông tin</a></div>
+<section class="panel profile-panel">
+    @if (!string.IsNullOrWhiteSpace(profile?.AnhDaiDien)) { <img class="profile-photo" src="@profile.AnhDaiDien" alt="Ảnh đại diện của @Model.FullName" /> } else { <div class="profile-avatar" aria-label="Chưa có ảnh đại diện">@(string.IsNullOrWhiteSpace(Model.FullName) ? "?" : Model.FullName.Trim()[0].ToString().ToUpperInvariant())</div> }
+    <dl class="detail-list"><dt>Mã tài khoản</dt><dd>@Model.UserName</dd><dt>Họ và tên</dt><dd>@Model.FullName</dd><dt>Email</dt><dd>@Model.Email</dd>@if (Model.ProfileCode is not null) { <dt>Mã hồ sơ</dt><dd>@Model.ProfileCode</dd> }@if (Model.ProfileType is "SinhVien" or "GiangVien") { <dt>Số điện thoại</dt><dd>@(Model.PhoneNumber ?? "Chưa cập nhật")</dd><dt>Ngày sinh</dt><dd>@(profile?.NgaySinh?.ToString("dd/MM/yyyy") ?? "Chưa cập nhật")</dd><dt>Giới tính</dt><dd>@(profile?.GioiTinh ?? "Chưa cập nhật")</dd><dt>Địa chỉ</dt><dd>@(profile?.DiaChiLienHe ?? "Chưa cập nhật")</dd> }</dl>
+</section>
+@if (profile is not null)
+{
+    <section class="panel section-gap"><h2>@(Model.ProfileType == "GiangVien" ? "Thông tin công tác" : "Thông tin đào tạo")</h2><dl class="detail-list"><dt>Cơ sở</dt><dd>@(profile.CoSo ?? "Chưa cập nhật")</dd><dt>Khoa</dt><dd>@(profile.Khoa ?? "Chưa cập nhật")</dd><dt>Chuyên ngành</dt><dd>@(profile.ChuyenNganh ?? profile.Nganh ?? "Chưa cập nhật")</dd>@if (Model.ProfileType == "SinhVien") { <dt>Lớp</dt><dd>@(profile.LopHoc ?? "Chưa cập nhật")</dd><dt>Khóa học</dt><dd>@(profile.KhoaHoc ?? "Chưa cập nhật")</dd><dt>Bậc đào tạo</dt><dd>@(profile.BacDaoTao ?? "Chưa cập nhật")</dd> } else { <dt>Chức danh</dt><dd>@(profile.ChucDanh ?? "Chưa cập nhật")</dd><dt>Trình độ</dt><dd>@(profile.TrinhDoHocVan ?? "Chưa cập nhật")</dd><dt>Ngày công tác</dt><dd>@(profile.NgayBatDauCongTac?.ToString("dd/MM/yyyy") ?? "Chưa cập nhật")</dd> }</dl></section>
+}

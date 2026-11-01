@@ -1,0 +1,220 @@
+@model AttendanceReportPageViewModel
+@{
+    ViewData["Title"] = "Báo cáo thống kê điểm danh";
+    var report = Model.BaoCao;
+}
+<div class="page-heading">
+    <div><p class="eyebrow blue">BÁO CÁO</p><h1>Thống kê điểm danh và chuyên cần</h1><p>@(report is null ? "Chọn học kỳ để xem số liệu." : $"{report.TenHocKy} · {Range(report.NgayBatDau, report.NgayKetThuc)}")</p></div>
+</div>
+
+<section class="panel">
+    <div class="report-toolbar">
+        <form method="get" asp-action="Index">
+            <label for="maHocKy">Học kỳ</label>
+            <select id="maHocKy" name="maHocKy">
+                @foreach (var item in Model.HocKy) { <option value="@item.MaHocKy" selected="@(item.MaHocKy == Model.MaHocKyDangChon)">@item.TenHocKy (@item.MaHocKy)</option> }
+            </select>
+            <button class="button secondary" type="submit">Xem báo cáo</button>
+        </form>
+        @if (report is not null)
+        {
+            <a class="button primary-link" asp-action="XuatExcel" asp-route-maHocKy="@report.MaHocKy">Xuất Excel</a>
+        }
+    </div>
+
+    @if (Model.HocKy.Count == 0)
+    {
+        <p class="empty-state">Chưa có học kỳ nào trong hệ thống.</p>
+    }
+    else if (report is null)
+    {
+        <p class="empty-state">Không đọc được số liệu của học kỳ này.</p>
+    }
+</section>
+
+@if (report is not null)
+{
+    var tongQuan = report.TongQuan;
+    <section class="class-overview section-gap">
+        <article class="hero-figure"><span>Tỷ lệ chuyên cần</span><strong>@tongQuan.TyLeChuyenCan.ToString("P1")</strong><small>Có mặt và đi trễ trên tổng lượt dự kiến</small></article>
+        <article><span>Sinh viên tham gia học</span><strong>@tongQuan.SoSinhVien</strong><small>@tongQuan.SoLopHocPhan lớp học phần · @tongQuan.SoMonHoc môn học</small></article>
+        <article><span>Buổi đã diễn ra</span><strong>@tongQuan.SoBuoiDaDienRa</strong><small>trên tổng @tongQuan.TongSoBuoi buổi theo lịch</small></article>
+        <article><span>Lượt chưa điểm danh</span><strong>@tongQuan.ChuaDiemDanh</strong><small>trên @tongQuan.TongLuot lượt dự kiến</small></article>
+    </section>
+
+    @* Biểu đồ 1: cơ cấu lượt điểm danh toàn học kỳ, một thanh xếp chồng chia theo trạng thái. *@
+    <section class="panel section-gap viz-root">
+        <h2>Cơ cấu lượt điểm danh</h2>
+        <p class="section-help">Toàn bộ @tongQuan.TongLuot lượt dự kiến của học kỳ, chia theo trạng thái ghi nhận.</p>
+        @{
+            var segments = new (string Nhan, int GiaTri, string Mau)[]
+            {
+                ("Có mặt", tongQuan.CoMat, "var(--viz-comat)"),
+                ("Đi trễ", tongQuan.DiTre, "var(--viz-ditre)"),
+                ("Vắng có phép", tongQuan.CoPhep, "var(--viz-cophep)"),
+                ("Vắng", tongQuan.Vang, "var(--viz-vang)"),
+                ("Chưa điểm danh", tongQuan.ChuaDiemDanh, "var(--viz-chua)")
+            };
+            var tongLuot = Math.Max(1, tongQuan.TongLuot);
+            double cursor = 0;
+        }
+        <svg viewBox="0 0 800 56" role="img" aria-label="Cơ cấu lượt điểm danh toàn học kỳ">
+            @foreach (var segment in segments)
+            {
+                var width = 800d * segment.GiaTri / tongLuot;
+                var x = cursor;
+                cursor += width;
+                if (width <= 0) { continue; }
+                @* Chừa 2px giữa các mảnh để hai màu cạnh nhau không dính vào nhau. *@
+                <rect x="@F(x)" y="0" width="@F(Math.Max(1, width - 2))" height="40" rx="4" fill="@segment.Mau"><title>@segment.Nhan: @segment.GiaTri lượt (@Percent(segment.GiaTri, tongQuan.TongLuot))</title></rect>
+                @if (width > 64)
+                {
+                    @SvgText(x + 6, 54, Percent(segment.GiaTri, tongQuan.TongLuot))
+                }
+            }
+        </svg>
+        <ul class="viz-legend">
+            @foreach (var segment in segments)
+            {
+                <li><span class="viz-swatch" style="background:@segment.Mau"></span>@segment.Nhan <small>@segment.GiaTri lượt · @Percent(segment.GiaTri, tongQuan.TongLuot)</small></li>
+            }
+        </ul>
+        <p class="viz-caption">Lượt dự kiến của một lớp bằng sĩ số nhân số buổi đã diễn ra. Các buổi chưa tới ngày không được tính.</p>
+    </section>
+
+    @* Biểu đồ 2: so sánh tỷ lệ chuyên cần giữa các môn học, một chỉ số nên dùng một màu. *@
+    <section class="panel section-gap viz-root">
+        <h2>Tỷ lệ chuyên cần theo môn học</h2>
+        <p class="section-help">Xếp từ thấp đến cao để thấy ngay môn nào cần nhắc nhở.</p>
+        @{
+            var subjects = report.TheoMonHoc.Where(x => x.CoSoLieu).ToList();
+            var subjectsKhongSoLieu = report.TheoMonHoc.Count - subjects.Count;
+        }
+        @if (subjects.Count == 0)
+        {
+            <p class="empty-state">Chưa môn học nào có buổi đã diễn ra kèm sinh viên đăng ký.</p>
+        }
+        else
+        {
+            const int rowHeight = 34;
+            const int labelWidth = 250;
+            const int plotWidth = 470;
+            var chartHeight = subjects.Count * rowHeight + 26;
+            <svg viewBox="0 0 800 @chartHeight" role="img" aria-label="Tỷ lệ chuyên cần theo môn học">
+                @for (var tick = 0; tick <= 4; tick++)
+                {
+                    var x = labelWidth + plotWidth * tick / 4d;
+                    <line class="viz-grid" x1="@F(x)" y1="0" x2="@F(x)" y2="@(subjects.Count * rowHeight)"></line>
+                    @SvgText(x, subjects.Count * rowHeight + 18, $"{tick * 25}%", anchor: "middle")
+                }
+                @for (var i = 0; i < subjects.Count; i++)
+                {
+                    var subject = subjects[i];
+                    var y = i * rowHeight;
+                    var width = plotWidth * Math.Clamp(subject.TyLeChuyenCan, 0, 1);
+                    @SvgText(0, y + 21, Truncate(subject.TenMonHoc, 32), "viz-label")
+                    <rect x="@labelWidth" y="@(y + 8)" width="@F(Math.Max(2, width))" height="18" rx="4" fill="var(--viz-bar)"><title>@subject.TenMonHoc — chuyên cần @subject.TyLeChuyenCan.ToString("P1"), @subject.SoLop lớp, @subject.SoSinhVien sinh viên</title></rect>
+                    @SvgText(labelWidth + Math.Max(2, width) + 8, y + 22, subject.TyLeChuyenCan.ToString("P0"), "viz-value")
+                }
+            </svg>
+            @if (subjectsKhongSoLieu > 0)
+            {
+                <p class="viz-caption">Bỏ qua @subjectsKhongSoLieu môn chưa có lượt dự kiến, do chưa có sinh viên đăng ký hoặc chưa tới buổi học nào.</p>
+            }
+        }
+    </section>
+
+    @* Biểu đồ 3: xu hướng theo thời gian, dùng đường để thấy diễn biến giữa các buổi. *@
+    <section class="panel section-gap viz-root">
+        <h2>Xu hướng chuyên cần theo ngày học</h2>
+        @{
+            var days = report.TheoNgay.ToList();
+        }
+        @if (days.Count < 2)
+        {
+            <p class="empty-state">Cần ít nhất hai ngày đã có buổi học để vẽ đường xu hướng.</p>
+        }
+        else
+        {
+            const int plotTop = 10;
+            const int plotHeight = 200;
+            const int plotLeft = 44;
+            const int lineWidth = 740;
+            var step = (double)lineWidth / (days.Count - 1);
+            var points = string.Join(' ', days.Select((d, i) =>
+                $"{F(plotLeft + i * step)},{F(plotTop + plotHeight * (1 - Math.Clamp(d.TyLeChuyenCan, 0, 1)))}"));
+            <svg viewBox="0 0 800 250" role="img" aria-label="Tỷ lệ chuyên cần theo từng ngày học">
+                @for (var tick = 0; tick <= 4; tick++)
+                {
+                    var y = plotTop + plotHeight * tick / 4d;
+                    <line class="viz-grid" x1="@plotLeft" y1="@F(y)" x2="@(plotLeft + lineWidth)" y2="@F(y)"></line>
+                    @SvgText(plotLeft - 8, y + 4, $"{(4 - tick) * 25}%", anchor: "end")
+                }
+                <polyline points="@points" fill="none" stroke="var(--viz-bar)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></polyline>
+                @for (var i = 0; i < days.Count; i++)
+                {
+                    var day = days[i];
+                    var cx = plotLeft + i * step;
+                    var cy = plotTop + plotHeight * (1 - Math.Clamp(day.TyLeChuyenCan, 0, 1));
+                    <circle cx="@F(cx)" cy="@F(cy)" r="4" fill="var(--viz-bar)" stroke="#fff" stroke-width="2"><title>@day.Ngay.ToString("dd/MM/yyyy") — chuyên cần @day.TyLeChuyenCan.ToString("P1") (@day.CoMatVaDiTre/@day.SoLuotDuKien lượt, @day.SoBuoi buổi)</title></circle>
+                }
+                @* Chỉ ghi ngày đầu, giữa và cuối để trục không chồng chữ. *@
+                @foreach (var index in new[] { 0, days.Count / 2, days.Count - 1 }.Distinct())
+                {
+                    var anchor = index == 0 ? "start" : index == days.Count - 1 ? "end" : "middle";
+                    @SvgText(plotLeft + index * step, plotTop + plotHeight + 22, days[index].Ngay.ToString("dd/MM"), anchor: anchor)
+                }
+            </svg>
+            <p class="viz-caption">Mỗi điểm là một ngày có buổi học, gộp mọi lớp trong học kỳ. Di chuột vào điểm để xem số liệu ngày đó.</p>
+        }
+    </section>
+
+    <section class="panel section-gap">
+        <h2>Chi tiết theo lớp học phần</h2>
+        <p class="section-help">Xếp từ tỷ lệ chuyên cần thấp nhất. Đây cũng là bảng số liệu của các biểu đồ ở trên.</p>
+        <div class="table-card" role="region" aria-label="Thống kê điểm danh theo lớp học phần" tabindex="0"><table><thead><tr><th scope="col">Lớp học phần</th><th scope="col">Giảng viên</th><th scope="col">Sĩ số</th><th scope="col">Buổi đã học</th><th scope="col">Có mặt</th><th scope="col">Đi trễ</th><th scope="col">Có phép</th><th scope="col">Vắng</th><th scope="col">Chưa điểm danh</th><th scope="col">Chuyên cần</th><th scope="col">SV cảnh báo</th></tr></thead><tbody>
+        @foreach (var item in report.TheoLopHocPhan)
+        {
+            <tr>
+                <td><strong>@item.MaLopHocPhan</strong><small>@item.TenMonHoc</small></td>
+                <td>@item.HoTenGiangVien</td>
+                <td>@item.SiSo</td>
+                <td>@item.SoBuoiDaDienRa</td>
+                <td>@item.CoMat</td>
+                <td>@item.DiTre</td>
+                <td>@item.CoPhep</td>
+                <td>@item.Vang</td>
+                <td>@item.ChuaDiemDanh</td>
+                <td>@if (item.CoSoLieu) { <span class="badge @RateBadge(item.TyLeChuyenCan)">@item.TyLeChuyenCan.ToString("P0")</span> } else { <span class="muted" title="Chưa có lượt dự kiến">—</span> }</td>
+                <td>@(item.SoSinhVienCanhBao == 0 ? "—" : item.SoSinhVienCanhBao.ToString())</td>
+            </tr>
+        }
+        @if (report.TheoLopHocPhan.Count == 0) { <tr><td colspan="11" class="empty-state">Học kỳ này chưa có lớp học phần nào.</td></tr> }
+        </tbody></table></div>
+    </section>
+}
+
+@functions {
+    static string F(double value) => value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+
+    // Razor coi <text> là thẻ điều khiển của nó, nên thẻ <text> của SVG phải dựng bằng tay.
+    static Microsoft.AspNetCore.Html.IHtmlContent SvgText(
+        double x, double y, string value, string cssClass = "viz-tick", string anchor = "start")
+    {
+        var encoder = System.Text.Encodings.Web.HtmlEncoder.Default;
+        return new Microsoft.AspNetCore.Html.HtmlString(
+            $"""<text class="{cssClass}" x="{F(x)}" y="{F(y)}" text-anchor="{anchor}">{encoder.Encode(value)}</text>""");
+    }
+
+    static string Percent(int value, int total) =>
+        total <= 0 ? "0%" : ((double)value / total).ToString("P0");
+
+    static string Truncate(string value, int length) =>
+        value.Length <= length ? value : value[..(length - 1)] + "…";
+
+    static string Range(DateTime? from, DateTime? to) =>
+        from.HasValue && to.HasValue ? $"{from:dd/MM/yyyy} – {to:dd/MM/yyyy}" : "chưa đặt mốc thời gian";
+
+    static string RateBadge(double rate) =>
+        rate >= 0.8 ? "badge-success" : rate >= 0.5 ? "badge-warning" : "badge-danger";
+}

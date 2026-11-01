@@ -1,0 +1,49 @@
+@model FaceAttendanceCaptureViewModel
+@{
+    ViewData["Title"] = "Điểm danh bằng khuôn mặt";
+}
+
+<div class="page-heading">
+    <div>
+        <p class="eyebrow blue">NHẬN DIỆN KHUÔN MẶT</p>
+        <h1>Điểm danh tự động</h1>
+        <p>Lớp <strong>@Model.MaLopHocPhan</strong> · Buổi <strong>@Model.MaBuoiHoc</strong>@(string.IsNullOrWhiteSpace(Model.NgayHoc) ? "" : $" · {Model.NgayHoc}")</p>
+    </div>
+    <a class="button secondary" asp-controller="GiangVien" asp-action="QuanLyLop" asp-route-maLop="@Model.MaLopHocPhan" asp-route-maBuoiHoc="@Model.MaBuoiHoc">Quay lại lớp</a>
+</div>
+
+<section class="face-layout">
+    <div class="panel face-camera-panel">
+        <div class="camera-frame" data-camera-frame data-state="idle">
+            <video data-face-video autoplay muted playsinline></video>
+            <div class="face-guide" aria-hidden="true"></div>
+            <div class="camera-placeholder" data-camera-placeholder aria-hidden="true"><span class="camera-placeholder-icon">◎</span><span>Camera chưa bật</span></div>
+        </div>
+        <p class="camera-message" data-face-message role="status" aria-live="polite">Bật camera, sau đó đưa từng sinh viên vào khung hình để điểm danh.</p>
+
+        <form method="post" data-face-form>
+            <input asp-for="MaLopHocPhan" type="hidden" />
+            <input asp-for="MaBuoiHoc" type="hidden" />
+            <input asp-for="NgayHoc" type="hidden" />
+            <input asp-for="DescriptorsJson" type="hidden" data-face-descriptors />
+            <div class="form-actions">
+                <button class="button secondary" type="button" data-camera-start>Bật camera</button>
+                <button class="button success-button" type="button" data-face-capture disabled>Nhận diện và điểm danh</button>
+            </div>
+        </form>
+    </div>
+
+    <aside class="panel face-help">
+        <h2>Quy trình</h2>
+        <ol>
+            <li>Chọn đúng buổi học trước khi mở camera.</li>
+            <li>Mỗi lần chỉ để một sinh viên đứng trước camera.</li>
+            <li>Kết quả khớp sẽ được ghi “Có mặt” vào buổi học hiện tại.</li>
+        </ol>
+        <p>Chỉ sinh viên thuộc lớp và đã đăng ký khuôn mặt mới có thể được nhận diện.</p>
+    </aside>
+</section>
+
+<script defer src="~/vendor/face-api/face-api.min.js" asp-append-version="true"></script>
+<script defer src="~/vendor/onnxruntime/ort.min.js" asp-append-version="true"></script>
+<script defer src="~/js/face-capture.js" asp-append-version="true"></script>
