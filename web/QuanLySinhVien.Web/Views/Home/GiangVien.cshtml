@@ -1,61 +1,28 @@
-@{
-    ViewData["Title"] = "Cổng thông tin Giảng viên";
-    ViewData["UseBootstrap"] = true;
-}
-
-<section class="dashboard-heading mb-4">
-    <p class="eyebrow fw-bold mb-1" style="color: #006699;">GIẢNG VIÊN</p>
-    <h1 class="fw-bold">Cổng thông tin giảng viên</h1>
-    <p class="text-muted">Chào @User.Identity?.Name. Phiên đăng nhập đã được xác thực đúng role giảng viên.</p>
+@{ ViewData["Title"] = "Cổng thông tin giảng viên"; }
+<header class="pt-heading">
+    <div>
+        <p class="pt-breadcrumb">Cổng giảng viên / Trang chủ</p>
+        <h1>Trang chủ</h1>
+        <p>Xin chào, @User.Identity?.Name. Tài khoản của bạn có quyền giảng viên.</p>
+    </div>
+    <a class="pt-link" asp-controller="PersonalProfile" asp-action="Index">Thông tin cá nhân →</a>
+</header>
+<section class="pt-section"><div class="pt-section-heading"><h2>Phạm vi quyền</h2><span>Giảng viên</span></div>
+    <dl class="pt-facts">
+        <div><dt>Lớp phụ trách</dt><dd>Các lớp học phần được phân công</dd></div>
+        <div><dt>Lịch giảng dạy</dt><dd>Thứ, tiết và phòng học theo tuần</dd></div>
+        <div><dt>Điểm danh</dt><dd>Điểm danh theo buổi, chốt buổi và xem lịch sử</dd></div>
+        <div><dt>Chuyên cần</dt><dd>Theo dõi tình trạng chuyên cần của sinh viên</dd></div>
+        <div><dt>Điểm danh QR</dt><dd>Mở phiên quét mã cho lớp đang dạy</dd></div>
+        <div><dt>Tài khoản</dt><dd>Cập nhật thông tin cá nhân, đổi mật khẩu</dd></div>
+    </dl>
 </section>
-
-<!-- Hàng 1: Thông tin chung (Phạm vi quyền & Bảo mật) -->
-<div class="row g-4 mb-4">
-    <div class="col-md-6">
-        <div class="card h-100" style="border: 1px solid #dbe4ec; border-radius: 8px; box-shadow: none; background-color: #fff;">
-            <div class="card-body" style="padding: 1.5rem;">
-                <h5 class="fw-bold" style="color: #006699; margin-bottom: 1rem; font-size: 1.15rem;">
-                    Phạm vi quyền
-                </h5>
-                <p class="card-text" style="color: #333; font-size: 0.95rem; line-height: 1.5;">
-                    Xem các lớp được phân công, lịch giảng dạy, cập nhật điểm danh và theo dõi chuyên cần của sinh viên trong từng lớp học phần.
-                </p>
-                <a asp-controller="GiangVien" asp-action="LichGiangDay" class="fw-bold" style="color: #006699; text-decoration: underline; font-size: 0.95rem;">
-                    Mở lớp phụ trách
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-6">
-        <div class="card h-100" style="border: 1px solid #dbe4ec; border-radius: 8px; box-shadow: none; background-color: #fff;">
-            <div class="card-body" style="padding: 1.5rem;">
-                <h5 class="fw-bold" style="color: #006699; margin-bottom: 1rem; font-size: 1.15rem;">
-                    Bảo mật tài khoản
-                </h5>
-                <a asp-controller="Account" asp-action="ChangePassword" class="fw-bold" style="color: #006699; text-decoration: underline; font-size: 0.95rem;">
-                    Đổi mật khẩu
-                </a>
-            </div>
-        </div>
-    </div>
+<div class="pt-home-actions">
+    <section class="pt-section"><h2>Lớp phụ trách</h2><p>Xem lịch giảng dạy, danh sách sinh viên, điểm danh theo buổi và tổng hợp chuyên cần của lớp.</p><a class="button primary-link" asp-controller="GiangVien" asp-action="LichGiangDay">Mở lớp phụ trách</a></section>
+    <section class="pt-section"><h2>Điểm danh QR</h2><p>Mở phiên điểm danh bằng mã QR hoặc nhận diện khuôn mặt cho buổi học đang diễn ra.</p><a class="button" asp-controller="QrAttendance" asp-action="Index">Mở điểm danh QR</a></section>
 </div>
-
-<!-- Hàng 2: Các chức năng nghiệp vụ của Giảng viên -->
-<div class="row g-4 mb-4">
-    <div class="col-md-6">
-        <div class="card h-100" style="border: 1px solid #dbe4ec; border-radius: 8px; box-shadow: none; background-color: #fff;">
-            <div class="card-body" style="padding: 1.5rem;">
-                <h5 class="fw-bold" style="color: #006699; margin-bottom: 1rem; font-size: 1.15rem;">
-                    Lịch giảng dạy & Quản lý lớp
-                </h5>
-                <p class="card-text" style="color: #333; margin-bottom: 1.5rem; font-size: 0.95rem; line-height: 1.5;">
-                    Quản lý danh sách sinh viên, xem lịch giảng dạy, điểm danh theo buổi và tổng hợp tình trạng chuyên cần của lớp học.
-                </p>
-                <a asp-controller="GiangVien" asp-action="LichGiangDay" class="fw-bold" style="color: #006699; text-decoration: underline; font-size: 0.95rem;">
-                    Xem lịch dạy
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
+<section class="pt-section pt-home-account"><h2>Hồ sơ và tài khoản</h2>
+    <a asp-controller="PersonalProfile" asp-action="Index">Thông tin cá nhân <span aria-hidden="true">→</span></a>
+    <a asp-controller="PersonalProfile" asp-action="Edit">Cập nhật thông tin liên hệ <span aria-hidden="true">→</span></a>
+    <a asp-controller="Account" asp-action="ChangePassword">Đổi mật khẩu <span aria-hidden="true">→</span></a>
+</section>

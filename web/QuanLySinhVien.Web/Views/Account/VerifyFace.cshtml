@@ -1,6 +1,7 @@
 @model FaceVerificationViewModel
 @{
     ViewData["Title"] = "Xác thực khuôn mặt";
+    ViewData["Standalone"] = true;
     var autoStart = ViewData["AutoStartFace"] is not false;
 }
 

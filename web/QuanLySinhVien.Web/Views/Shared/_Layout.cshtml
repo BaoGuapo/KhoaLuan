@@ -1,5 +1,8 @@
-@{ var studentPortal = User.Identity?.IsAuthenticated == true && User.IsInRole(RoleNames.SinhVien)
-    && !User.IsInRole(RoleNames.Admin) && !User.IsInRole(RoleNames.CanBoQuanLy) && !User.IsInRole(RoleNames.GiangVien); }
+@{
+    // Mọi role đã đăng nhập đều dùng chung bố cục cổng thông tin: thanh trên + thanh điều hướng bên trái.
+    // Các trang đứng riêng (đăng nhập, xác thực khuôn mặt, báo lỗi) không có thanh điều hướng.
+    var portal = User.Identity?.IsAuthenticated == true && ViewData["Standalone"] is not true;
+}
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -13,12 +16,12 @@
         <script src="~/vendor/bootstrap/js/bootstrap.bundle.min.js" asp-append-version="true"></script>
     }
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    @if (studentPortal)
+    @if (portal)
     {
-        <link rel="stylesheet" href="~/css/student-portal.css" asp-append-version="true" />
+        <link rel="stylesheet" href="~/css/portal.css" asp-append-version="true" />
     }
 </head>
-<body class="@(studentPortal ? "student-portal" : null)">
+<body class="@(portal ? "portal" : null)">
 <a class="skip-link" href="#main-content">Bỏ qua điều hướng</a>
 <div class="toast-region" aria-live="polite" aria-atomic="true">
     @if (TempData["Success"] is string success)
@@ -44,39 +47,23 @@
     <a class="brand" asp-controller="Home" asp-action="Index">
         <span class="brand-mark">HUIT</span><span>Quản lý sinh viên</span>
     </a>
-    @if (User.Identity?.IsAuthenticated == true)
+    @if (portal)
     {
-        <button class="nav-toggle" type="button" aria-controls="primary-nav" aria-expanded="false" aria-label="Mở menu điều hướng" data-nav-toggle>Menu</button>
-        <nav id="primary-nav" aria-label="Điều hướng chính">
-            <span>@User.Identity.Name</span>
-            <a asp-controller="QrAttendance" asp-action="Index">Điểm danh QR</a>
-            @if (User.IsInRole(RoleNames.Admin) || User.IsInRole(RoleNames.CanBoQuanLy))
-            {
-                <a asp-controller="UserManagement" asp-action="Index">Người dùng</a>
-                <a asp-controller="TrainingWorkflow" asp-action="Index">Đào tạo</a>
-                <a asp-controller="BaoCao" asp-action="Index">Báo cáo</a>
-                <a asp-controller="FaceProfileManagement" asp-action="Index">Duyệt hồ sơ khuôn mặt</a>
-            }
-            @if (User.IsInRole(RoleNames.GiangVien))
-            {
-                <a asp-controller="GiangVien" asp-action="LichGiangDay">Lớp phụ trách</a>
-            }
-            @if (!studentPortal)
-            {
-                <a asp-controller="PersonalProfile" asp-action="Index">Cá nhân</a>
-                <a asp-controller="Account" asp-action="ChangePassword">Đổi mật khẩu</a>
-            }
+        <button class="nav-toggle" type="button" aria-controls="primary-nav" aria-expanded="false" aria-label="Mở menu tài khoản" data-nav-toggle>Tài khoản</button>
+        <nav id="primary-nav" aria-label="Tài khoản">
+            @* Các mục chức năng nằm ở thanh bên, thanh trên chỉ giữ tên tài khoản và nút đăng xuất. *@
+            <span>@User.Identity!.Name</span>
             <form asp-controller="Account" asp-action="Logout" method="post">
                 <button type="submit">Đăng xuất</button>
             </form>
         </nav>
     }
 </header>
-@if (studentPortal)
+@if (portal)
 {
-    <div class="sv-shell">
-        <partial name="_StudentNavigation" />
-        <main id="main-content" class="sv-content" tabindex="-1">@RenderBody()</main>
+    <div class="pt-shell">
+        <partial name="_PortalNavigation" />
+        <main id="main-content" class="pt-content" tabindex="-1">@RenderBody()</main>
     </div>
 }
 else

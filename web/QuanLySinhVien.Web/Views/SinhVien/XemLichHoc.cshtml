@@ -5,27 +5,27 @@
     var classes = Model.SemesterRegistered.ToList();
     var inSemester = semester?.NgayBatDau.HasValue == true && semester.NgayKetThuc.HasValue;
 }
-<header class="sv-heading"><div><p class="sv-breadcrumb">Học tập / Lịch học</p><h1>Lịch học</h1><p>Tuần @Model.WeekStart.ToString("dd/MM/yyyy") – @Model.WeekStart.AddDays(6).ToString("dd/MM/yyyy")</p></div><a class="sv-link" asp-action="DangKyHocPhan" asp-route-hocKy="@Model.Semester">Đăng ký học phần →</a></header>
-@if (Model.Error is not null) { <section class="sv-empty sv-error" role="alert"><h2>Chưa tải được lịch học</h2><p>@Model.Error</p><a class="button" asp-action="XemLichHoc">Thử lại</a></section> }
+<header class="pt-heading"><div><p class="pt-breadcrumb">Học tập / Lịch học</p><h1>Lịch học</h1><p>Tuần @Model.WeekStart.ToString("dd/MM/yyyy") – @Model.WeekStart.AddDays(6).ToString("dd/MM/yyyy")</p></div><a class="pt-link" asp-action="DangKyHocPhan" asp-route-hocKy="@Model.Semester">Đăng ký học phần →</a></header>
+@if (Model.Error is not null) { <section class="pt-empty pt-error" role="alert"><h2>Chưa tải được lịch học</h2><p>@Model.Error</p><a class="button" asp-action="XemLichHoc">Thử lại</a></section> }
 else
 {
-    <div class="sv-calendar-toolbar"><form method="get" class="sv-filter"><label>Học kỳ<select name="hocKy">@foreach (var item in Model.Semesters) { <option value="@item.MaHocKy" selected="@(item.MaHocKy == Model.Semester)">@item.TenHocKy</option> }</select></label><button class="button" type="submit">Xem lịch</button></form>
-    <div class="sv-week-nav"><a class="button" asp-route-hocKy="@Model.Semester" asp-route-tuan="@Model.WeekStart.AddDays(-7).ToString("yyyy-MM-dd")" aria-label="Tuần trước">←</a><a class="button" asp-route-hocKy="@Model.Semester">Tuần hiện tại</a><a class="button" asp-route-hocKy="@Model.Semester" asp-route-tuan="@Model.WeekStart.AddDays(7).ToString("yyyy-MM-dd")" aria-label="Tuần sau">→</a></div></div>
-    @if (classes.Count == 0) { <section class="sv-empty"><h2>Chưa có lịch học trong học kỳ này</h2><p>Bạn cần đăng ký lớp học phần để lịch xuất hiện ở đây.</p><a class="button primary-link" asp-action="DangKyHocPhan" asp-route-hocKy="@Model.Semester">Đến trang đăng ký</a></section> }
+    <div class="pt-calendar-toolbar"><form method="get" class="pt-filter"><label>Học kỳ<select name="hocKy">@foreach (var item in Model.Semesters) { <option value="@item.MaHocKy" selected="@(item.MaHocKy == Model.Semester)">@item.TenHocKy</option> }</select></label><button class="button" type="submit">Xem lịch</button></form>
+    <div class="pt-week-nav"><a class="button" asp-route-hocKy="@Model.Semester" asp-route-tuan="@Model.WeekStart.AddDays(-7).ToString("yyyy-MM-dd")" aria-label="Tuần trước">←</a><a class="button" asp-route-hocKy="@Model.Semester">Tuần hiện tại</a><a class="button" asp-route-hocKy="@Model.Semester" asp-route-tuan="@Model.WeekStart.AddDays(7).ToString("yyyy-MM-dd")" aria-label="Tuần sau">→</a></div></div>
+    @if (classes.Count == 0) { <section class="pt-empty"><h2>Chưa có lịch học trong học kỳ này</h2><p>Bạn cần đăng ký lớp học phần để lịch xuất hiện ở đây.</p><a class="button primary-link" asp-action="DangKyHocPhan" asp-route-hocKy="@Model.Semester">Đến trang đăng ký</a></section> }
     else
     {
-        <div class="sv-week-grid">
+        <div class="pt-week-grid">
         @for (var day = 0; day < 7; day++)
         {
             var date = Model.WeekStart.AddDays(day); var weekday = day + 2;
             var lessons = classes.SelectMany(c => c.LichHoc.Where(s => s.ThuTrongTuan == weekday).Select(s => (Course: c, Slot: s)))
                 .Where(x => inSemester && date >= semester!.NgayBatDau!.Value.Date && date <= semester.NgayKetThuc!.Value.Date).OrderBy(x => x.Slot.TietBatDau).ToList();
-            <section class="sv-day"><header><h2>@(weekday == 8 ? "Chủ nhật" : $"Thứ {weekday}")</h2><span>@date.ToString("dd/MM")</span></header>
-            @if (lessons.Count == 0) { <p class="sv-no-lesson">Không có lịch</p> }
-            @foreach (var lesson in lessons) { <article class="sv-lesson"><span>Tiết @lesson.Slot.TietBatDau–@lesson.Slot.TietKetThuc</span><h3>@lesson.Course.TenMonHoc</h3><p>@lesson.Slot.TenPhong</p><small>@lesson.Course.MaLopHocPhan<br />@lesson.Course.HoTen</small></article> }
+            <section class="pt-day"><header><h2>@(weekday == 8 ? "Chủ nhật" : $"Thứ {weekday}")</h2><span>@date.ToString("dd/MM")</span></header>
+            @if (lessons.Count == 0) { <p class="pt-no-lesson">Không có lịch</p> }
+            @foreach (var lesson in lessons) { <article class="pt-lesson"><span>Tiết @lesson.Slot.TietBatDau–@lesson.Slot.TietKetThuc</span><h3>@lesson.Course.TenMonHoc</h3><p>@lesson.Slot.TenPhong</p><small>@lesson.Course.MaLopHocPhan<br />@lesson.Course.HoTen</small></article> }
             </section>
         }
         </div>
-        <p class="sv-table-note">Lịch định kỳ của các lớp đã đăng ký, theo khoảng ngày học kỳ. Các buổi nghỉ hoặc học bù chưa được phản ánh ở màn hình này.</p>
+        <p class="pt-table-note">Lịch định kỳ của các lớp đã đăng ký, theo khoảng ngày học kỳ. Các buổi nghỉ hoặc học bù chưa được phản ánh ở màn hình này.</p>
     }
 }

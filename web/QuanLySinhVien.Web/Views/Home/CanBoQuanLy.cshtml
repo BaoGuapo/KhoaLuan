@@ -1,113 +1,31 @@
-@{ 
-    ViewData["Title"] = "Cán bộ quản lý";
-    ViewData["UseBootstrap"] = true;
-}
-
-<style>
-    :root {
-        --huit-blue: #005b9f;
-        --huit-blue-hover: #00467a;
-        --huit-light: #eaf3fa;
-        --huit-border: #dbe4ec;
-    }
-    .text-huit { color: var(--huit-blue) !important; }
-    
-    .card-custom {
-        border-radius: 12px;
-        border: 1px solid var(--huit-border);
-        background-color: #fff;
-        transition: all 0.25s ease;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.02);
-        height: 100%;
-    }
-    .card-custom:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 16px rgba(0, 91, 159, 0.1);
-        border-color: #b3d4ec;
-    }
-    .icon-box {
-        width: 45px; height: 45px; border-radius: 10px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 1.25rem; margin-bottom: 1rem;
-    }
-</style>
-
-<div class="container-fluid py-4">
-    <!-- TIÊU ĐỀ THEO CODE GỐC CỦA BẠN -->
-    <section class="dashboard-heading mb-4">
-        <p class="eyebrow fw-bold mb-1 text-huit">CÁN BỘ QUẢN LÝ</p>
-        <h1 class="fw-bold">Cổng quản lý đào tạo</h1>
-        <p class="text-muted">Chào @User.Identity?.Name. Phiên đăng nhập đã được xác thực đúng role cán bộ quản lý.</p>
-    </section>
-
-    <!-- HÀNG 1: THÔNG TIN TÀI KHOẢN -->
-    <div class="row g-4 mb-4">
-        <div class="col-md-6">
-            <div class="card-custom p-4">
-                <h5 class="fw-bold text-huit mb-3">Phạm vi quyền</h5>
-                <p class="text-muted mb-0" style="line-height: 1.6;">
-                    Quản lý tài khoản, hồ sơ sinh viên, hồ sơ giảng viên, môn học và lớp học phần.
-                </p>
-                <a asp-controller="UserManagement" asp-action="Index" class="fw-bold text-huit text-decoration-underline">Mở quản lý người dùng</a>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card-custom p-4">
-                <h5 class="fw-bold text-huit mb-3">Bảo mật tài khoản</h5>
-                <a asp-controller="Account" asp-action="ChangePassword" class="fw-bold text-huit text-decoration-underline">Đổi mật khẩu</a>
-            </div>
-        </div>
+@{ ViewData["Title"] = "Cán bộ quản lý"; }
+<header class="pt-heading">
+    <div>
+        <p class="pt-breadcrumb">Cổng quản lý / Trang chủ</p>
+        <h1>Trang chủ</h1>
+        <p>Xin chào, @User.Identity?.Name. Tài khoản của bạn có quyền cán bộ quản lý.</p>
     </div>
-
-    <!-- HÀNG 2: QUẢN LÝ DANH MỤC CƠ SỞ -->
-    <div class="card-custom p-4 mb-4">
-        <div class="icon-box bg-light text-huit"><i class="bi bi-person-bounding-box"></i></div>
-        <h5 class="fw-bold text-dark">Duyệt hồ sơ khuôn mặt</h5>
-        <p class="text-muted">Xác minh danh tính, duyệt hồ sơ chờ xử lý và quản lý hồ sơ dùng chung cho tất cả lớp.</p>
-        <a asp-controller="FaceProfileManagement" asp-action="Index" class="btn btn-primary align-self-start">Mở trang duyệt hồ sơ khuôn mặt</a>
-    </div>
-    <h5 class="fw-bold text-dark mb-3 mt-4"><i class="bi bi-hdd-stack me-2 text-huit"></i>Dữ liệu & Danh mục</h5>
-    <div class="row g-4 mb-4">
-        <div class="col-md-6">
-            <div class="card-custom p-4 d-flex flex-column">
-                <div class="icon-box bg-light text-huit"><i class="bi bi-journal-bookmark-fill"></i></div>
-                <h5 class="fw-bold text-dark mb-2">Quản lý môn học</h5>
-                <p class="text-muted mb-4 fs-6">Danh mục môn học theo ngành, tín chỉ, tiết lý thuyết & thực hành.</p>
-                <a href="/CanBoQuanLy/QuanLyMonHoc" class="fw-bold text-huit text-decoration-underline mt-auto">Truy cập ngay</a>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card-custom p-4 d-flex flex-column">
-                <div class="icon-box bg-light text-huit"><i class="bi bi-grid-1x2-fill"></i></div>
-                <h5 class="fw-bold text-dark mb-2">Tạo lớp học phần</h5>
-                <p class="text-muted mb-4 fs-6">Thiết lập lớp học phần, mã lớp, sĩ số tối đa chờ phân công giảng dạy.</p>
-                <a asp-controller="TrainingWorkflow" asp-action="Index" class="fw-bold text-huit text-decoration-underline mt-auto">Chương trình đào tạo → áp dụng học kỳ → mở lớp</a>
-            </div>
-        </div>
-    </div>
-
-    <!-- HÀNG 3: ĐIỀU PHỐI GIẢNG VIÊN & SINH VIÊN -->
-    <h5 class="fw-bold text-dark mb-3 mt-4"><i class="bi bi-diagram-3 me-2 text-huit"></i>Điều phối Đào tạo</h5>
-    <div class="row g-4 mb-4">
-        <!-- Phân công Giảng viên -->
-        <div class="col-md-6">
-            <div class="card-custom p-4" style="border-left: 4px solid #f59e0b;">
-                <h5 class="fw-bold text-dark mb-2">Giảng viên (Phân công lịch)</h5>
-                <p class="text-muted mb-3 fs-6">Gán giảng viên vào lớp học phần, xếp lịch học theo tuần và lưu vào CSDL.</p>
-                <a asp-controller="TrainingWorkflow" asp-action="Index" class="btn btn-sm btn-outline-warning text-dark fw-bold rounded-pill px-3 shadow-sm border-warning">
-                    <i class="bi bi-calendar-plus me-1"></i>Xếp lịch học
-                </a>
-            </div>
-        </div>
-        <!-- Mở cổng Sinh viên -->
-        <div class="col-md-6">
-            <div class="card-custom p-4" style="border-left: 4px solid #10b981;">
-                <h5 class="fw-bold text-dark mb-2">Sinh viên (Mở đăng ký)</h5>
-                <p class="text-muted mb-3 fs-6">Đưa các lớp đã có giảng viên và lịch học lên cổng để sinh viên đăng ký.</p>
-                <a asp-controller="CanBoQuanLy" asp-action="MoCongDangKy" class="btn btn-sm btn-outline-success fw-bold rounded-pill px-3 shadow-sm">
-                    <i class="bi bi-check2-square me-1"></i>Mở cổng ĐKHP
-                </a>
-            </div>
-        </div>
-    </div>
+    <a class="pt-link" asp-controller="PersonalProfile" asp-action="Index">Thông tin cá nhân →</a>
+</header>
+<section class="pt-section"><div class="pt-section-heading"><h2>Phạm vi quyền</h2><span>Cán bộ quản lý</span></div>
+    <dl class="pt-facts">
+        <div><dt>Người dùng</dt><dd>Tài khoản, hồ sơ sinh viên và giảng viên</dd></div>
+        <div><dt>Danh mục</dt><dd>Môn học, chương trình đào tạo, học kỳ</dd></div>
+        <div><dt>Lớp học phần</dt><dd>Mở lớp, phân công giảng viên, xếp lịch</dd></div>
+        <div><dt>Đăng ký học phần</dt><dd>Mở và đóng cổng đăng ký cho sinh viên</dd></div>
+        <div><dt>Điểm danh</dt><dd>Duyệt hồ sơ khuôn mặt, xem thống kê chuyên cần</dd></div>
+        <div><dt>Tài khoản</dt><dd>Cập nhật thông tin cá nhân, đổi mật khẩu</dd></div>
+    </dl>
+</section>
+<div class="pt-home-actions">
+    <section class="pt-section"><h2>Quản lý người dùng</h2><p>Tạo và sửa tài khoản, phân quyền, quản lý hồ sơ sinh viên và giảng viên.</p><a class="button primary-link" asp-controller="UserManagement" asp-action="Index">Mở quản lý người dùng</a></section>
+    <section class="pt-section"><h2>Quản lý môn học</h2><p>Danh mục môn học theo ngành, số tín chỉ, tiết lý thuyết và thực hành.</p><a class="button" asp-controller="CanBoQuanLy" asp-action="QuanLyMonHoc">Mở danh mục môn học</a></section>
+    <section class="pt-section"><h2>Chương trình đào tạo</h2><p>Lập chương trình, áp dụng cho học kỳ, mở lớp học phần, xếp lịch, phân công giảng viên rồi mở cổng đăng ký cho sinh viên.</p><a class="button" asp-controller="TrainingWorkflow" asp-action="Index">Mở quy trình đào tạo</a></section>
+    <section class="pt-section"><h2>Thống kê điểm danh</h2><p>Tỷ lệ chuyên cần theo học kỳ, môn học và lớp học phần, kèm biểu đồ và xuất Excel.</p><a class="button" asp-controller="BaoCao" asp-action="Index">Xem báo cáo</a></section>
+    <section class="pt-section"><h2>Duyệt hồ sơ khuôn mặt</h2><p>Xác minh danh tính và duyệt hồ sơ chờ xử lý, dùng chung cho tất cả lớp.</p><a class="button" asp-controller="FaceProfileManagement" asp-action="Index">Mở trang duyệt hồ sơ</a></section>
 </div>
+<section class="pt-section pt-home-account"><h2>Hồ sơ và tài khoản</h2>
+    <a asp-controller="QrAttendance" asp-action="Index">Điểm danh QR <span aria-hidden="true">→</span></a>
+    <a asp-controller="PersonalProfile" asp-action="Index">Thông tin cá nhân <span aria-hidden="true">→</span></a>
+    <a asp-controller="Account" asp-action="ChangePassword">Đổi mật khẩu <span aria-hidden="true">→</span></a>
+</section>

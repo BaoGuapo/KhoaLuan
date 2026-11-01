@@ -1,12 +1,12 @@
 @model UserDetailModel?
 @{ ViewData["Title"] = "Trang chủ sinh viên"; var profile = Model?.AcademicProfile; string Show(string? value) => string.IsNullOrWhiteSpace(value) ? "Chưa cập nhật" : value; }
-<header class="sv-heading"><div><p class="sv-breadcrumb">Cổng sinh viên / Trang chủ</p><h1>Trang chủ</h1><p>Xin chào, @(Model?.FullName ?? User.Identity?.Name).</p></div><a class="sv-link" asp-controller="PersonalProfile" asp-action="Index">Thông tin cá nhân →</a></header>
-@if (ViewData["ProfileUnavailable"] is true) { <div class="sv-notice" role="status">Chưa tải được hồ sơ. <a asp-action="SinhVien">Tải lại trang</a></div> }
-<section class="sv-home-profile sv-section"><div class="sv-section-heading"><h2>Thông tin sinh viên</h2><span>@(Model?.ProfileCode ?? User.Identity?.Name)</span></div>
-    <dl class="sv-facts"><div><dt>Họ và tên</dt><dd>@Show(Model?.FullName)</dd></div><div><dt>Lớp</dt><dd>@Show(profile?.LopHoc)</dd></div><div><dt>Ngành</dt><dd>@Show(profile?.Nganh)</dd></div><div><dt>Khóa học</dt><dd>@Show(profile?.KhoaHoc)</dd></div><div><dt>Khoa</dt><dd>@Show(profile?.Khoa)</dd></div><div><dt>Bậc đào tạo</dt><dd>@Show(profile?.BacDaoTao)</dd></div></dl>
+<header class="pt-heading"><div><p class="pt-breadcrumb">Cổng sinh viên / Trang chủ</p><h1>Trang chủ</h1><p>Xin chào, @(Model?.FullName ?? User.Identity?.Name).</p></div><a class="pt-link" asp-controller="PersonalProfile" asp-action="Index">Thông tin cá nhân →</a></header>
+@if (ViewData["ProfileUnavailable"] is true) { <div class="pt-notice" role="status">Chưa tải được hồ sơ. <a asp-action="SinhVien">Tải lại trang</a></div> }
+<section class="pt-home-profile pt-section"><div class="pt-section-heading"><h2>Thông tin sinh viên</h2><span>@(Model?.ProfileCode ?? User.Identity?.Name)</span></div>
+    <dl class="pt-facts"><div><dt>Họ và tên</dt><dd>@Show(Model?.FullName)</dd></div><div><dt>Lớp</dt><dd>@Show(profile?.LopHoc)</dd></div><div><dt>Ngành</dt><dd>@Show(profile?.Nganh)</dd></div><div><dt>Khóa học</dt><dd>@Show(profile?.KhoaHoc)</dd></div><div><dt>Khoa</dt><dd>@Show(profile?.Khoa)</dd></div><div><dt>Bậc đào tạo</dt><dd>@Show(profile?.BacDaoTao)</dd></div></dl>
 </section>
-<div class="sv-home-actions">
-    <section class="sv-section"><h2>Đăng ký học phần</h2><p>Xem môn đang mở, chọn lớp phù hợp lịch học và theo dõi kết quả đăng ký.</p><a class="button primary-link" asp-controller="SinhVien" asp-action="DangKyHocPhan">Đăng ký học phần</a></section>
-    <section class="sv-section"><h2>Lịch học</h2><p>Tra cứu lịch theo tuần, phòng học và giảng viên của các lớp đã đăng ký.</p><a class="button" asp-controller="SinhVien" asp-action="XemLichHoc">Xem lịch học</a></section>
+<div class="pt-home-actions">
+    <section class="pt-section"><h2>Đăng ký học phần</h2><p>Xem môn đang mở, chọn lớp phù hợp lịch học và theo dõi kết quả đăng ký.</p><a class="button primary-link" asp-controller="SinhVien" asp-action="DangKyHocPhan">Đăng ký học phần</a></section>
+    <section class="pt-section"><h2>Lịch học</h2><p>Tra cứu lịch theo tuần, phòng học và giảng viên của các lớp đã đăng ký.</p><a class="button" asp-controller="SinhVien" asp-action="XemLichHoc">Xem lịch học</a></section>
 </div>
-<section class="sv-section sv-home-account"><h2>Hồ sơ và tài khoản</h2><a asp-controller="PersonalProfile" asp-action="Edit">Cập nhật thông tin liên hệ <span aria-hidden="true">→</span></a><a asp-controller="FaceRecognition" asp-action="Profile">Đăng ký / cập nhật khuôn mặt <span aria-hidden="true">→</span></a><a asp-controller="Account" asp-action="ChangePassword">Đổi mật khẩu <span aria-hidden="true">→</span></a></section>
+<section class="pt-section pt-home-account"><h2>Hồ sơ và tài khoản</h2><a asp-controller="PersonalProfile" asp-action="Edit">Cập nhật thông tin liên hệ <span aria-hidden="true">→</span></a><a asp-controller="FaceRecognition" asp-action="Profile">Đăng ký / cập nhật khuôn mặt <span aria-hidden="true">→</span></a><a asp-controller="Account" asp-action="ChangePassword">Đổi mật khẩu <span aria-hidden="true">→</span></a></section>
