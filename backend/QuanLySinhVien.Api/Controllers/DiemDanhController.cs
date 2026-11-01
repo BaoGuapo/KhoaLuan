@@ -193,7 +193,8 @@ public sealed class DiemDanhController(
         if (!match.Succeeded)
             return UnprocessableEntity(new { code = match.ErrorCode, message = match.ErrorMessage });
 
-        if (!string.Equals(match.Value.MaSinhVien, maSinhVien, StringComparison.OrdinalIgnoreCase))
+        // match.Succeeded đã được kiểm tra ngay trên, nên Value chắc chắn có giá trị.
+        if (!string.Equals(match.Value!.MaSinhVien, maSinhVien, StringComparison.OrdinalIgnoreCase))
             return StatusCode(403, new { code = "FaceMismatch", message = "Khuôn mặt không khớp với tài khoản đăng nhập." });
 
         var attendance = await db.ChiTietDiemDanhs.FindAsync([maBuoiHoc, match.Value.MaSinhVien], ct);
