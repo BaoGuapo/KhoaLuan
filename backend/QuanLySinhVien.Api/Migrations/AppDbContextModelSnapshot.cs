@@ -22,8 +22,6 @@ namespace QuanLySinhVien.Api.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-<<<<<<< HEAD
-=======
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.ApDungHocKy", b =>
                 {
                     b.Property<Guid>("Id")
@@ -103,7 +101,6 @@ namespace QuanLySinhVien.Api.Migrations
                     b.ToTable("AttendanceChallenges");
                 });
 
->>>>>>> origin/main
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.BuoiHoc", b =>
                 {
                     b.Property<string>("MaBuoiHoc")
@@ -117,19 +114,11 @@ namespace QuanLySinhVien.Api.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("ThoiGianDiemDanh")
-<<<<<<< HEAD
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("TrangThaiBuoiHoc")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-=======
                         .HasColumnType("datetime")
                         .HasColumnName("thoiGianMoDiemDanh");
 
                     b.Property<byte?>("TrangThaiBuoiHoc")
                         .HasColumnType("tinyint");
->>>>>>> origin/main
 
                     b.HasKey("MaBuoiHoc");
 
@@ -146,8 +135,6 @@ namespace QuanLySinhVien.Api.Migrations
                     b.Property<string>("MaSinhVien")
                         .HasColumnType("nvarchar(30)");
 
-<<<<<<< HEAD
-=======
                     b.Property<double?>("DoChinhXacMet")
                         .HasColumnType("float");
 
@@ -161,7 +148,6 @@ namespace QuanLySinhVien.Api.Migrations
                     b.Property<double?>("KinhDo")
                         .HasColumnType("float");
 
->>>>>>> origin/main
                     b.Property<DateTime?>("ThoiGianCheckIn")
                         .HasColumnType("datetime2");
 
@@ -169,12 +155,9 @@ namespace QuanLySinhVien.Api.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-<<<<<<< HEAD
-=======
                     b.Property<double?>("ViDo")
                         .HasColumnType("float");
 
->>>>>>> origin/main
                     b.HasKey("MaBuoiHoc", "MaSinhVien");
 
                     b.HasIndex("MaSinhVien");
@@ -190,8 +173,6 @@ namespace QuanLySinhVien.Api.Migrations
                     b.Property<string>("MaLopHocPhan")
                         .HasColumnType("nvarchar(30)");
 
-<<<<<<< HEAD
-=======
                     b.Property<string>("LoaiDangKy")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
@@ -199,20 +180,14 @@ namespace QuanLySinhVien.Api.Migrations
                         .HasColumnType("nvarchar(12)")
                         .HasDefaultValue("moi");
 
->>>>>>> origin/main
                     b.Property<DateTime>("ThoiGianDangKy")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("TongSoBuoiVang")
                         .HasColumnType("int");
 
-<<<<<<< HEAD
-                    b.Property<string>("TrangThaiCanhBao")
-                        .HasColumnType("nvarchar(max)");
-=======
                     b.Property<byte?>("TrangThaiCanhBao")
                         .HasColumnType("tinyint");
->>>>>>> origin/main
 
                     b.HasKey("MaSinhVien", "MaLopHocPhan");
 
@@ -221,8 +196,6 @@ namespace QuanLySinhVien.Api.Migrations
                     b.ToTable("DanhSachSinhVienLop", (string)null);
                 });
 
-<<<<<<< HEAD
-=======
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.DieuKienHocPhan", b =>
                 {
                     b.Property<Guid>("KeHoachDaoTaoId")
@@ -290,15 +263,12 @@ namespace QuanLySinhVien.Api.Migrations
                     b.ToTable("DotDangKyHocPhan", (string)null);
                 });
 
->>>>>>> origin/main
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.GiangVien", b =>
                 {
                     b.Property<string>("MaGiangVien")
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
-<<<<<<< HEAD
-=======
                     b.Property<string>("AnhDaiDien")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
@@ -335,19 +305,15 @@ namespace QuanLySinhVien.Api.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
->>>>>>> origin/main
                     b.Property<string>("HoTen")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-<<<<<<< HEAD
-=======
                     b.Property<string>("Khoa")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
->>>>>>> origin/main
                     b.Property<string>("MatKhauLegacy")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -355,11 +321,6 @@ namespace QuanLySinhVien.Api.Migrations
                         .HasColumnType("varchar(255)")
                         .HasColumnName("matKhau");
 
-<<<<<<< HEAD
-                    b.Property<bool>("TrangThaiTaiKhoan")
-                        .HasColumnType("bit");
-
-=======
                     b.Property<DateTime?>("NgayBatDauCongTac")
                         .HasColumnType("datetime2");
 
@@ -403,7 +364,6 @@ namespace QuanLySinhVien.Api.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
->>>>>>> origin/main
                     b.Property<Guid?>("UserId")
                         .HasColumnType("uniqueidentifier");
 
@@ -416,8 +376,6 @@ namespace QuanLySinhVien.Api.Migrations
                     b.ToTable("GiangVien", (string)null);
                 });
 
-<<<<<<< HEAD
-=======
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.HoSoHocVu", b =>
                 {
                     b.Property<string>("MaSinhVien")
@@ -442,14 +400,11 @@ namespace QuanLySinhVien.Api.Migrations
                     b.ToTable("HoSoHocVu", (string)null);
                 });
 
->>>>>>> origin/main
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.HoSoKhuonMat", b =>
                 {
                     b.Property<string>("MaHoSo")
                         .HasColumnType("nvarchar(450)");
 
-<<<<<<< HEAD
-=======
                     b.Property<DateTime?>("ApprovedAtUtc")
                         .HasColumnType("datetime2");
 
@@ -457,13 +412,10 @@ namespace QuanLySinhVien.Api.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
->>>>>>> origin/main
                     b.Property<string>("MaSinhVien")
                         .IsRequired()
                         .HasColumnType("nvarchar(30)");
 
-<<<<<<< HEAD
-=======
                     b.Property<string>("RegistrationPhotosProtected")
                         .HasColumnType("nvarchar(max)");
 
@@ -485,7 +437,6 @@ namespace QuanLySinhVien.Api.Migrations
                     b.Property<Guid?>("ReviewVersion")
                         .HasColumnType("uniqueidentifier");
 
->>>>>>> origin/main
                     b.Property<DateTime>("ThoiGianCapNhat")
                         .HasColumnType("datetime2");
 
@@ -507,17 +458,6 @@ namespace QuanLySinhVien.Api.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
-<<<<<<< HEAD
-                    b.Property<string>("LoaiHocKy")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("NgayBatDau")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("NgayKetThuc")
-                        .HasColumnType("datetime2");
-=======
                     b.Property<byte?>("LoaiHocKy")
                         .HasColumnType("tinyint");
 
@@ -526,7 +466,6 @@ namespace QuanLySinhVien.Api.Migrations
 
                     b.Property<DateTime?>("NgayKetThuc")
                         .HasColumnType("date");
->>>>>>> origin/main
 
                     b.Property<string>("TenHocKy")
                         .IsRequired()
@@ -537,8 +476,6 @@ namespace QuanLySinhVien.Api.Migrations
                     b.ToTable("HocKyThucTe", (string)null);
                 });
 
-<<<<<<< HEAD
-=======
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.KeHoachDaoTao", b =>
                 {
                     b.Property<Guid>("Id")
@@ -606,7 +543,6 @@ namespace QuanLySinhVien.Api.Migrations
                     b.ToTable("KetQuaHocPhan", (string)null);
                 });
 
->>>>>>> origin/main
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.LichHoc", b =>
                 {
                     b.Property<string>("MaLichHoc")
@@ -659,14 +595,8 @@ namespace QuanLySinhVien.Api.Migrations
                     b.Property<int>("SiSoToiDa")
                         .HasColumnType("int");
 
-<<<<<<< HEAD
-                    b.Property<string>("TrangThai")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-=======
                     b.Property<byte?>("TrangThai")
                         .HasColumnType("tinyint");
->>>>>>> origin/main
 
                     b.HasKey("MaLopHocPhan");
 
@@ -677,8 +607,6 @@ namespace QuanLySinhVien.Api.Migrations
                     b.ToTable("LopHocPhan", (string)null);
                 });
 
-<<<<<<< HEAD
-=======
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.LopHocPhanDuKien", b =>
                 {
                     b.Property<string>("MaLopHocPhan")
@@ -709,7 +637,6 @@ namespace QuanLySinhVien.Api.Migrations
                     b.ToTable("LopHocPhanDuKien", (string)null);
                 });
 
->>>>>>> origin/main
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.MonHoc", b =>
                 {
                     b.Property<string>("MaMonHoc")
@@ -732,8 +659,6 @@ namespace QuanLySinhVien.Api.Migrations
                     b.ToTable("MonHoc", (string)null);
                 });
 
-<<<<<<< HEAD
-=======
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.MonKeHoachDaoTao", b =>
                 {
                     b.Property<Guid>("KeHoachDaoTaoId")
@@ -757,7 +682,6 @@ namespace QuanLySinhVien.Api.Migrations
                     b.ToTable("MonKeHoachDaoTao", (string)null);
                 });
 
->>>>>>> origin/main
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.PhienDiemDanh", b =>
                 {
                     b.Property<Guid>("Id")
@@ -905,8 +829,6 @@ namespace QuanLySinhVien.Api.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
-<<<<<<< HEAD
-=======
                     b.Property<string>("AnhDaiDien")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
@@ -939,14 +861,11 @@ namespace QuanLySinhVien.Api.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
->>>>>>> origin/main
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
-<<<<<<< HEAD
-=======
                     b.Property<string>("GioiTinh")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
@@ -955,14 +874,11 @@ namespace QuanLySinhVien.Api.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
->>>>>>> origin/main
                     b.Property<string>("HoTen")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-<<<<<<< HEAD
-=======
                     b.Property<string>("Khoa")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
@@ -987,7 +903,6 @@ namespace QuanLySinhVien.Api.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
->>>>>>> origin/main
                     b.Property<string>("MatKhauLegacy")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -995,11 +910,6 @@ namespace QuanLySinhVien.Api.Migrations
                         .HasColumnType("varchar(255)")
                         .HasColumnName("matKhau");
 
-<<<<<<< HEAD
-                    b.Property<string>("SoDienThoai")
-                        .HasColumnType("nvarchar(max)");
-
-=======
                     b.Property<string>("Nganh")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
@@ -1042,7 +952,6 @@ namespace QuanLySinhVien.Api.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
->>>>>>> origin/main
                     b.Property<bool>("TrangThaiTaiKhoan")
                         .HasColumnType("bit");
 
@@ -1058,8 +967,6 @@ namespace QuanLySinhVien.Api.Migrations
                     b.ToTable("SinhVien", (string)null);
                 });
 
-<<<<<<< HEAD
-=======
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.StudentIdentityPhoto", b =>
                 {
                     b.Property<string>("MaSinhVien")
@@ -1086,7 +993,6 @@ namespace QuanLySinhVien.Api.Migrations
                     b.ToTable("StudentIdentityPhotos", (string)null);
                 });
 
->>>>>>> origin/main
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.ThongBao", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1138,12 +1044,9 @@ namespace QuanLySinhVien.Api.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-<<<<<<< HEAD
-=======
                     b.Property<bool>("MustChangePassword")
                         .HasColumnType("bit");
 
->>>>>>> origin/main
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasMaxLength(500)
@@ -1180,8 +1083,6 @@ namespace QuanLySinhVien.Api.Migrations
                     b.ToTable("UserRoles");
                 });
 
-<<<<<<< HEAD
-=======
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.ApDungHocKy", b =>
                 {
                     b.HasOne("QuanLySinhVien.Api.Models.Entities.KeHoachDaoTao", "KeHoach")
@@ -1213,7 +1114,6 @@ namespace QuanLySinhVien.Api.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
                 });
 
->>>>>>> origin/main
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.BuoiHoc", b =>
                 {
                     b.HasOne("QuanLySinhVien.Api.Models.Entities.LichHoc", "LichHoc")
@@ -1263,8 +1163,6 @@ namespace QuanLySinhVien.Api.Migrations
                     b.Navigation("SinhVien");
                 });
 
-<<<<<<< HEAD
-=======
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.DieuKienHocPhan", b =>
                 {
                     b.HasOne("QuanLySinhVien.Api.Models.Entities.KeHoachDaoTao", null)
@@ -1302,7 +1200,6 @@ namespace QuanLySinhVien.Api.Migrations
                     b.Navigation("HocKy");
                 });
 
->>>>>>> origin/main
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.GiangVien", b =>
                 {
                     b.HasOne("QuanLySinhVien.Api.Models.Entities.User", null)
@@ -1311,8 +1208,6 @@ namespace QuanLySinhVien.Api.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
                 });
 
-<<<<<<< HEAD
-=======
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.HoSoHocVu", b =>
                 {
                     b.HasOne("QuanLySinhVien.Api.Models.Entities.SinhVien", "SinhVien")
@@ -1324,7 +1219,6 @@ namespace QuanLySinhVien.Api.Migrations
                     b.Navigation("SinhVien");
                 });
 
->>>>>>> origin/main
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.HoSoKhuonMat", b =>
                 {
                     b.HasOne("QuanLySinhVien.Api.Models.Entities.SinhVien", "SinhVien")
@@ -1336,8 +1230,6 @@ namespace QuanLySinhVien.Api.Migrations
                     b.Navigation("SinhVien");
                 });
 
-<<<<<<< HEAD
-=======
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.KetQuaHocPhan", b =>
                 {
                     b.HasOne("QuanLySinhVien.Api.Models.Entities.HocKyThucTe", "HocKy")
@@ -1363,7 +1255,6 @@ namespace QuanLySinhVien.Api.Migrations
                     b.Navigation("SinhVien");
                 });
 
->>>>>>> origin/main
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.LichHoc", b =>
                 {
                     b.HasOne("QuanLySinhVien.Api.Models.Entities.LopHocPhan", "LopHocPhan")
@@ -1402,8 +1293,6 @@ namespace QuanLySinhVien.Api.Migrations
                     b.Navigation("MonHoc");
                 });
 
-<<<<<<< HEAD
-=======
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.LopHocPhanDuKien", b =>
                 {
                     b.HasOne("QuanLySinhVien.Api.Models.Entities.ApDungHocKy", "ApDung")
@@ -1442,7 +1331,6 @@ namespace QuanLySinhVien.Api.Migrations
                     b.Navigation("MonHoc");
                 });
 
->>>>>>> origin/main
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.PhienDiemDanh", b =>
                 {
                     b.HasOne("QuanLySinhVien.Api.Models.Entities.BuoiHoc", "BuoiHoc")
@@ -1473,8 +1361,6 @@ namespace QuanLySinhVien.Api.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
                 });
 
-<<<<<<< HEAD
-=======
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.StudentIdentityPhoto", b =>
                 {
                     b.HasOne("QuanLySinhVien.Api.Models.Entities.SinhVien", "SinhVien")
@@ -1486,7 +1372,6 @@ namespace QuanLySinhVien.Api.Migrations
                     b.Navigation("SinhVien");
                 });
 
->>>>>>> origin/main
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.UserRole", b =>
                 {
                     b.HasOne("QuanLySinhVien.Api.Models.Entities.Role", "Role")
@@ -1506,27 +1391,21 @@ namespace QuanLySinhVien.Api.Migrations
                     b.Navigation("User");
                 });
 
-<<<<<<< HEAD
-=======
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.ApDungHocKy", b =>
                 {
                     b.Navigation("LopHocPhans");
                 });
 
->>>>>>> origin/main
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.BuoiHoc", b =>
                 {
                     b.Navigation("ChiTietDiemDanhs");
                 });
 
-<<<<<<< HEAD
-=======
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.KeHoachDaoTao", b =>
                 {
                     b.Navigation("MonHocs");
                 });
 
->>>>>>> origin/main
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.LichHoc", b =>
                 {
                     b.Navigation("BuoiHocs");

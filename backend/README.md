@@ -1,10 +1,7 @@
 # Backend — QuanLySinhVien.Api
 
-<<<<<<< HEAD
-=======
 Điều kiện đăng ký học phần và cấu hình đợt/kết quả học tập: [hướng dẫn cập nhật](../docs/DANG_KY_HOC_PHAN.md). Dữ liệu demo đào tạo cần hồ sơ học vụ và đợt đăng ký phù hợp trước khi sinh viên tự đăng ký.
 
->>>>>>> origin/main
 ASP.NET Core Web API cho hệ thống quản lý sinh viên. API là thành phần duy nhất truy cập SQL Server/Azure SQL; web và mobile chỉ gọi API qua HTTPS.
 
 ## Yêu cầu
@@ -49,14 +46,11 @@ dotnet run --project backend/QuanLySinhVien.Api
 
 Khi chạy Development, Swagger ở `https://localhost:<port>/swagger`. Nhấn **Authorize** và dán access token JWT (không cần tự ghi `Bearer`).
 
-<<<<<<< HEAD
-=======
 Backend Development đồng thời nghe HTTP tại `http://localhost:5081` để Android
 Emulator truy cập qua `http://10.0.2.2:5081`. HTTPS redirection chỉ bị tắt trong
 Development; môi trường production vẫn bắt buộc HTTPS. Không dùng HTTP khi triển
 khai ra Internet.
 
->>>>>>> origin/main
 ## Tài khoản development và API auth
 
 Sau khi migration đã được áp dụng, lần khởi động Development đầu tiên seed bốn role và bốn tài khoản kiểm thử:
@@ -93,11 +87,6 @@ Khi cấp tài khoản, backend thực hiện trong transaction: kiểm tra hồ
 hash mật khẩu, gán `UserRole`, rồi cập nhật `SinhVien.UserId` hoặc `GiangVien.UserId`.
 Nếu hồ sơ không tồn tại API trả `404`; nếu hồ sơ đã có tài khoản API trả `409`.
 
-<<<<<<< HEAD
-Hai cột `matKhau` cũ trong bảng nghiệp vụ chỉ được ánh xạ để tương thích schema và
-không được sử dụng hay trả về API. Mật khẩu đăng nhập chỉ được lưu tại
-`Users.PasswordHash` bằng ASP.NET Core `PasswordHasher`.
-=======
 Tài khoản mới được tạo với `MustChangePassword = true`. Sau lần đăng nhập đầu tiên,
 web tự chuyển người dùng tới trang đổi mật khẩu và không cho mở chức năng khác. API
 cũng chỉ cho phép gọi `change-password` hoặc `logout` cho đến khi đổi mật khẩu thành
@@ -186,4 +175,3 @@ trên ảnh thử nghiệm của lớp trước khi dùng thực tế.
 ## Luồng đào tạo và mở nhiều lớp cùng môn
 
 API và web đã bổ sung nhập chương trình bằng form/Excel, áp dụng học kỳ, mở nhiều lớp học phần cùng môn, phân công giảng viên/lịch học và mở đăng ký. Xem [hướng dẫn và API](TRAINING-WORKFLOW.md). Màn hình web: `/dao-tao` (Admin/CanBoQuanLy).
->>>>>>> origin/main

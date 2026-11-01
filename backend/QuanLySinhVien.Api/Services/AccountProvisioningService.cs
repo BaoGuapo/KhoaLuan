@@ -121,10 +121,7 @@ public sealed class AccountProvisioningService(AppDbContext db) : IAccountProvis
             UserName = userName,
             Email = normalizedEmail,
             FullName = fullName.Trim(),
-<<<<<<< HEAD
-=======
             MustChangePassword = true,
->>>>>>> origin/main
             IsActive = true
         };
         user.PasswordHash = _passwordHasher.HashPassword(user, initialPassword);

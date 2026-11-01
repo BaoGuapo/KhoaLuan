@@ -14,10 +14,7 @@ namespace QuanLySinhVien.Api.Services;
 
 public sealed class AuthService(AppDbContext db, IOptions<JwtSettings> jwtOptions) : IAuthService
 {
-<<<<<<< HEAD
-=======
     public const string MustChangePasswordClaim = "must_change_password";
->>>>>>> origin/main
     private readonly JwtSettings _jwt = jwtOptions.Value;
     private readonly PasswordHasher<User> _passwordHasher = new();
 
@@ -52,10 +49,7 @@ public sealed class AuthService(AppDbContext db, IOptions<JwtSettings> jwtOption
             return false;
 
         user.PasswordHash = _passwordHasher.HashPassword(user, request.NewPassword);
-<<<<<<< HEAD
-=======
         user.MustChangePassword = false;
->>>>>>> origin/main
         await RevokeAllRefreshTokensAsync(userId, cancellationToken);
         await db.SaveChangesAsync(cancellationToken);
         return true;
@@ -81,12 +75,8 @@ public sealed class AuthService(AppDbContext db, IOptions<JwtSettings> jwtOption
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new(ClaimTypes.Name, user.UserName),
-<<<<<<< HEAD
-            new(ClaimTypes.Email, user.Email)
-=======
             new(ClaimTypes.Email, user.Email),
             new(MustChangePasswordClaim, user.MustChangePassword.ToString().ToLowerInvariant())
->>>>>>> origin/main
         };
         claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
         var credentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwt.Key)), SecurityAlgorithms.HmacSha256);
@@ -99,9 +89,6 @@ public sealed class AuthService(AppDbContext db, IOptions<JwtSettings> jwtOption
             ExpiresAtUtc = DateTime.UtcNow.AddDays(_jwt.RefreshTokenDays)
         });
         await db.SaveChangesAsync(cancellationToken);
-<<<<<<< HEAD
-        return new AuthResponse(new JwtSecurityTokenHandler().WriteToken(accessToken), refreshToken, expiresAt, user.UserName, roles);
-=======
         return new AuthResponse(
             new JwtSecurityTokenHandler().WriteToken(accessToken),
             refreshToken,
@@ -110,7 +97,6 @@ public sealed class AuthService(AppDbContext db, IOptions<JwtSettings> jwtOption
             user.FullName,
             roles,
             user.MustChangePassword);
->>>>>>> origin/main
     }
 
     private async Task RevokeAllRefreshTokensAsync(Guid userId, CancellationToken cancellationToken)

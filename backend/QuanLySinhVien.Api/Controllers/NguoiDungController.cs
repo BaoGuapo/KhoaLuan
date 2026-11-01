@@ -22,11 +22,7 @@ public sealed class NguoiDungController(AppDbContext db, IAccountProvisioningSer
     }
 
     [HttpGet("sinh-vien/{maSinhVien}")]
-<<<<<<< HEAD
-    [Authorize]
-=======
     [Authorize(Roles = RoleNames.Admin + "," + RoleNames.CanBoQuanLy)]
->>>>>>> origin/main
     public async Task<ActionResult<SinhVien>> GetSinhVienById(string maSinhVien, CancellationToken ct)
     {
         var item = await db.SinhViens.AsNoTracking().SingleOrDefaultAsync(x => x.MaSinhVien == maSinhVien, ct);
@@ -40,30 +36,20 @@ public sealed class NguoiDungController(AppDbContext db, IAccountProvisioningSer
         var code = request.MaSinhVien.Trim();
         if (await db.SinhViens.AnyAsync(x => x.MaSinhVien == code, ct))
             return Conflict(new { message = "Mã sinh viên đã tồn tại." });
-<<<<<<< HEAD
-=======
         var email = request.Email.Trim();
         if (await db.SinhViens.AnyAsync(x => x.Email == email, ct)
             || await db.Users.AnyAsync(x => x.Email == email, ct))
             return Conflict(new { message = "Email đã được sử dụng." });
->>>>>>> origin/main
 
         var item = new SinhVien
         {
             MaSinhVien = code,
             HoTen = request.HoTen.Trim(),
-<<<<<<< HEAD
-            Email = request.Email.Trim(),
-            SoDienThoai = request.SoDienThoai?.Trim(),
-            TrangThaiTaiKhoan = true
-        };
-=======
             Email = email,
             SoDienThoai = request.SoDienThoai?.Trim(),
             TrangThaiTaiKhoan = true
         };
         ApplyStudentProfile(item, request);
->>>>>>> origin/main
         db.SinhViens.Add(item);
         await db.SaveChangesAsync(ct);
         return CreatedAtAction(nameof(GetSinhVienById), new { maSinhVien = item.MaSinhVien }, item);
@@ -71,13 +57,6 @@ public sealed class NguoiDungController(AppDbContext db, IAccountProvisioningSer
 
     [HttpPut("sinh-vien/{maSinhVien}")]
     [Authorize(Roles = RoleNames.Admin + "," + RoleNames.CanBoQuanLy)]
-<<<<<<< HEAD
-    public async Task<IActionResult> UpdateSinhVien(string maSinhVien, SinhVien request, CancellationToken ct)
-    {
-        var item = await db.SinhViens.FindAsync([maSinhVien], ct); if (item is null) return NotFound();
-        item.HoTen = request.HoTen; item.Email = request.Email; item.SoDienThoai = request.SoDienThoai; item.TrangThaiTaiKhoan = request.TrangThaiTaiKhoan;
-        await db.SaveChangesAsync(ct); return NoContent();
-=======
     public async Task<IActionResult> UpdateSinhVien(string maSinhVien, UpdateSinhVienRequest request, CancellationToken ct)
     {
         var item = await db.SinhViens.FindAsync([maSinhVien], ct);
@@ -103,14 +82,10 @@ public sealed class NguoiDungController(AppDbContext db, IAccountProvisioningSer
         }
         await db.SaveChangesAsync(ct);
         return NoContent();
->>>>>>> origin/main
     }
 
     [HttpGet("giang-vien")]
     [Authorize(Roles = RoleNames.Admin + "," + RoleNames.CanBoQuanLy)]
-<<<<<<< HEAD
-    public Task<List<GiangVien>> GetGiangVien(CancellationToken ct) => db.GiangViens.AsNoTracking().OrderBy(x => x.MaGiangVien).ToListAsync(ct);
-=======
     public Task<List<GiangVien>> GetGiangVien(
         string? search,
         string? khoa,
@@ -137,7 +112,6 @@ public sealed class NguoiDungController(AppDbContext db, IAccountProvisioningSer
         var item = await db.GiangViens.AsNoTracking().SingleOrDefaultAsync(x => x.MaGiangVien == maGiangVien, ct);
         return item is null ? NotFound() : Ok(item);
     }
->>>>>>> origin/main
 
     [HttpPost("giang-vien")]
     [Authorize(Roles = RoleNames.Admin + "," + RoleNames.CanBoQuanLy)]
@@ -146,14 +120,11 @@ public sealed class NguoiDungController(AppDbContext db, IAccountProvisioningSer
         var code = request.MaGiangVien.Trim();
         if (await db.GiangViens.AnyAsync(x => x.MaGiangVien == code, ct))
             return Conflict(new { message = "Mã giảng viên đã tồn tại." });
-<<<<<<< HEAD
-=======
         var email = request.Email?.Trim();
         if (!string.IsNullOrWhiteSpace(email)
             && (await db.GiangViens.AnyAsync(x => x.Email == email, ct)
                 || await db.Users.AnyAsync(x => x.Email == email, ct)))
             return Conflict(new { message = "Email đã được sử dụng." });
->>>>>>> origin/main
 
         var item = new GiangVien
         {
@@ -161,11 +132,6 @@ public sealed class NguoiDungController(AppDbContext db, IAccountProvisioningSer
             HoTen = request.HoTen.Trim(),
             TrangThaiTaiKhoan = true
         };
-<<<<<<< HEAD
-        db.GiangViens.Add(item);
-        await db.SaveChangesAsync(ct);
-        return StatusCode(StatusCodes.Status201Created, item);
-=======
         ApplyLecturerProfile(item, request);
         db.GiangViens.Add(item);
         await db.SaveChangesAsync(ct);
@@ -198,7 +164,6 @@ public sealed class NguoiDungController(AppDbContext db, IAccountProvisioningSer
         }
         await db.SaveChangesAsync(ct);
         return NoContent();
->>>>>>> origin/main
     }
 
     [HttpPost("sinh-vien/{maSinhVien}/tai-khoan")]
@@ -243,8 +208,6 @@ public sealed class NguoiDungController(AppDbContext db, IAccountProvisioningSer
         AccountProvisioningStatus.RoleNotConfigured => Problem("Vai trò hệ thống chưa được cấu hình.", statusCode: StatusCodes.Status500InternalServerError),
         _ => Conflict(new { message = "Dữ liệu đã thay đổi hoặc xảy ra xung đột khi cấp tài khoản." })
     };
-<<<<<<< HEAD
-=======
 
     private static void ApplyStudentProfile(SinhVien item, PersonalAcademicProfileRequest request)
     {
@@ -363,5 +326,4 @@ public sealed class NguoiDungController(AppDbContext db, IAccountProvisioningSer
         item.ChucDanh = title?.Trim();
         item.NgayVaoDang = partyDate;
     }
->>>>>>> origin/main
 }

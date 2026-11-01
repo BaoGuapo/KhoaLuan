@@ -2,11 +2,8 @@
 
 Repository chung của đồ án, gồm ASP.NET Core Web API, website ASP.NET Core MVC và ứng dụng Flutter.
 
-<<<<<<< HEAD
-=======
 Luồng điểm danh QR và xác minh khuôn mặt trên web/mobile: xem [hướng dẫn triển khai và kiểm thử](docs/QR_FACE_ATTENDANCE.md). Cần áp dụng migration mới trước khi dùng chức năng.
 
->>>>>>> origin/main
 ## Cấu trúc repository
 
 ```text
@@ -124,18 +121,13 @@ Các địa chỉ mặc định:
 
 - Website: [https://localhost:7082](https://localhost:7082)
 - Trang đăng nhập: [https://localhost:7082/tai-khoan/dang-nhap](https://localhost:7082/tai-khoan/dang-nhap)
-<<<<<<< HEAD
-=======
 - Quản lý người dùng: [https://localhost:7082/quan-ly-nguoi-dung](https://localhost:7082/quan-ly-nguoi-dung)
 - Thông tin cá nhân: [https://localhost:7082/thong-tin-ca-nhan](https://localhost:7082/thong-tin-ca-nhan)
->>>>>>> origin/main
 - Swagger API: [https://localhost:7081/swagger](https://localhost:7081/swagger)
 - Backend API: `https://localhost:7081`
 
 Luôn chạy backend trước website. Dừng một server bằng `Ctrl+C` trong cửa sổ đang chạy server đó.
 
-<<<<<<< HEAD
-=======
 Ứng dụng Flutter nằm trong `mobile/quan_ly_sinh_vien_app`. Sau khi cài Flutter SDK,
 sinh platform Android/iOS lần đầu và chạy trên Android Emulator:
 
@@ -147,7 +139,6 @@ flutter run --dart-define=API_BASE_URL=http://10.0.2.2:5081/
 
 Xem hướng dẫn thiết bị thật và cấu hình HTTPS production tại `mobile/README.md`.
 
->>>>>>> origin/main
 ## 7. Tài khoản kiểm thử Development
 
 Sau khi migration hoàn tất, lần chạy backend đầu tiên trong môi trường Development sẽ tạo bốn role và các tài khoản sau:
@@ -161,24 +152,18 @@ Sau khi migration hoàn tất, lần chạy backend đầu tiên trong môi trư
 
 Các mật khẩu này chỉ dành cho Development, không sử dụng khi triển khai thật.
 
-<<<<<<< HEAD
-=======
 Tài khoản sinh viên/giảng viên được Admin hoặc Cán bộ quản lý cấp mới sẽ phải đổi
 mật khẩu tạm ngay trong lần đăng nhập đầu tiên. Sau khi đổi thành công, hệ thống thu
 hồi phiên cũ và yêu cầu đăng nhập lại bằng mật khẩu mới.
 
->>>>>>> origin/main
 ## 8. Kiểm tra trước khi commit hoặc push
 
 ```powershell
 dotnet build backend/QuanLySinhVien.Api
 dotnet build web/QuanLySinhVien.Web
-<<<<<<< HEAD
-=======
 cd mobile/quan_ly_sinh_vien_app
 flutter analyze
 flutter test
->>>>>>> origin/main
 git status
 ```
 

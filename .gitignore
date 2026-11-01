@@ -9,14 +9,11 @@
 **/.flutter-plugins-dependencies
 **/.packages
 **/build/
-<<<<<<< HEAD
-=======
 **/android/local.properties
 **/android/key.properties
 **/ios/Flutter/ephemeral/
 **/ios/Flutter/Generated.xcconfig
 **/ios/Flutter/flutter_export_environment.sh
->>>>>>> origin/main
 
 # Local configuration and secrets
 **/appsettings.Development.json
@@ -32,10 +29,7 @@
 *.suo
 Thumbs.db
 .DS_Store
-<<<<<<< HEAD
-=======
 
 # Task-local SDKs and test artifacts
 .tools/
 .artifacts/
->>>>>>> origin/main

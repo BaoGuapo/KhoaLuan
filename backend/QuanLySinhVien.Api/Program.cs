@@ -1,13 +1,8 @@
-<<<<<<< HEAD
-using System.Text;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-=======
 using System.Security.Claims;
 using System.Text;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
->>>>>>> origin/main
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -27,8 +22,6 @@ var jwtSettings = builder.Configuration.GetSection(JwtSettings.SectionName).Get<
 jwtSettings.Validate();
 
 builder.Services.AddControllers();
-<<<<<<< HEAD
-=======
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowMobile", policy =>
@@ -39,7 +32,6 @@ builder.Services.AddCors(options =>
     });
 });
 builder.Services.AddDataProtection();
->>>>>>> origin/main
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -69,12 +61,6 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-<<<<<<< HEAD
-builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
-builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IAccountProvisioningService, AccountProvisioningService>();
-=======
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(
     connectionString,
     sql => sql.EnableRetryOnFailure(
@@ -143,7 +129,6 @@ builder.Services.AddRateLimiter(options =>
                 AutoReplenishment = true
             }));
 });
->>>>>>> origin/main
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -169,10 +154,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-<<<<<<< HEAD
-app.UseHttpsRedirection();
-app.UseAuthentication();
-=======
 // Mobile emulator/device uses the HTTP development endpoint because it cannot
 // trust the ASP.NET Core local development certificate. Production still
 // redirects all traffic to HTTPS.
@@ -240,7 +221,6 @@ app.Use(async (context, next) =>
 
     await next();
 });
->>>>>>> origin/main
 app.UseAuthorization();
 app.MapControllers();
 

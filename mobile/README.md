@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-# Mobile
-
-`quan_ly_sinh_vien_app` sẽ là ứng dụng Flutter. Ứng dụng chỉ gọi backend qua HTTPS; không truy cập Azure SQL trực tiếp.
-=======
 # Mobile Flutter
 
 Ứng dụng Flutter nằm tại `mobile/quan_ly_sinh_vien_app`. Mobile chỉ gọi backend
@@ -87,4 +82,3 @@ flutter test
 Các tài khoản Development được ghi trong README gốc. Tài khoản đã tồn tại trước
 migration có `MustChangePassword = false`; để kiểm thử đổi mật khẩu lần đầu, hãy
 cấp một tài khoản sinh viên hoặc giảng viên mới qua Swagger.
->>>>>>> origin/main

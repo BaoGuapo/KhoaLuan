@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-@{ ViewData["Title"] = "Sinh viên"; }
-<section class="dashboard-heading"><p class="eyebrow blue">SINH VIÊN</p><h1>Cổng thông tin sinh viên</h1><p>Chào @User.Identity?.Name. Phiên đăng nhập đã được xác thực đúng role sinh viên.</p></section>
-<div class="role-grid"><article><h2>Phạm vi quyền</h2><p>Hồ sơ, đăng ký môn học, lịch học và chuyên cần thuộc các tuần triển khai tiếp theo.</p></article><article><h2>Bảo mật tài khoản</h2><a asp-controller="Account" asp-action="ChangePassword">Đổi mật khẩu</a></article></div>
-=======
 @model UserDetailModel?
 @{ ViewData["Title"] = "Trang chủ sinh viên"; var profile = Model?.AcademicProfile; string Show(string? value) => string.IsNullOrWhiteSpace(value) ? "Chưa cập nhật" : value; }
 <header class="pt-heading"><div><p class="pt-breadcrumb">Cổng sinh viên / Trang chủ</p><h1>Trang chủ</h1><p>Xin chào, @(Model?.FullName ?? User.TenHienThi()).</p></div><a class="pt-link" asp-controller="PersonalProfile" asp-action="Index">Thông tin cá nhân →</a></header>
@@ -15,4 +10,3 @@
     <section class="pt-section"><h2>Lịch học</h2><p>Tra cứu lịch theo tuần, phòng học và giảng viên của các lớp đã đăng ký.</p><a class="button" asp-controller="SinhVien" asp-action="XemLichHoc">Xem lịch học</a></section>
 </div>
 <section class="pt-section pt-home-account"><h2>Hồ sơ và tài khoản</h2><a asp-controller="PersonalProfile" asp-action="Edit">Cập nhật thông tin liên hệ <span aria-hidden="true">→</span></a><a asp-controller="FaceRecognition" asp-action="Profile">Đăng ký / cập nhật khuôn mặt <span aria-hidden="true">→</span></a><a asp-controller="Account" asp-action="ChangePassword">Đổi mật khẩu <span aria-hidden="true">→</span></a></section>
->>>>>>> origin/main
