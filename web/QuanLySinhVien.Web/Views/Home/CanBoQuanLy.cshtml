@@ -1,36 +1,3 @@
 @{ ViewData["Title"] = "Cán bộ quản lý"; }
-<<<<<<< HEAD
 <section class="dashboard-heading"><p class="eyebrow blue">CÁN BỘ QUẢN LÝ</p><h1>Cổng quản lý đào tạo</h1><p>Chào @User.Identity?.Name. Phiên đăng nhập đã được xác thực đúng role cán bộ quản lý.</p></section>
 <div class="role-grid"><article><h2>Phạm vi quyền</h2><p>Quản lý hồ sơ, môn học, lớp học và báo cáo thuộc các tuần triển khai chức năng website tiếp theo.</p></article><article><h2>Bảo mật tài khoản</h2><a asp-controller="Account" asp-action="ChangePassword">Đổi mật khẩu</a></article></div>
-=======
-<header class="pt-heading">
-    <div>
-        <p class="pt-breadcrumb">Cổng quản lý / Trang chủ</p>
-        <h1>Trang chủ</h1>
-        <p>Xin chào, @User.TenHienThi(). Tài khoản của bạn có quyền cán bộ quản lý.</p>
-    </div>
-    <a class="pt-link" asp-controller="PersonalProfile" asp-action="Index">Thông tin cá nhân →</a>
-</header>
-<section class="pt-section"><div class="pt-section-heading"><h2>Phạm vi quyền</h2><span>Cán bộ quản lý</span></div>
-    <dl class="pt-facts">
-        <div><dt>Người dùng</dt><dd>Tài khoản, hồ sơ sinh viên và giảng viên</dd></div>
-        <div><dt>Danh mục</dt><dd>Môn học, chương trình đào tạo, học kỳ</dd></div>
-        <div><dt>Lớp học phần</dt><dd>Mở lớp, phân công giảng viên, xếp lịch</dd></div>
-        <div><dt>Đăng ký học phần</dt><dd>Mở và đóng cổng đăng ký cho sinh viên</dd></div>
-        <div><dt>Điểm danh</dt><dd>Duyệt hồ sơ khuôn mặt, xem thống kê chuyên cần</dd></div>
-        <div><dt>Tài khoản</dt><dd>Cập nhật thông tin cá nhân, đổi mật khẩu</dd></div>
-    </dl>
-</section>
-<div class="pt-home-actions">
-    <section class="pt-section"><h2>Quản lý người dùng</h2><p>Tạo và sửa tài khoản, phân quyền, quản lý hồ sơ sinh viên và giảng viên.</p><a class="button primary-link" asp-controller="UserManagement" asp-action="Index">Mở quản lý người dùng</a></section>
-    <section class="pt-section"><h2>Quản lý môn học</h2><p>Danh mục môn học theo ngành, số tín chỉ, tiết lý thuyết và thực hành.</p><a class="button" asp-controller="CanBoQuanLy" asp-action="QuanLyMonHoc">Mở danh mục môn học</a></section>
-    <section class="pt-section"><h2>Chương trình đào tạo</h2><p>Lập chương trình, áp dụng cho học kỳ, mở lớp học phần, xếp lịch, phân công giảng viên rồi mở cổng đăng ký cho sinh viên.</p><a class="button" asp-controller="TrainingWorkflow" asp-action="Index">Mở quy trình đào tạo</a></section>
-    <section class="pt-section"><h2>Thống kê điểm danh</h2><p>Tỷ lệ chuyên cần theo học kỳ, môn học và lớp học phần, kèm biểu đồ và xuất Excel.</p><a class="button" asp-controller="BaoCao" asp-action="Index">Xem báo cáo</a></section>
-    <section class="pt-section"><h2>Duyệt hồ sơ khuôn mặt</h2><p>Xác minh danh tính và duyệt hồ sơ chờ xử lý, dùng chung cho tất cả lớp.</p><a class="button" asp-controller="FaceProfileManagement" asp-action="Index">Mở trang duyệt hồ sơ</a></section>
-</div>
-<section class="pt-section pt-home-account"><h2>Hồ sơ và tài khoản</h2>
-    <a asp-controller="QrAttendance" asp-action="Index">Điểm danh QR <span aria-hidden="true">→</span></a>
-    <a asp-controller="PersonalProfile" asp-action="Index">Thông tin cá nhân <span aria-hidden="true">→</span></a>
-    <a asp-controller="Account" asp-action="ChangePassword">Đổi mật khẩu <span aria-hidden="true">→</span></a>
-</section>
->>>>>>> origin/main
