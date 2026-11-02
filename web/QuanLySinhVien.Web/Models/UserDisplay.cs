@@ -10,9 +10,6 @@ public static class UserDisplay
 {
     public const string FullNameClaim = "full_name";
 
-    /// <summary>Số ảnh pravatar hợp lệ; dịch vụ chỉ có img=1 đến img=70.</summary>
-    private const int SoAnhMau = 70;
-
     /// <summary>Họ tên để hiển thị; chưa có thì lùi về mã đăng nhập.</summary>
     public static string TenHienThi(this ClaimsPrincipal user)
     {
@@ -23,13 +20,22 @@ public static class UserDisplay
     /// <summary>Mã đăng nhập (mã sinh viên, mã giảng viên hoặc tài khoản quản trị).</summary>
     public static string MaDangNhap(this ClaimsPrincipal user) => user.Identity?.Name ?? string.Empty;
 
-    /// <summary>
-    /// Ảnh đại diện tạm thời cho bản demo. Chọn theo mã đăng nhập để mỗi tài khoản
-    /// luôn ra cùng một ảnh giữa các lần chạy; khi có ảnh thật thì thay hàm này.
-    /// </summary>
-    public static string AnhDaiDien(this ClaimsPrincipal user) => AnhDaiDien(MaDangNhap(user));
+    /// <summary>Số ảnh pravatar hợp lệ; dịch vụ chỉ có img=1 đến img=70.</summary>
+    private const int SoAnhMau = 70;
 
-    public static string AnhDaiDien(string maDangNhap)
+    /// <summary>
+    /// Ảnh đại diện là ảnh thẻ chụp lúc nhập học. Route /anh-dai-dien trả ảnh thẻ nếu có,
+    /// chưa có thì chuyển sang ảnh mẫu, nên mọi tài khoản đều dùng chung một đường dẫn.
+    /// </summary>
+    public static string AnhDaiDien(this ClaimsPrincipal user) => "/anh-dai-dien";
+
+    /// <summary>
+    /// Ảnh mẫu tạm thời khi chưa có ảnh thẻ. Chọn theo mã đăng nhập để mỗi tài khoản
+    /// luôn ra cùng một ảnh giữa các lần chạy.
+    /// </summary>
+    public static string AnhMau(this ClaimsPrincipal user) => AnhMau(MaDangNhap(user));
+
+    public static string AnhMau(string maDangNhap)
     {
         // FNV-1a để mã nào cũng ra cùng một số, khác với GetHashCode vốn đổi theo tiến trình.
         uint hash = 2166136261;

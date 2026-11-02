@@ -63,7 +63,7 @@
     }
     </nav>
     <div class="pt-sidebar-note">
-        <span class="pt-avatar" aria-hidden="true">@User.ChuDaiDien()<img src="@User.AnhDaiDien()" alt="" loading="lazy" referrerpolicy="no-referrer" /></span>
+        <span class="pt-avatar" aria-hidden="true">@User.ChuDaiDien()@if (User.AnhDaiDien() is { } anhDaiDien) { <img src="@anhDaiDien" alt="" loading="lazy" onerror="this.remove()" /> }</span>
         @* Tên đứng trước, mã đăng nhập để bên dưới vì vẫn cần khi tra cứu. *@
         <div><strong>@User.TenHienThi()</strong>@User.MaDangNhap()</div>
     </div>

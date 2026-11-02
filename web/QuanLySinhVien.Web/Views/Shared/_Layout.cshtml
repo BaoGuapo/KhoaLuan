@@ -53,7 +53,7 @@
         <nav id="primary-nav" aria-label="Tài khoản">
             @* Các mục chức năng nằm ở thanh bên, thanh trên chỉ giữ tên tài khoản và nút đăng xuất. *@
             <span class="pt-user">
-                <span class="pt-avatar" aria-hidden="true">@User.ChuDaiDien()<img src="@User.AnhDaiDien()" alt="" loading="lazy" referrerpolicy="no-referrer" /></span>
+                <span class="pt-avatar" aria-hidden="true">@User.ChuDaiDien()@if (User.AnhDaiDien() is { } anhDaiDien) { <img src="@anhDaiDien" alt="" loading="lazy" onerror="this.remove()" /> }</span>
                 @User.TenHienThi()
             </span>
             <form asp-controller="Account" asp-action="Logout" method="post">

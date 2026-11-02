@@ -574,6 +574,51 @@ namespace QuanLySinhVien.Api.Migrations
                     b.ToTable("LichHoc", (string)null);
                 });
 
+            modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.LichSuSuaDiemDanh", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("LyDo")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("MaBuoiHoc")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("MaSinhVien")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("NguoiSua")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("SuaLucUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TrangThaiCu")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("TrangThaiMoi")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MaSinhVien");
+
+                    b.HasIndex("MaBuoiHoc", "SuaLucUtc");
+
+                    b.ToTable("LichSuSuaDiemDanh", (string)null);
+                });
+
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.LopHocPhan", b =>
                 {
                     b.Property<string>("MaLopHocPhan")
@@ -1272,6 +1317,25 @@ namespace QuanLySinhVien.Api.Migrations
                     b.Navigation("LopHocPhan");
 
                     b.Navigation("PhongHoc");
+                });
+
+            modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.LichSuSuaDiemDanh", b =>
+                {
+                    b.HasOne("QuanLySinhVien.Api.Models.Entities.BuoiHoc", "BuoiHoc")
+                        .WithMany()
+                        .HasForeignKey("MaBuoiHoc")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("QuanLySinhVien.Api.Models.Entities.SinhVien", "SinhVien")
+                        .WithMany()
+                        .HasForeignKey("MaSinhVien")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("BuoiHoc");
+
+                    b.Navigation("SinhVien");
                 });
 
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.LopHocPhan", b =>

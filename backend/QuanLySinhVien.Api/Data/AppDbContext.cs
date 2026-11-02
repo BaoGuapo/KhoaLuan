@@ -19,6 +19,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<LichHoc> LichHocs => Set<LichHoc>();
     public DbSet<BuoiHoc> BuoiHocs => Set<BuoiHoc>();
     public DbSet<ChiTietDiemDanh> ChiTietDiemDanhs => Set<ChiTietDiemDanh>();
+    public DbSet<LichSuSuaDiemDanh> LichSuSuaDiemDanhs => Set<LichSuSuaDiemDanh>();
     public DbSet<HoSoKhuonMat> HoSoKhuonMats => Set<HoSoKhuonMat>();
     public DbSet<StudentIdentityPhoto> StudentIdentityPhotos => Set<StudentIdentityPhoto>();
     public DbSet<PhienDiemDanh> PhienDiemDanhs => Set<PhienDiemDanh>();
@@ -243,6 +244,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
             e.Property(x => x.ThoiGianDiemDanh).HasColumnName("thoiGianMoDiemDanh").HasColumnType("datetime");
             e.Property(x => x.TrangThaiBuoiHoc).HasConversion(x => LegacyAcademicValues.SessionCode(x), x => LegacyAcademicValues.SessionName(x)).IsRequired(false); });
         modelBuilder.Entity<ChiTietDiemDanh>(e => { e.ToTable("ChiTietDiemDanh"); e.HasKey(x => new { x.MaBuoiHoc, x.MaSinhVien }); e.Property(x => x.KetQuaViTri).HasMaxLength(20); e.HasOne(x => x.BuoiHoc).WithMany(x => x.ChiTietDiemDanhs).HasForeignKey(x => x.MaBuoiHoc); e.HasOne(x => x.SinhVien).WithMany().HasForeignKey(x => x.MaSinhVien); });
+        modelBuilder.Entity<LichSuSuaDiemDanh>(e => { e.ToTable("LichSuSuaDiemDanh"); e.HasKey(x => x.Id); e.Property(x => x.TrangThaiCu).HasMaxLength(20); e.Property(x => x.TrangThaiMoi).HasMaxLength(20); e.Property(x => x.LyDo).HasMaxLength(500); e.Property(x => x.NguoiSua).HasMaxLength(50); e.HasIndex(x => new { x.MaBuoiHoc, x.SuaLucUtc }); e.HasOne(x => x.BuoiHoc).WithMany().HasForeignKey(x => x.MaBuoiHoc).OnDelete(DeleteBehavior.Restrict); e.HasOne(x => x.SinhVien).WithMany().HasForeignKey(x => x.MaSinhVien).OnDelete(DeleteBehavior.Restrict); });
         modelBuilder.Entity<HoSoKhuonMat>(e => { e.ToTable("HoSoKhuonMat"); e.HasKey(x => x.MaHoSo); e.HasOne(x => x.SinhVien).WithOne(x => x.HoSoKhuonMat).HasForeignKey<HoSoKhuonMat>(x => x.MaSinhVien); });
         modelBuilder.Entity<PhienDiemDanh>(e => { e.ToTable("PhienDiemDanh"); e.HasKey(x => x.Id); e.HasIndex(x => x.QrTokenHash).IsUnique(); e.HasOne(x => x.BuoiHoc).WithMany().HasForeignKey(x => x.MaBuoiHoc); });
         modelBuilder.Entity<ThongBao>(e => { e.ToTable("ThongBao"); e.HasKey(x => x.Id); e.Property(x => x.TieuDe).HasMaxLength(250); });

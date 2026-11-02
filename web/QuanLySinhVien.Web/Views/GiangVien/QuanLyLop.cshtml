@@ -4,6 +4,10 @@
     var selected = Model.BuoiHoc.FirstOrDefault(x => x.MaBuoiHoc == Model.MaBuoiHocDangChon);
     var moLuc = Model.MoDiemDanhLuc?.ToString("HH:mm");
     var dongLuc = Model.DongDiemDanhLuc?.ToString("HH:mm");
+    // Sinh viên được ghi có mặt nhưng GPS báo ở xa: giảng viên cần kiểm tra trước khi chốt.
+    var canKiemTra = Model.SinhVien.Where(x => x.TrangThaiBuoiHoc is "CoMat" or "DiTre" && x.KetQuaViTri == "NgoaiKhuonVien").ToList();
+    var chiNgoaiKhuonVien = Context.Request.Query["viTri"] == "ngoai";
+    var danhSach = chiNgoaiKhuonVien ? canKiemTra : Model.SinhVien.ToList();
 }
 <div class="page-heading">
     <div><p class="eyebrow blue">LỚP PHỤ TRÁCH</p><h1>@Model.LopHocPhan.TenMonHoc</h1><p>@Model.LopHocPhan.MaLopHocPhan · @Model.LopHocPhan.TenHocKy · @Model.LopHocPhan.MaPhong</p></div>
@@ -59,8 +63,22 @@
         </div>
 
         <p class="section-help">@(Model.CoTheDiemDanh ? "Chọn trạng thái cho từng sinh viên rồi bấm Lưu. Chỉ chốt buổi học sau khi đã kiểm tra toàn bộ danh sách." : "Buổi học này chỉ xem được, không sửa được trạng thái điểm danh.")</p>
+        @if (canKiemTra.Count > 0 || chiNgoaiKhuonVien)
+        {
+            <div class="location-review">
+                <span><strong>@canKiemTra.Count sinh viên</strong> được ghi có mặt nhưng GPS báo ngoài khuôn viên. GPS có thể lệch, hãy kiểm tra lại@(Model.CoTheDiemDanh ? " và đổi sang Vắng nếu sinh viên không có trong lớp" : "").</span>
+                @if (chiNgoaiKhuonVien)
+                {
+                    <a class="button secondary" asp-action="QuanLyLop" asp-route-maLop="@Model.LopHocPhan.MaLopHocPhan" asp-route-maBuoiHoc="@selected.MaBuoiHoc">Hiện tất cả sinh viên</a>
+                }
+                else
+                {
+                    <a class="button secondary" asp-action="QuanLyLop" asp-route-maLop="@Model.LopHocPhan.MaLopHocPhan" asp-route-maBuoiHoc="@selected.MaBuoiHoc" asp-route-viTri="ngoai">Chỉ hiện sinh viên ngoài khuôn viên</a>
+                }
+            </div>
+        }
         <div class="table-card" role="region" aria-label="Điểm danh sinh viên" tabindex="0"><table><thead><tr><th scope="col">Sinh viên</th><th scope="col">Liên hệ</th><th scope="col">Trạng thái buổi này</th>@if (Model.CoTheDiemDanh) { <th scope="col">Thao tác</th> }</tr></thead><tbody>
-        @foreach (var item in Model.SinhVien)
+        @foreach (var item in danhSach)
         {
             <tr>
                 <td><strong>@item.MaSinhVien</strong><small>@item.HoTen</small></td>
@@ -70,14 +88,14 @@
                 {
                     <td>
                         <form method="post" asp-action="CapNhatDiemDanh" class="inline-form attendance-form">
-                            <input type="hidden" name="maLop" value="@Model.LopHocPhan.MaLopHocPhan" /><input type="hidden" name="maBuoiHoc" value="@selected.MaBuoiHoc" /><input type="hidden" name="maSinhVien" value="@item.MaSinhVien" />
+                            <input type="hidden" name="maLop" value="@Model.LopHocPhan.MaLopHocPhan" /><input type="hidden" name="maBuoiHoc" value="@selected.MaBuoiHoc" /><input type="hidden" name="maSinhVien" value="@item.MaSinhVien" />@if (chiNgoaiKhuonVien) { <input type="hidden" name="viTri" value="ngoai" /> }
                             <select name="trangThai" aria-label="Trạng thái điểm danh của @item.HoTen (@item.MaSinhVien)" required><option value="" disabled selected="@(item.TrangThaiBuoiHoc is not ("CoMat" or "DiTre" or "CoPhep" or "Vang"))">Chọn trạng thái</option><option value="CoMat" selected="@(item.TrangThaiBuoiHoc == "CoMat")">Có mặt</option><option value="DiTre" selected="@(item.TrangThaiBuoiHoc == "DiTre")">Đi trễ</option><option value="CoPhep" selected="@(item.TrangThaiBuoiHoc == "CoPhep")">Vắng có phép</option><option value="Vang" selected="@(item.TrangThaiBuoiHoc == "Vang")">Vắng</option></select><button class="button" type="submit" aria-label="Lưu điểm danh của @item.HoTen">Lưu</button>
                         </form>
                     </td>
                 }
             </tr>
         }
-        @if (Model.SinhVien.Count == 0) { <tr><td colspan="@(Model.CoTheDiemDanh ? 4 : 3)" class="empty-state">Lớp chưa có sinh viên đăng ký.</td></tr> }
+        @if (danhSach.Count == 0) { <tr><td colspan="@(Model.CoTheDiemDanh ? 4 : 3)" class="empty-state">@(chiNgoaiKhuonVien ? "Không còn sinh viên nào cần kiểm tra vị trí." : "Lớp chưa có sinh viên đăng ký.")</td></tr> }
         </tbody></table></div>
     }
 </section>
@@ -88,7 +106,10 @@
     <div class="table-card"><table><thead><tr><th>Sinh viên</th><th>Có mặt</th><th>Đi trễ</th><th>Có phép</th><th>Vắng</th><th>Cảnh báo</th></tr></thead><tbody>
     @foreach (var item in Model.SinhVien)
     {
-        <tr><td><strong>@item.MaSinhVien</strong><small>@item.HoTen</small></td><td>@item.CoMat</td><td>@item.DiTre</td><td>@item.CoPhep</td><td><strong>@item.Vang</strong>/@item.TongSoBuoi</td><td><span class="badge @(item.TrangThaiCanhBao == "CamThi" ? "badge-danger" : item.TrangThaiCanhBao == "CanhBao" ? "badge-warning" : "badge-success")">@(item.TrangThaiCanhBao == "CamThi" ? "Cấm thi" : item.TrangThaiCanhBao == "CanhBao" ? "Cảnh báo" : "Bình thường")</span></td></tr>
+        <tr><td><strong>@item.MaSinhVien</strong><small>@item.HoTen</small></td><td>@item.CoMat</td><td>@item.DiTre</td><td>@item.CoPhep</td><td><strong>@item.Vang</strong>/@item.TongSoBuoi</td><td><span class="badge @(item.TrangThaiCanhBao == "CamThi" ? "badge-danger" : item.TrangThaiCanhBao == "CanhBao" ? "badge-warning" : "badge-success")">@(item.TrangThaiCanhBao == "CamThi" ? "Cấm thi" : item.TrangThaiCanhBao == "CanhBao" ? "Cảnh báo" : "Bình thường")</span>@if (item.TrangThaiCanhBao is "CanhBao" or "CamThi")
+            {
+                <form method="post" asp-action="GuiLaiCanhBao" class="inline-form resend-warning" data-confirm="Gửi lại thư @(item.TrangThaiCanhBao == "CamThi" ? "cấm thi" : "cảnh báo") cho @item.HoTen (@item.MaSinhVien) tới @item.Email?"><input type="hidden" name="maLop" value="@Model.LopHocPhan.MaLopHocPhan" /><input type="hidden" name="maSinhVien" value="@item.MaSinhVien" /><input type="hidden" name="maBuoiHoc" value="@selected?.MaBuoiHoc" /><button class="button secondary" type="submit">Gửi lại thư</button></form>
+            }</td></tr>
     }
     @if (Model.SinhVien.Count == 0) { <tr><td colspan="6" class="empty-state">Lớp chưa có sinh viên đăng ký.</td></tr> }
     </tbody></table></div>

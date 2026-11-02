@@ -16,6 +16,7 @@ public sealed class DiemDanhController(
     AppDbContext db,
     IFaceRecognitionService faces,
     CampusLocationSettings campus,
+    AttendanceDemoSettings demo,
     ILogger<DiemDanhController> logger) : ControllerBase
 {
     [HttpPost("buoi-hoc/{maBuoiHoc}/phien-diem-danh")]
@@ -53,7 +54,7 @@ public sealed class DiemDanhController(
         if (session.TrangThaiBuoiHoc == "DaChot")
             return Conflict(new { code = "AttendanceFinalized", message = "Buổi học đã chốt điểm danh." });
         // Giảng viên chỉ sửa trong giờ lên lớp; học vụ vẫn sửa được để xử lý sai sót.
-        if (!User.IsInRole(RoleNames.Admin) && !User.IsInRole(RoleNames.CanBoQuanLy)
+        if (!demo.BoQuaKhungGio && !User.IsInRole(RoleNames.Admin) && !User.IsInRole(RoleNames.CanBoQuanLy)
             && !ClassPeriods.DangTrongKhungGio(session.NgayHocCuThe, session.TietBatDau, session.TietKetThuc))
             return Conflict(new { code = "OutsideAttendanceWindow", message = "Chỉ điểm danh được trong giờ lên lớp của buổi hôm nay." });
         var classCode = session.MaLopHocPhan;

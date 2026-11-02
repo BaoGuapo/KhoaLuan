@@ -47,14 +47,62 @@ public sealed class GiangVienController(ITeachingManagementApiClient api) : Cont
 
         // Chi tiết một buổi dùng lại dữ liệu workspace, chỉ để xem nên không cần kiểm tra khung giờ.
         LecturerClassWorkspaceModel? detail = null;
+        // Mở trang mà chưa chọn buổi thì hiện luôn buổi gần nhất đã diễn ra, khỏi phải bấm thêm.
+        maBuoiHoc ??= history.Value.BuoiHoc
+            .Where(x => x.NgayHocCuThe.Date <= DateTime.Today)
+            .OrderByDescending(x => x.NgayHocCuThe)
+            .FirstOrDefault()?.MaBuoiHoc;
+        IReadOnlyCollection<AttendanceCorrectionModel> corrections = [];
         if (!string.IsNullOrWhiteSpace(maBuoiHoc))
         {
             var result = await SafeAsync(() => api.GetClassWorkspaceAsync(token, maLop, maBuoiHoc, ct));
             if (result.Succeeded) detail = result.Value;
             else TempData["Error"] = result.Error;
+            var log = await SafeAsync(() => api.GetCorrectionsAsync(token, maBuoiHoc, ct));
+            if (log.Succeeded && log.Value is not null) corrections = log.Value;
         }
 
-        return View(new ClassAttendanceHistoryPageViewModel { LichSu = history.Value, ChiTietBuoi = detail });
+        return View(new ClassAttendanceHistoryPageViewModel { LichSu = history.Value, ChiTietBuoi = detail, LichSuSua = corrections });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> GuiLaiCanhBao(
+        string maLop,
+        string maSinhVien,
+        string? maBuoiHoc,
+        CancellationToken ct)
+    {
+        var token = AccessToken;
+        if (token is null) return LoginRedirect();
+        var result = await SafeAsync(() => api.ResendAttendanceWarningAsync(token, maLop, maSinhVien, ct));
+        TempData[result.Succeeded ? "Success" : "Error"] = result.Succeeded
+            ? $"Đã gửi lại thư cảnh báo chuyên cần cho {maSinhVien}."
+            : result.Error;
+        return RedirectToAction(nameof(QuanLyLop), new { maLop, maBuoiHoc });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> DieuChinhDiemDanh(
+        string maLop,
+        string maBuoiHoc,
+        string maSinhVien,
+        string trangThai,
+        string? lyDo,
+        CancellationToken ct)
+    {
+        var token = AccessToken;
+        if (token is null) return LoginRedirect();
+        if (string.IsNullOrWhiteSpace(lyDo) || lyDo.Trim().Length < 5)
+        {
+            TempData["Error"] = "Cần ghi lý do sửa (ít nhất 5 ký tự).";
+            return RedirectToAction(nameof(LichSuDiemDanh), new { maLop, maBuoiHoc });
+        }
+        var result = await SafeAsync(() => api.CorrectAttendanceAsync(
+            token, maBuoiHoc, maSinhVien, trangThai, lyDo.Trim(), ct));
+        TempData[result.Succeeded ? "Success" : "Error"] = result.Succeeded
+            ? $"Đã sửa điểm danh của {maSinhVien} và lưu lý do."
+            : result.Error;
+        return RedirectToAction(nameof(LichSuDiemDanh), new { maLop, maBuoiHoc });
     }
 
     [HttpPost, ValidateAntiForgeryToken]
@@ -63,6 +111,7 @@ public sealed class GiangVienController(ITeachingManagementApiClient api) : Cont
         string maBuoiHoc,
         string maSinhVien,
         string trangThai,
+        string? viTri,
         CancellationToken ct)
     {
         var token = AccessToken;
@@ -72,7 +121,8 @@ public sealed class GiangVienController(ITeachingManagementApiClient api) : Cont
         TempData[result.Succeeded ? "Success" : "Error"] = result.Succeeded
             ? "Đã cập nhật trạng thái điểm danh."
             : result.Error;
-        return RedirectToAction(nameof(QuanLyLop), new { maLop, maBuoiHoc });
+        // Giữ bộ lọc "ngoài khuôn viên" để giảng viên xử lý tiếp các sinh viên còn lại.
+        return RedirectToAction(nameof(QuanLyLop), new { maLop, maBuoiHoc, viTri = viTri == "ngoai" ? viTri : null });
     }
 
     [HttpPost, ValidateAntiForgeryToken]

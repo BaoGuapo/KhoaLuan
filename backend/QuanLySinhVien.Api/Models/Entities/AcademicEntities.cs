@@ -168,6 +168,25 @@ public sealed class ChiTietDiemDanh
     public SinhVien SinhVien { get; set; } = null!;
 }
 
+/// <summary>
+/// Vết một lần sửa thủ công kết quả điểm danh của buổi đã qua, ví dụ khi sinh viên
+/// xác nhận trực tiếp với giảng viên. Lưu để xem lại ai sửa, lúc nào và vì sao.
+/// </summary>
+public sealed class LichSuSuaDiemDanh
+{
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public string MaBuoiHoc { get; set; } = string.Empty;
+    public string MaSinhVien { get; set; } = string.Empty;
+    /// <summary>Null khi trước đó sinh viên chưa có bản ghi điểm danh.</summary>
+    public string? TrangThaiCu { get; set; }
+    public string TrangThaiMoi { get; set; } = string.Empty;
+    public string LyDo { get; set; } = string.Empty;
+    public string NguoiSua { get; set; } = string.Empty;
+    public DateTime SuaLucUtc { get; set; }
+    public BuoiHoc BuoiHoc { get; set; } = null!;
+    public SinhVien SinhVien { get; set; } = null!;
+}
+
 public sealed class HoSoKhuonMat
 {
     public string? RegistrationPhotosProtected { get; set; }

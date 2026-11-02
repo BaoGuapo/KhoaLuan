@@ -1,4 +1,4 @@
-document.querySelectorAll('[data-toast]').forEach((toast) => {
+const initToast = (toast) => {
     const closeButton = toast.querySelector('.toast-close');
     let timeoutId;
 
@@ -12,7 +12,30 @@ document.querySelectorAll('[data-toast]').forEach((toast) => {
     closeButton?.addEventListener('click', close);
     window.requestAnimationFrame(() => toast.classList.add('show'));
     timeoutId = window.setTimeout(close, 5000);
-});
+};
+document.querySelectorAll('[data-toast]').forEach(initToast);
+
+// Cho các trang dùng JavaScript hiện thông báo cùng kiểu với thông báo từ server.
+window.showToast = (title, text, kind = 'success') => {
+    const region = document.querySelector('.toast-region');
+    if (!region) return;
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${kind}`;
+    toast.setAttribute('role', kind === 'success' ? 'status' : 'alert');
+    const icon = document.createElement('span');
+    icon.className = 'toast-icon'; icon.setAttribute('aria-hidden', 'true'); icon.textContent = kind === 'success' ? '✓' : '!';
+    const body = document.createElement('div');
+    const strong = document.createElement('strong'); strong.textContent = title;
+    const p = document.createElement('p'); p.textContent = text;
+    body.append(strong, p);
+    const closeButton = document.createElement('button');
+    closeButton.type = 'button'; closeButton.className = 'toast-close'; closeButton.setAttribute('aria-label', 'Đóng thông báo'); closeButton.textContent = '×';
+    const progress = document.createElement('span');
+    progress.className = 'toast-progress'; progress.setAttribute('aria-hidden', 'true');
+    toast.append(icon, body, closeButton, progress);
+    region.append(toast);
+    initToast(toast);
+};
 
 const navigationToggle = document.querySelector('[data-nav-toggle]');
 const navigation = document.querySelector('#primary-nav');

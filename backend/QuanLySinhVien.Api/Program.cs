@@ -71,6 +71,10 @@ builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSett
 builder.Services.Configure<FaceRecognitionOptions>(builder.Configuration.GetSection(FaceRecognitionOptions.SectionName));
 builder.Services.AddSingleton(builder.Configuration.GetSection(CampusLocationSettings.SectionName)
     .Get<CampusLocationSettings>() ?? new CampusLocationSettings());
+// Chế độ demo chỉ có hiệu lực ở Development để không thể vô tình bật trên môi trường thật.
+builder.Services.AddSingleton(builder.Environment.IsDevelopment()
+    ? builder.Configuration.GetSection(AttendanceDemoSettings.SectionName).Get<AttendanceDemoSettings>() ?? new AttendanceDemoSettings()
+    : new AttendanceDemoSettings());
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAccountProvisioningService, AccountProvisioningService>();
 builder.Services.AddScoped<UserManagementService>();

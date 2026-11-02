@@ -10,7 +10,8 @@ namespace QuanLySinhVien.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/giang-day")]
-public sealed class TeachingManagementController(AppDbContext db, AttendanceEmailNotifier notifier) : ControllerBase
+public sealed class TeachingManagementController(AppDbContext db, AttendanceEmailNotifier notifier,
+    AttendanceDemoSettings demo) : ControllerBase
 {
     private static readonly HashSet<string> AttendanceStatuses =
         ["CoMat", "DiTre", "CoPhep", "Vang"];
@@ -236,6 +237,35 @@ public sealed class TeachingManagementController(AppDbContext db, AttendanceEmai
             khungGio?.DongLuc));
     }
 
+    /// <summary>
+    /// Gửi lại thư cảnh báo chuyên cần theo mức hiện tại, ví dụ khi sinh viên vừa cập nhật email
+    /// hoặc báo chưa nhận được thư. Thư tự động chỉ gửi lúc mức tăng nên cần đường gửi tay này.
+    /// </summary>
+    [HttpPost("lop/{maLopHocPhan}/sinh-vien/{maSinhVien}/gui-canh-bao")]
+    [Authorize(Roles = RoleNames.Admin + "," + RoleNames.CanBoQuanLy + "," + RoleNames.GiangVien)]
+    public async Task<IActionResult> ResendAttendanceWarning(
+        string maLopHocPhan,
+        string maSinhVien,
+        CancellationToken ct)
+    {
+        if (!await CanAccessClassAsync(maLopHocPhan, ct)) return Forbid();
+        var enrollment = await db.DanhSachSinhVienLops.AsNoTracking()
+            .Where(x => x.MaLopHocPhan == maLopHocPhan && x.MaSinhVien == maSinhVien)
+            .Select(x => new { x.TrangThaiCanhBao, x.TongSoBuoiVang, x.SinhVien.Email })
+            .SingleOrDefaultAsync(ct);
+        if (enrollment is null)
+            return NotFound(new { message = "Sinh viên không thuộc lớp học phần này." });
+        if (enrollment.TrangThaiCanhBao is not ("CanhBao" or "CamThi"))
+            return Conflict(new { code = "NoWarning", message = "Sinh viên chưa bị cảnh báo chuyên cần, không có thư để gửi." });
+        if (string.IsNullOrWhiteSpace(enrollment.Email))
+            return Conflict(new { code = "NoEmail", message = "Sinh viên chưa có địa chỉ email." });
+
+        // Coi như mức trước đó là bình thường để bộ soạn thư gửi đúng nội dung của mức hiện tại.
+        await notifier.NotifyAttendanceWarningsAsync(maLopHocPhan,
+            [(maSinhVien, "BinhThuong", enrollment.TrangThaiCanhBao, enrollment.TongSoBuoiVang)], ct);
+        return Ok(new { message = $"Đã xếp thư {(enrollment.TrangThaiCanhBao == "CamThi" ? "cấm thi" : "cảnh báo")} gửi tới {enrollment.Email}." });
+    }
+
     [HttpGet("lop/{maLopHocPhan}/lich-su")]
     [Authorize(Roles = RoleNames.Admin + "," + RoleNames.CanBoQuanLy + "," + RoleNames.GiangVien)]
     public async Task<ActionResult<ClassAttendanceHistoryResponse>> GetClassAttendanceHistory(
@@ -260,7 +290,10 @@ public sealed class TeachingManagementController(AppDbContext db, AttendanceEmai
                 CoMat = x.ChiTietDiemDanhs.Count(d => d.TrangThai == "CoMat"),
                 DiTre = x.ChiTietDiemDanhs.Count(d => d.TrangThai == "DiTre"),
                 CoPhep = x.ChiTietDiemDanhs.Count(d => d.TrangThai == "CoPhep"),
-                Vang = x.ChiTietDiemDanhs.Count(d => d.TrangThai == "Vang")
+                Vang = x.ChiTietDiemDanhs.Count(d => d.TrangThai == "Vang"),
+                NgoaiKhuonVien = x.ChiTietDiemDanhs.Count(d => (d.TrangThai == "CoMat" || d.TrangThai == "DiTre")
+                    && d.KetQuaViTri == "NgoaiKhuonVien"),
+                SoLanDieuChinh = db.LichSuSuaDiemDanhs.Count(d => d.MaBuoiHoc == x.MaBuoiHoc)
             })
             .ToListAsync(ct);
 
@@ -276,7 +309,10 @@ public sealed class TeachingManagementController(AppDbContext db, AttendanceEmai
                 x.CoPhep,
                 x.Vang,
                 // Sinh viên chưa có bản ghi nào cho buổi này vẫn tính là chưa điểm danh.
-                Math.Max(0, siSoLop - (x.CoMat + x.DiTre + x.CoPhep + x.Vang))))
+                Math.Max(0, siSoLop - (x.CoMat + x.DiTre + x.CoPhep + x.Vang)),
+                x.NgoaiKhuonVien,
+                CorrectionLockReason(x.NgayHocCuThe, homNay) is null,
+                x.SoLanDieuChinh))
             .ToList();
 
         return Ok(new ClassAttendanceHistoryResponse(
@@ -369,6 +405,96 @@ public sealed class TeachingManagementController(AppDbContext db, AttendanceEmai
         return NoContent();
     }
 
+    /// <summary>
+    /// Sửa thủ công kết quả một buổi đã diễn ra, kể cả buổi đã chốt, khi sinh viên xác nhận
+    /// trực tiếp với giảng viên. Bắt buộc có lý do; mỗi lần sửa được lưu vết và buổi đã chốt
+    /// được tính lại số buổi vắng, mức cảnh báo của sinh viên đó.
+    /// </summary>
+    [HttpPut("buoi-hoc/{maBuoiHoc}/sinh-vien/{maSinhVien}/dieu-chinh")]
+    [Authorize(Roles = RoleNames.Admin + "," + RoleNames.CanBoQuanLy + "," + RoleNames.GiangVien)]
+    public async Task<IActionResult> CorrectAttendance(
+        string maBuoiHoc,
+        string maSinhVien,
+        CorrectAttendanceRequest request,
+        CancellationToken ct)
+    {
+        if (!AttendanceStatuses.Contains(request.TrangThai))
+            return BadRequest(new { message = "Trạng thái điểm danh không hợp lệ." });
+        var lyDo = request.LyDo.Trim();
+        if (lyDo.Length < 5)
+            return BadRequest(new { message = "Cần ghi lý do sửa (ít nhất 5 ký tự)." });
+
+        return await db.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
+        {
+            db.ChangeTracker.Clear();
+            await using var transaction = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable, ct);
+            var session = await db.BuoiHocs.Include(x => x.LichHoc)
+                .SingleOrDefaultAsync(x => x.MaBuoiHoc == maBuoiHoc, ct);
+            if (session is null) return NotFound(new { message = "Không tìm thấy buổi học." });
+            var maLop = session.LichHoc.MaLopHocPhan;
+            if (!await CanAccessClassAsync(maLop, ct)) return Forbid();
+            var lyDoKhoa = CorrectionLockReason(session.NgayHocCuThe, ClassPeriods.BayGioVietNam().Date);
+            if (lyDoKhoa is not null)
+                return Conflict(new { code = "CorrectionNotAllowed", message = lyDoKhoa });
+            var enrollment = await db.DanhSachSinhVienLops
+                .SingleOrDefaultAsync(x => x.MaLopHocPhan == maLop && x.MaSinhVien == maSinhVien, ct);
+            if (enrollment is null)
+                return BadRequest(new { message = "Sinh viên không thuộc lớp học phần này." });
+
+            var attendance = await db.ChiTietDiemDanhs.FindAsync([maBuoiHoc, maSinhVien], ct);
+            var trangThaiCu = attendance?.TrangThai;
+            if (trangThaiCu == request.TrangThai)
+                return Conflict(new { code = "NoChange", message = "Trạng thái mới trùng trạng thái hiện tại." });
+            if (attendance is null)
+            {
+                attendance = new ChiTietDiemDanh { MaBuoiHoc = maBuoiHoc, MaSinhVien = maSinhVien };
+                db.ChiTietDiemDanhs.Add(attendance);
+            }
+            attendance.TrangThai = request.TrangThai;
+            // Giữ giờ quét thật nếu có; sửa sau buổi học không có giờ vào lớp để ghi.
+            if (request.TrangThai is not ("CoMat" or "DiTre")) attendance.ThoiGianCheckIn = null;
+            db.LichSuSuaDiemDanhs.Add(new LichSuSuaDiemDanh
+            {
+                MaBuoiHoc = maBuoiHoc,
+                MaSinhVien = maSinhVien,
+                TrangThaiCu = trangThaiCu,
+                TrangThaiMoi = request.TrangThai,
+                LyDo = lyDo,
+                NguoiSua = User.Identity?.Name ?? string.Empty,
+                SuaLucUtc = DateTime.UtcNow
+            });
+            await db.SaveChangesAsync(ct);
+
+            // Buổi chưa chốt sẽ được tính khi chốt; buổi đã chốt phải tính lại ngay.
+            var warningChanges = session.TrangThaiBuoiHoc == "DaChot"
+                ? await RecalculateWarningsAsync([enrollment], ct)
+                : [];
+            await db.SaveChangesAsync(ct);
+            await transaction.CommitAsync(ct);
+            if (warningChanges.Count > 0)
+                await notifier.NotifyAttendanceWarningsAsync(maLop, warningChanges, ct);
+            return (IActionResult)NoContent();
+        });
+    }
+
+    [HttpGet("buoi-hoc/{maBuoiHoc}/lich-su-sua")]
+    [Authorize(Roles = RoleNames.Admin + "," + RoleNames.CanBoQuanLy + "," + RoleNames.GiangVien)]
+    public async Task<ActionResult<IReadOnlyCollection<AttendanceCorrectionResponse>>> GetCorrections(
+        string maBuoiHoc,
+        CancellationToken ct)
+    {
+        var maLop = await db.BuoiHocs.Where(x => x.MaBuoiHoc == maBuoiHoc)
+            .Select(x => x.LichHoc.MaLopHocPhan).SingleOrDefaultAsync(ct);
+        if (maLop is null) return NotFound(new { message = "Không tìm thấy buổi học." });
+        if (!await CanAccessClassAsync(maLop, ct)) return Forbid();
+        return Ok(await db.LichSuSuaDiemDanhs.AsNoTracking()
+            .Where(x => x.MaBuoiHoc == maBuoiHoc)
+            .OrderByDescending(x => x.SuaLucUtc)
+            .Select(x => new AttendanceCorrectionResponse(x.MaSinhVien, x.SinhVien.HoTen, x.TrangThaiCu,
+                x.TrangThaiMoi, x.LyDo, x.NguoiSua, x.SuaLucUtc))
+            .ToListAsync(ct));
+    }
+
     [HttpPost("buoi-hoc/{maBuoiHoc}/chot-diem-danh")]
     [Authorize(Roles = RoleNames.Admin + "," + RoleNames.CanBoQuanLy + "," + RoleNames.GiangVien)]
     public async Task<IActionResult> FinalizeAttendance(string maBuoiHoc, CancellationToken ct)
@@ -412,22 +538,7 @@ public sealed class TeachingManagementController(AppDbContext db, AttendanceEmai
         session.ThoiGianDiemDanh ??= DateTime.UtcNow;
         await db.SaveChangesAsync(ct);
 
-        var warningChanges = new List<(string MaSinhVien, string MucCu, string MucMoi, int SoBuoiVang)>();
-        foreach (var enrollment in enrollments)
-        {
-            var mucCu = enrollment.TrangThaiCanhBao ?? "BinhThuong";
-            enrollment.TongSoBuoiVang = await db.ChiTietDiemDanhs.CountAsync(x =>
-                x.MaSinhVien == enrollment.MaSinhVien
-                && x.BuoiHoc.LichHoc.MaLopHocPhan == enrollment.MaLopHocPhan
-                && x.TrangThai == "Vang", ct);
-            enrollment.TrangThaiCanhBao = enrollment.TongSoBuoiVang switch
-            {
-                >= 4 => "CamThi",
-                >= 2 => "CanhBao",
-                _ => "BinhThuong"
-            };
-            warningChanges.Add((enrollment.MaSinhVien, mucCu, enrollment.TrangThaiCanhBao, enrollment.TongSoBuoiVang));
-        }
+        var warningChanges = await RecalculateWarningsAsync(enrollments, ct);
         await db.SaveChangesAsync(ct);
         var openSessions = await db.PhienDiemDanhs.Where(x => x.MaBuoiHoc == maBuoiHoc && x.DongLucUtc == null).ToListAsync(ct);
         foreach (var openSession in openSessions) openSession.DongLucUtc = DateTime.UtcNow;
@@ -535,9 +646,51 @@ public sealed class TeachingManagementController(AppDbContext db, AttendanceEmai
                 x.PhongHoc.TenPhong))
             .FirstOrDefaultAsync(ct);
 
+    /// <summary>Tính lại số buổi vắng và mức cảnh báo; trả về mức cũ/mới để báo email.</summary>
+    private async Task<List<(string MaSinhVien, string MucCu, string MucMoi, int SoBuoiVang)>> RecalculateWarningsAsync(
+        IEnumerable<DanhSachSinhVienLop> enrollments,
+        CancellationToken ct)
+    {
+        var warningChanges = new List<(string MaSinhVien, string MucCu, string MucMoi, int SoBuoiVang)>();
+        foreach (var enrollment in enrollments)
+        {
+            var mucCu = enrollment.TrangThaiCanhBao ?? "BinhThuong";
+            enrollment.TongSoBuoiVang = await db.ChiTietDiemDanhs.CountAsync(x =>
+                x.MaSinhVien == enrollment.MaSinhVien
+                && x.BuoiHoc.LichHoc.MaLopHocPhan == enrollment.MaLopHocPhan
+                && x.TrangThai == "Vang", ct);
+            enrollment.TrangThaiCanhBao = enrollment.TongSoBuoiVang switch
+            {
+                >= 4 => "CamThi",
+                >= 2 => "CanhBao",
+                _ => "BinhThuong"
+            };
+            warningChanges.Add((enrollment.MaSinhVien, mucCu, enrollment.TrangThaiCanhBao, enrollment.TongSoBuoiVang));
+        }
+        return warningChanges;
+    }
+
+    /// <summary>Số ngày giảng viên còn được sửa thủ công một buổi đã qua.</summary>
+    private const int SoNgayDuocSuaDiemDanh = 14;
+
+    /// <summary>
+    /// Lý do không được sửa thủ công buổi học, hoặc null khi được sửa.
+    /// Học vụ không bị giới hạn số ngày để xử lý sai sót cũ.
+    /// </summary>
+    private string? CorrectionLockReason(DateTime ngayHocCuThe, DateTime homNay)
+    {
+        var ngayHoc = ngayHocCuThe.Date;
+        if (ngayHoc > homNay) return "Buổi học chưa diễn ra, chưa thể sửa kết quả.";
+        if (User.IsInRole(RoleNames.Admin) || User.IsInRole(RoleNames.CanBoQuanLy)) return null;
+        return ngayHoc < homNay.AddDays(-SoNgayDuocSuaDiemDanh)
+            ? $"Chỉ sửa được buổi trong {SoNgayDuocSuaDiemDanh} ngày gần nhất. Liên hệ phòng đào tạo để sửa buổi cũ hơn."
+            : null;
+    }
+
     // Học vụ là đường sửa sai khi giảng viên quên điểm danh, nên không bị khóa theo giờ lên lớp.
+    // Chế độ demo (chỉ Development) mở khóa cho cả giảng viên.
     private bool BoQuaKhungGioDiemDanh =>
-        User.IsInRole(RoleNames.Admin) || User.IsInRole(RoleNames.CanBoQuanLy);
+        demo.BoQuaKhungGio || User.IsInRole(RoleNames.Admin) || User.IsInRole(RoleNames.CanBoQuanLy);
 
     private async Task<bool> CanAccessClassAsync(string maLopHocPhan, CancellationToken ct)
     {

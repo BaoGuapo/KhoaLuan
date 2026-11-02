@@ -14,6 +14,9 @@ public interface ITeachingManagementApiClient
     Task<ApiResult<ClassAttendanceHistoryModel>> GetClassAttendanceHistoryAsync(string token, string classCode, CancellationToken ct);
     Task<ApiResult> UpdateAttendanceAsync(string token, string sessionCode, string studentCode, string status, CancellationToken ct);
     Task<ApiResult> FinalizeAttendanceAsync(string token, string sessionCode, CancellationToken ct);
+    Task<ApiResult> CorrectAttendanceAsync(string token, string sessionCode, string studentCode, string status, string reason, CancellationToken ct);
+    Task<ApiResult<IReadOnlyCollection<AttendanceCorrectionModel>>> GetCorrectionsAsync(string token, string sessionCode, CancellationToken ct);
+    Task<ApiResult> ResendAttendanceWarningAsync(string token, string classCode, string studentCode, CancellationToken ct);
 }
 
 public sealed class TeachingManagementApiClient(HttpClient httpClient) : ITeachingManagementApiClient
@@ -72,6 +75,33 @@ public sealed class TeachingManagementApiClient(HttpClient httpClient) : ITeachi
     public Task<ApiResult> FinalizeAttendanceAsync(string token, string sessionCode, CancellationToken ct) =>
         SendAsync(token, HttpMethod.Post,
             $"api/v1/giang-day/buoi-hoc/{Uri.EscapeDataString(sessionCode)}/chot-diem-danh", new { }, ct);
+
+    public Task<ApiResult> CorrectAttendanceAsync(
+        string token,
+        string sessionCode,
+        string studentCode,
+        string status,
+        string reason,
+        CancellationToken ct) =>
+        SendAsync(token, HttpMethod.Put,
+            $"api/v1/giang-day/buoi-hoc/{Uri.EscapeDataString(sessionCode)}/sinh-vien/{Uri.EscapeDataString(studentCode)}/dieu-chinh",
+            new { trangThai = status, lyDo = reason }, ct);
+
+    public Task<ApiResult<IReadOnlyCollection<AttendanceCorrectionModel>>> GetCorrectionsAsync(
+        string token,
+        string sessionCode,
+        CancellationToken ct) =>
+        GetAsync<IReadOnlyCollection<AttendanceCorrectionModel>>(token,
+            $"api/v1/giang-day/buoi-hoc/{Uri.EscapeDataString(sessionCode)}/lich-su-sua", ct);
+
+    public Task<ApiResult> ResendAttendanceWarningAsync(
+        string token,
+        string classCode,
+        string studentCode,
+        CancellationToken ct) =>
+        SendAsync(token, HttpMethod.Post,
+            $"api/v1/giang-day/lop/{Uri.EscapeDataString(classCode)}/sinh-vien/{Uri.EscapeDataString(studentCode)}/gui-canh-bao",
+            new { }, ct);
 
     private async Task<ApiResult<T>> GetAsync<T>(string token, string path, CancellationToken ct)
     {

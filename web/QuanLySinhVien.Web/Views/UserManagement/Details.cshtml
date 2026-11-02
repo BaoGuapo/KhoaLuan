@@ -8,3 +8,21 @@
 <a class="button" asp-action="ResetPassword" asp-route-id="@Model.Id">Cấp lại mật khẩu tạm</a>
 @if (User.IsInRole(RoleNames.Admin) && Model.ProfileType is null) { <form asp-action="ChangeRole" asp-route-id="@Model.Id" method="post" class="inline-form" data-confirm="Đổi vai trò tài khoản @Model.UserName? Quyền mới có hiệu lực sau khi người dùng đăng nhập lại."><label class="visually-hidden" for="account-role">Vai trò mới</label><select id="account-role" name="role"><option value="Admin" selected="@Model.Roles.Contains(RoleNames.Admin)">Quản trị viên</option><option value="CanBoQuanLy" selected="@Model.Roles.Contains(RoleNames.CanBoQuanLy)">Cán bộ quản lý</option></select><button class="button" type="submit">Đổi vai trò</button></form> }
 </div></section></div>
+@if (Model.ProfileType == "SinhVien" && Model.ProfileCode is { } maSinhVien)
+{
+    @* Ảnh thẻ lúc nhập học: dùng làm ảnh đại diện và làm ảnh đối chiếu khi duyệt hồ sơ khuôn mặt. *@
+    <section class="panel section-gap identity-photo-panel">
+        <h2>Ảnh thẻ lúc nhập học</h2>
+        <div class="identity-photo-row">
+            <figure class="profile-figure"><div class="profile-avatar">@(string.IsNullOrWhiteSpace(Model.FullName) ? "?" : Model.FullName.Trim()[0].ToString().ToUpperInvariant())<img src="@Url.Content($"~/quan-ly-nguoi-dung/anh-the/{Uri.EscapeDataString(maSinhVien)}")" alt="Ảnh thẻ của @Model.FullName" onerror="this.remove()" /></div></figure>
+            <form method="post" action="@Url.Content($"~/quan-ly-nguoi-dung/anh-the/{Uri.EscapeDataString(maSinhVien)}")" enctype="multipart/form-data" class="identity-photo-form">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.Id" />
+                <label for="anh-the">Tải ảnh thẻ từ hồ sơ nhập học (JPEG/PNG, tối đa 1 MB)</label>
+                <input id="anh-the" name="anhThe" type="file" accept="image/jpeg,image/png" required />
+                <p class="field-help">Ảnh này hiện làm ảnh đại diện của sinh viên và dùng để đối chiếu khi duyệt hồ sơ khuôn mặt. Sinh viên không tự đổi được.</p>
+                <button class="button primary-link" type="submit">Lưu ảnh thẻ</button>
+            </form>
+        </div>
+    </section>
+}

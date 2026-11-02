@@ -70,7 +70,12 @@ public sealed record AttendanceSessionStatisticsResponse(
     int DiTre,
     int CoPhep,
     int Vang,
-    int ChuaDiemDanh);
+    int ChuaDiemDanh,
+    // Số sinh viên có mặt/đi trễ nhưng GPS báo ngoài khuôn viên, cần giảng viên kiểm tra lại.
+    int NgoaiKhuonVien,
+    // Người đang xem có được sửa thủ công kết quả buổi này không (buổi đã qua, còn trong hạn sửa).
+    bool CoTheDieuChinh,
+    int SoLanDieuChinh);
 
 public sealed record ClassAttendanceHistoryResponse(
     TeachingAssignmentResponse LopHocPhan,
@@ -109,3 +114,19 @@ public sealed class UpdateAttendanceRequest
 {
     [Required] public string TrangThai { get; init; } = string.Empty;
 }
+
+/// <summary>Sửa thủ công kết quả buổi đã qua; bắt buộc ghi lý do để lưu vết.</summary>
+public sealed class CorrectAttendanceRequest
+{
+    [Required] public string TrangThai { get; init; } = string.Empty;
+    [Required, StringLength(500, MinimumLength = 5)] public string LyDo { get; init; } = string.Empty;
+}
+
+public sealed record AttendanceCorrectionResponse(
+    string MaSinhVien,
+    string HoTen,
+    string? TrangThaiCu,
+    string TrangThaiMoi,
+    string LyDo,
+    string NguoiSua,
+    DateTime SuaLucUtc);

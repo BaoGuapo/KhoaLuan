@@ -5,7 +5,7 @@
     const $ = id => document.getElementById(id);
     const student = root.dataset.student === 'true';
     let stream, scanning = false, challenge, mode, frames = [], sessionId, qrExpires, sessionExpires, busy = false;
-    let poll, scanFrame;
+    let poll, scanFrame, farSeen = new Set(), farPrimed = false;
     let liveRunning = false, captureRun = 0, guidanceTimer, poseGate;
 
     const message = (text, error = false) => { $('attendance-status').textContent = text; $('attendance-status').style.color = error ? '#b42318' : '#087443'; };
@@ -48,7 +48,10 @@
         if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) throw new Error('Camera cần HTTPS hoặc localhost.');
         stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: front ? 'user' : 'environment' }, width: { ideal: 960 }, height: { ideal: 720 } }, audio: false });
         $('capture-section').hidden = false;
-        const video = $('attendance-video'); video.srcObject = stream; await video.play();
+        // Chỉ lật hình như gương với camera trước; camera sau quét QR phải hiện đúng chiều.
+        const facing = stream.getVideoTracks()[0]?.getSettings().facingMode;
+        const video = $('attendance-video'); video.classList.toggle('no-mirror', facing ? facing !== 'user' : !front);
+        video.srcObject = stream; await video.play();
     }
     function instruction() {
         $('capture-instruction').textContent = frames.length === 3 ? 'Đã nhận đủ ba động tác. Kiểm tra ảnh trước khi gửi xác minh.' : [`Bước 1/3: Nhìn thẳng vào camera.`, `Bước 2/3: Quay nhẹ đầu sang ${challenge.direction === 'left' ? 'trái' : 'phải'} của bạn, giữ mặt trong khung.`, 'Bước 3/3: Nhìn thẳng trở lại.'][frames.length];
@@ -180,16 +183,37 @@
         $('session-title').textContent = `${value.maLopHocPhan} · ${value.tenMonHoc} · ${value.maBuoiHoc}`;
         $('close-session').disabled = false;
         const rows = await api('results', undefined, { id: sessionId }); $('attendance-results').replaceChildren();
+        const present = rows.filter(row => row.trangThai === 'CoMat' || row.trangThai === 'DiTre');
+        const far = present.filter(row => row.ketQuaViTri === 'NgoaiKhuonVien');
         for (const row of rows) {
             const tr = document.createElement('tr');
             for (const value of [row.maSinhVien, row.hoTen, row.trangThai, row.thoiGianCheckIn ? new Date(row.thoiGianCheckIn).toLocaleTimeString('vi-VN') : '—']) {
                 const td = document.createElement('td'); td.textContent = value; tr.append(td);
             }
+            tr.append(viTriCell(row));
+            if (far.includes(row)) tr.classList.add('row-warning');
             $('attendance-results').append(tr);
         }
+        const unverified = present.filter(row => !row.ketQuaViTri).length;
+        $('attendance-summary').textContent = `${present.length} có mặt · ${far.length} ngoài khuôn viên · ${unverified} chưa xác minh vị trí`;
+        // Báo một lần cho mỗi sinh viên mới bị GPS ghi nhận ở xa; lần tải đầu chỉ ghi nhớ, không báo dồn.
+        const fresh = far.filter(row => !farSeen.has(row.maSinhVien));
+        fresh.forEach(row => farSeen.add(row.maSinhVien));
+        if (farPrimed) for (const row of fresh)
+            window.showToast?.('Ngoài khuôn viên', `${row.maSinhVien} · ${row.hoTen} điểm danh cách cơ sở khoảng ${Math.round(row.khoangCachMet)} m. Hãy kiểm tra lại.`, 'warning');
+        farPrimed = true;
+    }
+    function viTriCell(row) {
+        const td = document.createElement('td');
+        if (row.trangThai !== 'CoMat' && row.trangThai !== 'DiTre') { td.textContent = '—'; return td; }
+        const badge = document.createElement('span');
+        if (row.ketQuaViTri === 'NgoaiKhuonVien') { badge.className = 'badge badge-warning'; badge.textContent = `Cách ${Math.round(row.khoangCachMet)} m`; }
+        else if (row.ketQuaViTri === 'TrongKhuonVien') { badge.className = 'badge badge-success'; badge.textContent = 'Trong khuôn viên'; }
+        else { badge.className = 'badge'; badge.textContent = 'Chưa xác minh'; }
+        td.append(badge); return td;
     }
     async function resume(id) {
-        clearInterval(poll); sessionId = id;
+        clearInterval(poll); sessionId = id; farSeen = new Set(); farPrimed = false;
         await updateSession();
         poll = setInterval(() => updateSession().catch(e => { clearInterval(poll); $('qr-area').hidden = true; message(e.message, true); }), 15000);
     }

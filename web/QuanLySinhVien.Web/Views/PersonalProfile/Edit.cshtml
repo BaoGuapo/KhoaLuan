@@ -25,7 +25,7 @@
                 <div><label asp-for="QuocTich"></label><input asp-for="QuocTich" /></div>
                 <div class="full"><label asp-for="HoKhauThuongTru"></label><input asp-for="HoKhauThuongTru" /></div>
             </div></fieldset>
-            <details><summary>Ảnh đại diện</summary><div class="form-grid section-gap"><div class="full"><label asp-for="AnhDaiDien"></label><input asp-for="AnhDaiDien" /><p class="field-help">Nhập đường dẫn ảnh của bạn. Hệ thống chưa hỗ trợ tải ảnh trực tiếp.</p></div></div></details>
+            <details><summary>Ảnh đại diện</summary><div class="form-grid section-gap"><div class="full"><input type="hidden" asp-for="AnhDaiDien" /><p class="field-help">Ảnh đại diện là ảnh thẻ chụp lúc nhập học, do phòng đào tạo cập nhật từ hồ sơ gốc. Cần đổi ảnh, liên hệ phòng đào tạo.</p></div></div></details>
         }
         <div class="form-actions"><a class="button secondary" asp-action="Index">Hủy</a><button class="button primary-link" type="submit">Lưu thay đổi</button></div>
     </form>

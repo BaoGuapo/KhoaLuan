@@ -1,6 +1,17 @@
 namespace QuanLySinhVien.Api.Services;
 
 /// <summary>
+/// Cấu hình demo: cho giảng viên điểm danh ngoài giờ lên lớp để trình diễn chức năng.
+/// Chỉ đọc ở môi trường Development; môi trường khác luôn tắt.
+/// </summary>
+public sealed class AttendanceDemoSettings
+{
+    public const string SectionName = "AttendanceDemo";
+
+    public bool BoQuaKhungGio { get; set; }
+}
+
+/// <summary>
 /// Bảng giờ tiết học và khung giờ cho phép giảng viên điểm danh một buổi học.
 /// Giờ học là giờ Việt Nam (UTC+7), trùng với cách các controller khác quy đổi.
 /// </summary>

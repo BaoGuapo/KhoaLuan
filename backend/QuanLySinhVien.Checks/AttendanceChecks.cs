@@ -191,11 +191,50 @@ internal static class AttendanceChecks
         Check((await student.MyResults(default)) is OkObjectResult && (await student.MyLessons(default)) is OkObjectResult, "student history and current lessons queries translate");
         // Thư cảnh báo chuyên cần chỉ được xếp hàng đợi, kiểm tra này không gửi đi đâu.
         var teaching = new TeachingManagementController(db,
-            new AttendanceEmailNotifier(db, new EmailQueue(NullLogger<EmailQueue>.Instance)));
+            new AttendanceEmailNotifier(db, new EmailQueue(NullLogger<EmailQueue>.Instance)),
+            new AttendanceDemoSettings());
         teaching.ControllerContext = lecturer.ControllerContext;
         Check(await teaching.FinalizeAttendance("BH", default) is NoContentResult
             && !await db.PhienDiemDanhs.AnyAsync(x => x.MaBuoiHoc == "BH" && x.DongLucUtc == null), "finalizing lesson also closes QR sessions atomically");
         Check(Code(await lecturer.Open("BH", new(10), default)) == "AttendanceFinalized", "finalized lesson cannot reopen attendance");
+
+        // Sửa thủ công buổi đã chốt khi sinh viên xác nhận trực tiếp: bắt buộc lý do, lưu vết, tính lại cảnh báo.
+        var trangThaiTruoc = (await db.ChiTietDiemDanhs.AsNoTracking().SingleAsync(x => x.MaBuoiHoc == "BH" && x.MaSinhVien == "SV1")).TrangThai;
+        var trangThaiSau = trangThaiTruoc == "Vang" ? "CoMat" : "Vang";
+        Check(await teaching.CorrectAttendance("BH", "SV1", new() { TrangThai = trangThaiSau, LyDo = "  " }, default) is BadRequestObjectResult,
+            "correction without a reason is rejected");
+        Check(await teaching.CorrectAttendance("BH", "SV1", new() { TrangThai = trangThaiSau, LyDo = "Sinh viên xác nhận trực tiếp" }, default) is NoContentResult,
+            "lecturer corrects a finalized lesson with a reason");
+        var vet = await db.LichSuSuaDiemDanhs.AsNoTracking().SingleAsync();
+        var dangKy = await db.DanhSachSinhVienLops.AsNoTracking().SingleAsync(x => x.MaSinhVien == "SV1" && x.MaLopHocPhan == "LOP");
+        Check(vet.TrangThaiCu == trangThaiTruoc && vet.TrangThaiMoi == trangThaiSau && vet.NguoiSua == "GV"
+            && dangKy.TongSoBuoiVang == (trangThaiSau == "Vang" ? 1 : 0),
+            "correction is audited and absence count recalculated");
+        Check(await teaching.CorrectAttendance("BH", "SV1", new() { TrangThai = trangThaiSau, LyDo = "Sửa lại lần nữa" }, default) is ConflictObjectResult,
+            "correction to the same status is rejected");
+        db.BuoiHocs.Add(new() { MaBuoiHoc = "BH-CU", MaLichHoc = "LH", NgayHocCuThe = now.Date.AddDays(-20), TrangThaiBuoiHoc = "DaChot" });
+        await db.SaveChangesAsync();
+        Check(await teaching.CorrectAttendance("BH-CU", "SV1", new() { TrangThai = "CoPhep", LyDo = "Có giấy phép nộp muộn" }, default) is ConflictObjectResult,
+            "lecturer cannot correct lessons older than 14 days");
+        var teachingOfficer = new TeachingManagementController(db,
+            new AttendanceEmailNotifier(db, new EmailQueue(NullLogger<EmailQueue>.Instance)),
+            new AttendanceDemoSettings()) { ControllerContext = officer.ControllerContext };
+        Check(await teachingOfficer.CorrectAttendance("BH-CU", "SV1", new() { TrangThai = "CoPhep", LyDo = "Có giấy phép nộp muộn" }, default) is NoContentResult,
+            "academic staff may correct older lessons");
+
+        // Gửi lại thư cảnh báo chỉ dành cho sinh viên đang bị cảnh báo; thư chỉ được xếp hàng đợi.
+        var dangKySv1 = await db.DanhSachSinhVienLops.SingleAsync(x => x.MaSinhVien == "SV1" && x.MaLopHocPhan == "LOP");
+        dangKySv1.TrangThaiCanhBao = "BinhThuong"; await db.SaveChangesAsync();
+        Check(await teaching.ResendAttendanceWarning("LOP", "SV1", default) is ConflictObjectResult,
+            "no warning email to resend for a student in good standing");
+        dangKySv1.TrangThaiCanhBao = "CamThi"; dangKySv1.TongSoBuoiVang = 5; await db.SaveChangesAsync();
+        Check(await teaching.ResendAttendanceWarning("LOP", "SV1", default) is OkObjectResult,
+            "lecturer resends the current exam-ban warning");
+        var teachingOther = new TeachingManagementController(db,
+            new AttendanceEmailNotifier(db, new EmailQueue(NullLogger<EmailQueue>.Instance)),
+            new AttendanceDemoSettings()) { ControllerContext = Controller("OTHER", RoleNames.GiangVien).ControllerContext };
+        Check(await teachingOther.ResendAttendanceWarning("LOP", "SV1", default) is ForbidResult,
+            "another lecturer cannot resend warnings for this class");
 
         // One approved identity is reused across independent classes/lecturers.
         for (var n = 2; n <= 3; n++)

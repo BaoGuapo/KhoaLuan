@@ -20,7 +20,7 @@ body.portal { color: #243746; background: #f3f5f7; font-family: system-ui, -appl
 .portal .topbar nav { font-size: 1rem; }
 .portal .topbar nav > span { color: #586975; }
 .portal .topbar nav button, .portal .nav-toggle { color: #24536f; border-color: #c8d4dc; border-radius: 4px; }
-.pt-shell { display: grid; grid-template-columns: 224px minmax(0, 1fr); max-width: 1680px; margin: 0 auto; min-height: calc(100vh - 64px); }
+.pt-shell { display: grid; grid-template-columns: 224px minmax(0, 1fr); max-width: 1680px; margin: 0 auto; min-height: calc(100vh / var(--page-zoom) - 64px); }
 .pt-sidebar { padding: 29px 14px; border-right: 1px solid #dce2e7; background: #fff; }
 .pt-sidebar-title { padding: 0 12px 17px; color: #71808b; font-size: 0.875rem; font-weight: 650; letter-spacing: .07em; }
 .pt-sidebar nav { display: flex; flex-direction: column; gap: 4px; align-items: stretch; }

@@ -6,6 +6,8 @@
     var daDienRa = sessions.Where(x => x.NgayHocCuThe.Date <= DateTime.Today).ToList();
     var detail = Model.ChiTietBuoi;
     var selected = detail is null ? null : sessions.FirstOrDefault(x => x.MaBuoiHoc == detail.MaBuoiHocDangChon);
+    var coTheSua = selected?.CoTheDieuChinh == true;
+    var daSua = Model.LichSuSua.Select(x => x.MaSinhVien).ToHashSet(StringComparer.OrdinalIgnoreCase);
 }
 <div class="page-heading">
     <div><p class="eyebrow blue">LỊCH SỬ ĐIỂM DANH</p><h1>@lop.TenMonHoc</h1><p>@lop.MaLopHocPhan · @lop.TenHocKy · @Model.LichSu.KhungGioTiet</p></div>
@@ -15,59 +17,127 @@
     </div>
 </div>
 
-<section class="class-overview">
+<section class="class-overview history-overview">
     <article><span>Tổng số buổi</span><strong>@sessions.Count</strong><small>@daDienRa.Count buổi đã diễn ra</small></article>
     <article><span>Đã chốt</span><strong>@sessions.Count(x => x.DaChot)</strong><small>@daDienRa.Count(x => !x.DaChot) buổi đã qua chưa chốt</small></article>
     <article><span>Sĩ số lớp</span><strong>@lop.SiSoHienTai</strong><small>Sinh viên đã đăng ký</small></article>
-    <article><span>Chuyên cần trung bình</span><strong>@(daDienRa.Count == 0 ? "—" : daDienRa.Average(x => x.TyLeChuyenCan).ToString("P0"))</strong><small>Có mặt và đi trễ trên các buổi đã diễn ra</small></article>
+    <article><span>Ngoài khuôn viên</span><strong>@sessions.Sum(x => x.NgoaiKhuonVien)</strong><small>Lượt có mặt GPS báo ở xa</small></article>
+    <article><span>Chuyên cần trung bình</span><strong>@(daDienRa.Count == 0 ? "—" : daDienRa.Average(x => x.TyLeChuyenCan).ToString("P0"))</strong><small>Trên các buổi đã diễn ra</small></article>
 </section>
 
-<section class="panel section-gap">
-    <h2>Thống kê từng buổi</h2>
-    <p class="section-help">Bấm “Xem chi tiết” để mở danh sách sinh viên của buổi đó. Các buổi đã qua chỉ xem được, không sửa được trạng thái.</p>
-    <div class="table-card" role="region" aria-label="Thống kê điểm danh từng buổi" tabindex="0"><table><thead><tr><th scope="col">Buổi học</th><th scope="col">Trạng thái</th><th scope="col">Có mặt</th><th scope="col">Đi trễ</th><th scope="col">Có phép</th><th scope="col">Vắng</th><th scope="col">Chưa điểm danh</th><th scope="col">Chuyên cần</th><th scope="col"></th></tr></thead><tbody>
-    @foreach (var item in sessions)
-    {
-        var laTuongLai = item.NgayHocCuThe.Date > DateTime.Today;
-        <tr class="@(item.MaBuoiHoc == detail?.MaBuoiHocDangChon ? "row-selected" : null)">
-            <td><strong>@item.NgayHocCuThe.ToString("dd/MM/yyyy")</strong><small>@item.MaBuoiHoc</small></td>
-            <td>
-                @if (item.DaChot) { <span class="badge badge-success">Đã chốt</span> }
-                else if (item.LaHomNay) { <span class="badge badge-warning">Hôm nay</span> }
-                else if (laTuongLai) { <span class="badge">Chưa diễn ra</span> }
-                else { <span class="badge badge-danger">Chưa chốt</span> }
-            </td>
-            <td>@item.CoMat</td>
-            <td>@item.DiTre</td>
-            <td>@item.CoPhep</td>
-            <td>@item.Vang</td>
-            <td>@(laTuongLai ? "—" : item.ChuaDiemDanh.ToString())</td>
-            <td>@(laTuongLai ? "—" : item.TyLeChuyenCan.ToString("P0"))</td>
-            <td>@if (!laTuongLai) { <a class="button" asp-action="LichSuDiemDanh" asp-route-maLop="@lop.MaLopHocPhan" asp-route-maBuoiHoc="@item.MaBuoiHoc">Xem chi tiết</a> }</td>
-        </tr>
-    }
-    @if (sessions.Count == 0) { <tr><td colspan="9" class="empty-state">Lớp chưa có buổi học nào trong lịch.</td></tr> }
-    </tbody></table></div>
-</section>
-
-@if (detail is not null && selected is not null)
-{
-    <section class="panel section-gap" id="chi-tiet-buoi">
-        <h2>Chi tiết buổi @selected.NgayHocCuThe.ToString("dd/MM/yyyy")</h2>
-        <p class="section-help">@selected.DaDiemDanh/@selected.SiSoLop sinh viên đã có kết quả · chuyên cần @selected.TyLeChuyenCan.ToString("P0") · @(selected.DaChot ? "buổi đã chốt" : "buổi chưa chốt").</p>
-        <div class="table-card" role="region" aria-label="Danh sách điểm danh của buổi học" tabindex="0"><table><thead><tr><th scope="col">Sinh viên</th><th scope="col">Liên hệ</th><th scope="col">Trạng thái</th><th scope="col">Giờ điểm danh</th></tr></thead><tbody>
-        @foreach (var item in detail.SinhVien)
+@* Danh sách buổi và chi tiết buổi đặt cạnh nhau để chọn buổi khác không phải cuộn lại đầu trang. *@
+<div class="history-layout section-gap">
+    <section class="panel history-sessions" aria-labelledby="history-sessions-title">
+        <h2 id="history-sessions-title">Các buổi học</h2>
+        <nav class="history-session-list" aria-label="Chọn buổi học">
+        @foreach (var item in sessions)
         {
-            <tr>
-                <td><strong>@item.MaSinhVien</strong><small>@item.HoTen</small></td>
-                <td>@item.Email<small>@(item.SoDienThoai ?? "Chưa có SĐT")</small></td>
-                <td><span class="badge @AttendanceBadge(item.TrangThaiBuoiHoc)">@AttendanceLabel(item.TrangThaiBuoiHoc)</span></td>
-                <td>@(item.ThoiGianCheckIn.HasValue ? item.ThoiGianCheckIn.Value.ToLocalTime().ToString("HH:mm dd/MM/yyyy") : "—")</td>
-            </tr>
+            var laTuongLai = item.NgayHocCuThe.Date > DateTime.Today;
+            var dangChon = item.MaBuoiHoc == selected?.MaBuoiHoc;
+            if (laTuongLai)
+            {
+                <div class="history-session is-future">
+                    <div class="history-session-head"><strong>@item.NgayHocCuThe.ToString("dd/MM/yyyy")</strong><span class="badge">Chưa diễn ra</span></div>
+                </div>
+                continue;
+            }
+            <a class="history-session @(dangChon ? "is-selected" : null)" aria-current="@(dangChon ? "true" : null)"
+               asp-action="LichSuDiemDanh" asp-route-maLop="@lop.MaLopHocPhan" asp-route-maBuoiHoc="@item.MaBuoiHoc">
+                <div class="history-session-head">
+                    <strong>@item.NgayHocCuThe.ToString("dd/MM/yyyy")</strong>
+                    @if (item.DaChot) { <span class="badge badge-success">Đã chốt</span> }
+                    else if (item.LaHomNay) { <span class="badge badge-warning">Hôm nay</span> }
+                    else { <span class="badge badge-danger">Chưa chốt</span> }
+                    <span class="history-session-rate">@item.TyLeChuyenCan.ToString("P0")</span>
+                </div>
+                <div class="history-session-counts">
+                    <span>Có mặt <b>@item.CoMat</b></span><span>Trễ <b>@item.DiTre</b></span><span>Phép <b>@item.CoPhep</b></span><span>Vắng <b>@item.Vang</b></span>
+                    @if (item.ChuaDiemDanh > 0) { <span>Chưa ĐD <b>@item.ChuaDiemDanh</b></span> }
+                    @if (item.NgoaiKhuonVien > 0) { <span class="badge badge-warning">@item.NgoaiKhuonVien ngoài khuôn viên</span> }
+                    @if (item.SoLanDieuChinh > 0) { <span class="badge">Đã sửa @item.SoLanDieuChinh lần</span> }
+                </div>
+            </a>
         }
-        @if (detail.SinhVien.Count == 0) { <tr><td colspan="4" class="empty-state">Lớp chưa có sinh viên đăng ký.</td></tr> }
-        </tbody></table></div>
+        @if (sessions.Count == 0) { <p class="empty-state">Lớp chưa có buổi học nào trong lịch.</p> }
+        </nav>
     </section>
+
+    <section class="panel history-detail" id="chi-tiet-buoi">
+        @if (detail is not null && selected is not null)
+        {
+            <div class="history-detail-head">
+                <div>
+                    <h2>Buổi @selected.NgayHocCuThe.ToString("dd/MM/yyyy")</h2>
+                    <p class="section-help">@selected.DaDiemDanh/@selected.SiSoLop sinh viên đã có kết quả · chuyên cần @selected.TyLeChuyenCan.ToString("P0") · @(selected.DaChot ? "đã chốt" : "chưa chốt")</p>
+                </div>
+                <div class="history-detail-chips">
+                    <span class="badge badge-success">Có mặt @selected.CoMat</span>
+                    <span class="badge badge-warning">Trễ @selected.DiTre</span>
+                    <span class="badge badge-warning">Phép @selected.CoPhep</span>
+                    <span class="badge badge-danger">Vắng @selected.Vang</span>
+                    @if (selected.NgoaiKhuonVien > 0) { <span class="badge badge-warning">Ngoài khuôn viên @selected.NgoaiKhuonVien</span> }
+                </div>
+            </div>
+            <p class="section-help">@(coTheSua ? "Sinh viên xác nhận trực tiếp với bạn? Bấm “Sửa” ở dòng của sinh viên, chọn trạng thái đúng và ghi lý do. Mọi lần sửa đều được lưu lại." : "Buổi này đã quá hạn sửa của giảng viên. Liên hệ phòng đào tạo nếu cần điều chỉnh.")</p>
+            <div class="table-card history-detail-table" role="region" aria-label="Danh sách điểm danh của buổi học" tabindex="0"><table><thead><tr><th scope="col">Sinh viên</th><th scope="col">Liên hệ</th><th scope="col">Trạng thái</th><th scope="col">Giờ điểm danh</th>@if (coTheSua) { <th scope="col"><span class="visually-hidden">Sửa</span></th> }</tr></thead><tbody>
+            @foreach (var item in detail.SinhVien)
+            {
+                <tr class="@(item.KetQuaViTri == "NgoaiKhuonVien" && item.TrangThaiBuoiHoc is "CoMat" or "DiTre" ? "row-warning" : null)">
+                    <td><strong>@item.MaSinhVien</strong><small>@item.HoTen</small></td>
+                    <td>@item.Email<small>@(item.SoDienThoai ?? "Chưa có SĐT")</small></td>
+                    <td><span class="badge @AttendanceBadge(item.TrangThaiBuoiHoc)">@AttendanceLabel(item.TrangThaiBuoiHoc)</span>@if (item.KetQuaViTri == "NgoaiKhuonVien") { <span class="badge badge-warning">Ngoài khuôn viên@(item.KhoangCachMet.HasValue ? $" · {item.KhoangCachMet.Value:0} m" : "")</span> }@if (daSua.Contains(item.MaSinhVien)) { <span class="badge">Đã sửa tay</span> }</td>
+                    <td>@(item.ThoiGianCheckIn.HasValue ? item.ThoiGianCheckIn.Value.ToLocalTime().ToString("HH:mm dd/MM/yyyy") : "—")</td>
+                    @if (coTheSua)
+                    {
+                        <td><button class="button secondary" type="button" data-correct-open data-student="@item.MaSinhVien" data-name="@item.HoTen" data-status="@item.TrangThaiBuoiHoc">Sửa</button></td>
+                    }
+                </tr>
+            }
+            @if (detail.SinhVien.Count == 0) { <tr><td colspan="@(coTheSua ? 5 : 4)" class="empty-state">Lớp chưa có sinh viên đăng ký.</td></tr> }
+            </tbody></table></div>
+            @if (Model.LichSuSua.Count > 0)
+            {
+                <details class="correction-log">
+                    <summary>Lịch sử chỉnh sửa (@Model.LichSuSua.Count)</summary>
+                    <ul>
+                    @foreach (var log in Model.LichSuSua)
+                    {
+                        <li><strong>@log.MaSinhVien · @log.HoTen</strong>: @(log.TrangThaiCu is null ? "Chưa điểm danh" : AttendanceLabel(log.TrangThaiCu)) → @AttendanceLabel(log.TrangThaiMoi)<small>@log.NguoiSua · @log.SuaLucUtc.ToLocalTime().ToString("HH:mm dd/MM/yyyy") · Lý do: @log.LyDo</small></li>
+                    }
+                    </ul>
+                </details>
+            }
+        }
+        else
+        {
+            <p class="empty-state">Chọn một buổi học ở danh sách bên trái để xem kết quả từng sinh viên.</p>
+        }
+    </section>
+</div>
+
+@if (coTheSua && selected is not null)
+{
+    <dialog class="confirm-dialog correction-dialog" data-correct-dialog aria-labelledby="correct-title">
+        <form method="post" asp-action="DieuChinhDiemDanh">
+            <h2 id="correct-title">Sửa điểm danh buổi @selected.NgayHocCuThe.ToString("dd/MM/yyyy")</h2>
+            <p data-correct-student></p>
+            @if (selected.DaChot) { <p class="section-help">Buổi đã chốt: số buổi vắng và mức cảnh báo của sinh viên sẽ được tính lại.</p> }
+            <input type="hidden" name="maLop" value="@lop.MaLopHocPhan" />
+            <input type="hidden" name="maBuoiHoc" value="@selected.MaBuoiHoc" />
+            <input type="hidden" name="maSinhVien" data-correct-code />
+            <label for="correct-status">Trạng thái đúng</label>
+            <select id="correct-status" name="trangThai" required data-correct-status>
+                <option value="CoMat">Có mặt</option><option value="DiTre">Đi trễ</option><option value="CoPhep">Vắng có phép</option><option value="Vang">Vắng</option>
+            </select>
+            <label for="correct-reason">Lý do sửa</label>
+            <textarea id="correct-reason" name="lyDo" rows="3" required minlength="5" maxlength="500" placeholder="Ví dụ: Sinh viên có mặt nhưng điện thoại hết pin, đã xác nhận trực tiếp sau buổi học."></textarea>
+            <div class="confirm-actions">
+                <button class="button secondary" type="button" data-correct-cancel>Hủy</button>
+                <button class="button primary-link" type="submit">Lưu thay đổi</button>
+            </div>
+        </form>
+    </dialog>
+    <script defer src="~/js/attendance-correction.js" asp-append-version="true"></script>
 }
 
 @functions {

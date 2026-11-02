@@ -24,7 +24,7 @@
         <p>Chọn <strong>Đối chiếu ảnh</strong> để xem ảnh thẻ từ hồ sơ gốc và ảnh sinh viên đã chụp khi đăng ký. Sinh viên không cần có mặt để duyệt hồ sơ.</p>
         <div id="profiles" class="table-card" aria-live="polite"></div>
     </section>
-    <dialog id="profile-review-dialog" style="width:min(1100px,95vw);max-height:92vh;border:1px solid #d8e9f3;border-radius:16px;padding:24px">
+    <dialog id="profile-review-dialog" style="width:min(1100px,calc(95vw / var(--page-zoom)));max-height:calc(92vh / var(--page-zoom));border:1px solid #d8e9f3;border-radius:16px;padding:24px">
         <div class="page-heading"><div><h2 id="review-student">Đối chiếu ảnh</h2><p id="review-metadata"></p></div><button id="close-review" class="button secondary" type="button">Đóng</button></div>
         <p id="review-status" role="status" aria-live="polite"></p>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:24px">
@@ -39,6 +39,6 @@
             <div class="form-actions"><button id="approve-profile" class="button primary-link" type="button" disabled>Duyệt hồ sơ</button><button id="reject-profile" class="button secondary" type="button">Yêu cầu đăng ký lại</button><button id="reload-review" class="button secondary" type="button">Tải lại hồ sơ</button></div>
         </div>
     </dialog>
-    <dialog id="photo-zoom-dialog" style="max-width:94vw;max-height:94vh;border:0;border-radius:12px"><p id="photo-zoom-label"></p><img id="photo-zoom" alt="Ảnh đối chiếu phóng to" style="max-width:85vw;max-height:75vh;object-fit:contain" /><p><button id="close-photo-zoom" type="button" class="button secondary">Đóng ảnh</button></p></dialog>
+    <dialog id="photo-zoom-dialog" style="max-width:calc(94vw / var(--page-zoom));max-height:calc(94vh / var(--page-zoom));border:0;border-radius:12px"><p id="photo-zoom-label"></p><img id="photo-zoom" alt="Ảnh đối chiếu phóng to" style="max-width:calc(85vw / var(--page-zoom));max-height:calc(75vh / var(--page-zoom));object-fit:contain" /><p><button id="close-photo-zoom" type="button" class="button secondary">Đóng ảnh</button></p></dialog>
 </div>
 <script defer src="~/js/face-profile-review.js" asp-append-version="true"></script>

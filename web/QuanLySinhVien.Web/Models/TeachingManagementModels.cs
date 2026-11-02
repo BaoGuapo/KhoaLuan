@@ -123,6 +123,9 @@ public sealed class AttendanceSessionStatisticsModel
     public int CoPhep { get; set; }
     public int Vang { get; set; }
     public int ChuaDiemDanh { get; set; }
+    public int NgoaiKhuonVien { get; set; }
+    public bool CoTheDieuChinh { get; set; }
+    public int SoLanDieuChinh { get; set; }
 
     public int DaDiemDanh => CoMat + DiTre + CoPhep + Vang;
     public double TyLeChuyenCan => SiSoLop == 0 ? 0 : (double)(CoMat + DiTre) / SiSoLop;
@@ -135,9 +138,22 @@ public sealed class ClassAttendanceHistoryModel
     public IReadOnlyCollection<AttendanceSessionStatisticsModel> BuoiHoc { get; set; } = [];
 }
 
+/// <summary>Một lần sửa thủ công kết quả điểm danh, hiện lại trên trang lịch sử.</summary>
+public sealed class AttendanceCorrectionModel
+{
+    public string MaSinhVien { get; set; } = string.Empty;
+    public string HoTen { get; set; } = string.Empty;
+    public string? TrangThaiCu { get; set; }
+    public string TrangThaiMoi { get; set; } = string.Empty;
+    public string LyDo { get; set; } = string.Empty;
+    public string NguoiSua { get; set; } = string.Empty;
+    public DateTime SuaLucUtc { get; set; }
+}
+
 /// <summary>Trang lịch sử: bảng thống kê mọi buổi, kèm chi tiết buổi đang mở (nếu có).</summary>
 public sealed class ClassAttendanceHistoryPageViewModel
 {
     public required ClassAttendanceHistoryModel LichSu { get; init; }
     public LecturerClassWorkspaceModel? ChiTietBuoi { get; init; }
+    public IReadOnlyCollection<AttendanceCorrectionModel> LichSuSua { get; init; } = [];
 }
