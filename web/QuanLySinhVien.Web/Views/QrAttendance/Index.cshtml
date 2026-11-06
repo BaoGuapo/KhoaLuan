@@ -12,8 +12,10 @@
     {
         <section class="panel section-gap">
             <h2>Phiên điểm danh</h2>
-            <label for="lesson">Buổi học hôm nay</label><select id="lesson"></select>
-            <label for="duration">Thời gian mở (phút)</label><input id="duration" type="number" min="1" max="30" value="10" />
+            <div class="form-grid session-fields">
+                <div><label for="lesson">Buổi học hôm nay</label><select id="lesson"></select></div>
+                <div><label for="duration">Thời gian mở (phút)</label><input id="duration" type="number" min="1" max="30" value="10" /></div>
+            </div>
             <div class="form-actions"><button id="open-session" class="button primary-link" type="button">Mở phiên mới</button><button id="resume-session" class="button secondary" type="button">Xem phiên đang mở</button><button id="close-session" class="button secondary" type="button" disabled>Đóng phiên</button></div>
             <div id="qr-area" hidden><h3 id="session-title"></h3><div id="qr-image" style="background:white;padding:20px;display:inline-block"></div><p id="qr-countdown"></p><p>QR tự cập nhật. Sinh viên mở mục Điểm danh trên điện thoại để quét.</p>
                 <div class="form-actions"><button id="present-open" class="button primary-link" type="button">Trình chiếu toàn màn hình</button></div>

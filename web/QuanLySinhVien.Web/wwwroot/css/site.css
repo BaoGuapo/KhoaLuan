@@ -357,3 +357,7 @@ body.is-presenting { overflow: hidden; }
 .grade-input { width: 5.5rem; text-align: center; }
 .grade-input:invalid { border-color: #c0392b; }
 .grade-letter { font-weight: 700; }
+
+/* Ô chọn buổi và thời gian mở phiên QR: tách khỏi hàng nút bên dưới. */
+.session-fields { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); margin-bottom: 16px; }
+@media (max-width: 650px) { .session-fields { grid-template-columns: 1fr; gap: 12px; } }

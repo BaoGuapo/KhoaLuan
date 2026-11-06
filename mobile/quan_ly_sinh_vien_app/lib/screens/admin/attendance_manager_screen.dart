@@ -117,10 +117,16 @@ class _AttendanceManagerScreenState extends State<AttendanceManagerScreen> {
         if (_busy) const LinearProgressIndicator(),
         if (_message != null)
           Padding(padding: const EdgeInsets.all(12), child: Text(_message!)),
-        const Text('Buổi học trong 7 ngày trước đến 14 ngày tới'),
         DropdownButtonFormField<String>(
+          // Key theo buổi đang chọn để ô cập nhật khi danh sách buổi được tải lại.
+          key: ValueKey(_lesson),
           initialValue: _lesson,
           isExpanded: true,
+          decoration: InputDecoration(
+            labelText: 'Buổi học',
+            helperText: 'Các buổi từ 7 ngày trước đến 14 ngày tới',
+            hintText: _lessons.isEmpty ? 'Không có buổi học nào' : 'Chọn buổi học',
+          ),
           items: _lessons
               .map(
                 (x) => DropdownMenuItem<String>(
@@ -135,6 +141,7 @@ class _AttendanceManagerScreenState extends State<AttendanceManagerScreen> {
               .toList(),
           onChanged: _busy ? null : (v) => setState(() => _lesson = v),
         ),
+        const SizedBox(height: 16),
         DropdownButtonFormField<int>(
           initialValue: _minutes,
           decoration: const InputDecoration(labelText: 'Thời gian mở phiên'),
@@ -143,7 +150,7 @@ class _AttendanceManagerScreenState extends State<AttendanceManagerScreen> {
               .toList(),
           onChanged: (v) => setState(() => _minutes = v ?? 10),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
         ElevatedButton(
           onPressed: _busy || _lesson == null
               ? null
