@@ -376,6 +376,40 @@ namespace QuanLySinhVien.Api.Migrations
                     b.ToTable("GiangVien", (string)null);
                 });
 
+            modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.GiaoTrinh", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("DuongDanFile")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LoaiFile")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MaMonHoc")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<DateTime>("NgayTao")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TenFile")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MaMonHoc");
+
+                    b.ToTable("GiaoTrinh");
+                });
+
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.HoSoHocVu", b =>
                 {
                     b.Property<string>("MaSinhVien")
@@ -625,19 +659,36 @@ namespace QuanLySinhVien.Api.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
+                    b.Property<string>("LichHoc")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LoaiPhong")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("MaGiangVien")
                         .IsRequired()
                         .HasColumnType("nvarchar(30)");
 
                     b.Property<string>("MaHocKy")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("MaMonHoc")
                         .IsRequired()
                         .HasColumnType("nvarchar(30)");
 
+                    b.Property<string>("MonHocMaMonHoc")
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("NgayBatDau")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NgayKetThuc")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("SiSoToiDa")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SoBuoi")
                         .HasColumnType("int");
 
                     b.Property<byte?>("TrangThai")
@@ -648,6 +699,8 @@ namespace QuanLySinhVien.Api.Migrations
                     b.HasIndex("MaGiangVien");
 
                     b.HasIndex("MaMonHoc");
+
+                    b.HasIndex("MonHocMaMonHoc");
 
                     b.ToTable("LopHocPhan", (string)null);
                 });
@@ -688,6 +741,21 @@ namespace QuanLySinhVien.Api.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
+                    b.Property<bool>("LaMonTuChon")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("MaNganh")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SoTietLyThuyet")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SoTietThucHanh")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SoTinChi")
+                        .HasColumnType("int");
+
                     b.Property<int>("SoTinChiLyThuyet")
                         .HasColumnType("int");
 
@@ -725,6 +793,20 @@ namespace QuanLySinhVien.Api.Migrations
                     b.HasIndex("MaMonHoc");
 
                     b.ToTable("MonKeHoachDaoTao", (string)null);
+                });
+
+            modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.NganhDaoTao", b =>
+                {
+                    b.Property<string>("MaNganh")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("TenNganh")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("MaNganh");
+
+                    b.ToTable("NganhDaoTaos");
                 });
 
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.PhienDiemDanh", b =>
@@ -1253,6 +1335,17 @@ namespace QuanLySinhVien.Api.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
                 });
 
+            modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.GiaoTrinh", b =>
+                {
+                    b.HasOne("QuanLySinhVien.Api.Models.Entities.MonHoc", "MonHoc")
+                        .WithMany()
+                        .HasForeignKey("MaMonHoc")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MonHoc");
+                });
+
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.HoSoHocVu", b =>
                 {
                     b.HasOne("QuanLySinhVien.Api.Models.Entities.SinhVien", "SinhVien")
@@ -1351,6 +1444,10 @@ namespace QuanLySinhVien.Api.Migrations
                         .HasForeignKey("MaMonHoc")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("QuanLySinhVien.Api.Models.Entities.MonHoc", null)
+                        .WithMany("LopHocPhans")
+                        .HasForeignKey("MonHocMaMonHoc");
 
                     b.Navigation("GiangVien");
 
@@ -1480,6 +1577,11 @@ namespace QuanLySinhVien.Api.Migrations
                     b.Navigation("DanhSachSinhVien");
 
                     b.Navigation("LichHocs");
+                });
+
+            modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.MonHoc", b =>
+                {
+                    b.Navigation("LopHocPhans");
                 });
 
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.Role", b =>

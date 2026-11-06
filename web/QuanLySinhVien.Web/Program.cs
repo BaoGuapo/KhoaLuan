@@ -81,7 +81,7 @@ builder.Services.AddHttpClient<IFaceRecognitionApiClient, FaceRecognitionApiClie
     client.BaseAddress = new Uri(baseUrl);
     client.Timeout = TimeSpan.FromSeconds(30);
 });
-
+builder.Services.AddHttpClient();
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())

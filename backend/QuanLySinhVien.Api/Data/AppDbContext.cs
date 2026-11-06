@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using QuanLySinhVien.Api.Models.Entities;
-
 namespace QuanLySinhVien.Api.Data;
 
 public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
@@ -33,7 +32,9 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
     public DbSet<KetQuaHocPhan> KetQuaHocPhans => Set<KetQuaHocPhan>();
     public DbSet<DieuKienHocPhan> DieuKienHocPhans => Set<DieuKienHocPhan>();
     public DbSet<DotDangKyHocPhan> DotDangKyHocPhans => Set<DotDangKyHocPhan>();
-
+    public DbSet<NganhDaoTao> NganhDaoTaos { get; set; }
+    public DbSet<GiangVien> GiangVien { get; set; }
+    public DbSet<GiaoTrinh> GiaoTrinhs { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

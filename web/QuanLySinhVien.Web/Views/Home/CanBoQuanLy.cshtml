@@ -19,8 +19,10 @@
 </section>
 <div class="pt-home-actions">
     <section class="pt-section"><h2>Quản lý người dùng</h2><p>Tạo và sửa tài khoản, phân quyền, quản lý hồ sơ sinh viên và giảng viên.</p><a class="button primary-link" asp-controller="UserManagement" asp-action="Index">Mở quản lý người dùng</a></section>
-    <section class="pt-section"><h2>Quản lý môn học</h2><p>Danh mục môn học theo ngành, số tín chỉ, tiết lý thuyết và thực hành.</p><a class="button" asp-controller="CanBoQuanLy" asp-action="QuanLyMonHoc">Mở danh mục môn học</a></section>
-    <section class="pt-section"><h2>Chương trình đào tạo</h2><p>Lập chương trình, áp dụng cho học kỳ, mở lớp học phần, xếp lịch, phân công giảng viên rồi mở cổng đăng ký cho sinh viên.</p><a class="button" asp-controller="TrainingWorkflow" asp-action="Index">Mở quy trình đào tạo</a></section>
+    <section class="pt-section"><h2>Quản lý môn học</h2><p>Danh mục môn học theo ngành, thiết lập số tín chỉ, tiết lý thuyết và thực hành.</p><a class="button" asp-controller="CanBoQuanLy" asp-action="QuanLyMonHoc">Mở danh mục môn học</a></section>
+    <section class="pt-section"><h2>Kế hoạch đào tạo</h2><p>Xây dựng kế hoạch giảng dạy, cấu trúc chương trình đào tạo theo ngành và khóa.</p><a class="button" asp-controller="CanBoQuanLy" asp-action="KeHoachDaoTao">Mở kế hoạch đào tạo</a></section>
+    <section class="pt-section"><h2>Phân công lịch dạy</h2><p>Sắp xếp giảng viên, phòng học và lên lịch thời khóa biểu cho các lớp học phần.</p><a class="button" asp-controller="CanBoQuanLy" asp-action="PhanCongLichDay">Mở phân công lịch dạy</a></section>
+    <section class="pt-section"><h2>Mở cổng đăng ký</h2><p>Mở cổng đăng ký cho sinh viên và phân lịch qua bên giảng viên</p><a class="button" asp-controller="CanBoQuanLy" asp-action="MoCongDangKy">Mở cổng đăng ký</a></section>
     <section class="pt-section"><h2>Thống kê điểm danh</h2><p>Tỷ lệ chuyên cần theo học kỳ, môn học và lớp học phần, kèm biểu đồ và xuất Excel.</p><a class="button" asp-controller="BaoCao" asp-action="Index">Xem báo cáo</a></section>
     <section class="pt-section"><h2>Duyệt hồ sơ khuôn mặt</h2><p>Xác minh danh tính và duyệt hồ sơ chờ xử lý, dùng chung cho tất cả lớp.</p><a class="button" asp-controller="FaceProfileManagement" asp-action="Index">Mở trang duyệt hồ sơ</a></section>
 </div>

@@ -1,4 +1,7 @@
 using System.Text.Json.Serialization;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QuanLySinhVien.Api.Models.Entities;
 
@@ -80,6 +83,12 @@ public sealed class MonHoc
     public string TenMonHoc { get; set; } = string.Empty;
     public int SoTinChiLyThuyet { get; set; }
     public int SoTinChiThucHanh { get; set; }
+    public int SoTinChi { get; set; }
+    public int SoTietLyThuyet { get; set; }
+    public int SoTietThucHanh { get; set; }
+    public string? MaNganh { get; set; }
+    public ICollection<LopHocPhan> LopHocPhans { get; set; } = new List<LopHocPhan>();
+    public bool LaMonTuChon { get; set; } = false;
 }
 
 public sealed class HocKyThucTe
@@ -99,20 +108,57 @@ public sealed class PhongHoc
     public string? LoaiPhong { get; set; }
 }
 
-public sealed class LopHocPhan
+public class LopHocPhan
 {
     public string MaLopHocPhan { get; set; } = string.Empty;
-    public string MaMonHoc { get; set; } = string.Empty;
-    public string MaHocKy { get; set; } = string.Empty;
-    public string MaGiangVien { get; set; } = string.Empty;
-    public int SiSoToiDa { get; set; }
-    public string TrangThai { get; set; } = "1";
-    public MonHoc MonHoc { get; set; } = null!;
-    public GiangVien GiangVien { get; set; } = null!;
-    public ICollection<LichHoc> LichHocs { get; set; } = new List<LichHoc>();
-    public ICollection<DanhSachSinhVienLop> DanhSachSinhVien { get; set; } = new List<DanhSachSinhVienLop>();
-}
 
+    public string MaMonHoc { get; set; } = string.Empty;
+    public string MaGiangVien { get; set; } = string.Empty;
+    public int SiSoToiDa { get; set; } = 70;
+    public string TrangThai { get; set; } = "0";
+    public string? MaHocKy { get; set; }
+
+    // Trường lưu Thời khóa biểu cho giao diện xếp lịch
+    public string? LoaiPhong { get; set; }
+    public int? SoBuoi { get; set; }
+    public string? NgayBatDau { get; set; }
+    public string? NgayKetThuc { get; set; }
+    public string? LichHoc { get; set; }
+
+    // Navigation Properties (Đã khai báo rõ ForeignKey để tránh lỗi MonHocMaMonHoc)
+    [ForeignKey("MaMonHoc")]
+    public virtual MonHoc? MonHoc { get; set; }
+
+    [ForeignKey("MaGiangVien")]
+    public virtual GiangVien? GiangVien { get; set; }
+
+    // Tập hợp liên kết chuẩn của hệ thống
+    public virtual ICollection<LichHoc> LichHocs { get; set; } = new List<LichHoc>();
+    public virtual ICollection<DanhSachSinhVienLop> DanhSachSinhVien { get; set; } = new List<DanhSachSinhVienLop>();
+}
+[Table("GiaoTrinh")]
+public class GiaoTrinh
+{
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public int Id { get; set; }
+
+    [Required]
+    public string MaMonHoc { get; set; } = string.Empty;
+
+    [Required]
+    public string TenFile { get; set; } = string.Empty;
+
+    [Required]
+    public string DuongDanFile { get; set; } = string.Empty;
+
+    public string LoaiFile { get; set; } = string.Empty; // "WORD" hoặc "PPT"
+
+    public DateTime NgayTao { get; set; } = DateTime.Now;
+
+    [ForeignKey("MaMonHoc")]
+    public virtual MonHoc? MonHoc { get; set; }
+}
 public sealed class DanhSachSinhVienLop
 {
     public string LoaiDangKy { get; set; } = "moi";

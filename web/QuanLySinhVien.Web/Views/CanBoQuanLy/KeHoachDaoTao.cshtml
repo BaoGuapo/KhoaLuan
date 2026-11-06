@@ -1,0 +1,1011 @@
+@{
+    ViewData["Title"] = "Kế hoạch Đào tạo";
+}
+
+<!-- Nhúng Bootstrap Icons & SheetJS đọc file Excel -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<style>
+    :root {
+        --primary-color: #005b9f;
+        --bg-light: #f4f6f9;
+        --border-color: #e0e5ec;
+        --text-main: #333333;
+        --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+        font-family: var(--font-family);
+        background-color: var(--bg-light);
+        color: var(--text-main);
+    }
+
+    .page-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-subtitle {
+        font-size: 0.95rem;
+        color: #6c757d;
+        margin-bottom: 1.5rem;
+    }
+
+    .custom-card {
+        background-color: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+    }
+
+    .card-heading {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        text-transform: uppercase;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .form-group-inline {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.25rem;
+    }
+
+    .form-group-inline label {
+        width: 180px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        margin-bottom: 0;
+        color: #495057;
+        flex-shrink: 0;
+    }
+
+    .form-group-inline .form-control, 
+    .form-group-inline .form-select {
+        flex: 1;
+        max-width: 450px;
+        height: 40px;
+        border-radius: 8px;
+        border: 1px solid #ced4da;
+        font-size: 0.95rem;
+    }
+
+    .d-none-custom {
+        display: none !important;
+    }
+
+    .btn-pill-primary {
+        background-color: var(--primary-color);
+        color: white;
+        border: 1px solid var(--primary-color);
+        padding: 8px 24px;
+        font-weight: 600;
+        border-radius: 30px;
+        font-size: 0.95rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0, 91, 159, 0.2);
+        cursor: pointer;
+    }
+    .btn-pill-primary:hover {
+        background-color: #00467a;
+        color: white;
+    }
+
+    .btn-pill-secondary {
+        background-color: #6c757d;
+        color: white;
+        border: 1px solid #6c757d;
+        padding: 8px 20px;
+        font-weight: 600;
+        border-radius: 30px;
+        font-size: 0.95rem;
+        cursor: pointer;
+    }
+
+    .btn-action-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1.5px solid;
+        background-color: transparent;
+        transition: all 0.2s ease;
+        padding: 0;
+        font-size: 0.88rem;
+    }
+    .btn-action-edit { color: #0d6efd; border-color: #0d6efd; }
+    .btn-action-edit:hover { background-color: #0d6efd; color: #ffffff; }
+    .btn-action-delete { color: #dc3545; border-color: #dc3545; }
+    .btn-action-delete:hover { background-color: #dc3545; color: #ffffff; }
+
+    .badge-bat-buoc {
+        background-color: #146c43;
+        color: #ffffff;
+        font-weight: 500;
+        padding: 5px 14px;
+        border-radius: 12px;
+        font-size: 0.82rem;
+        display: inline-block;
+        text-align: center;
+        min-width: 80px;
+    }
+
+    .badge-tu-chon {
+        background-color: #ffc107;
+        color: #000000;
+        font-weight: 600;
+        padding: 5px 14px;
+        border-radius: 12px;
+        font-size: 0.82rem;
+        display: inline-block;
+        text-align: center;
+        min-width: 80px;
+    }
+
+    .mon-item-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 12px;
+        border-bottom: 1px dashed #e2e8f0;
+        cursor: pointer;
+        transition: background-color 0.15s ease;
+    }
+    .mon-item-row:hover {
+        background-color: #f8fafc;
+    }
+    .mon-item-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex: 1;
+        overflow: hidden;
+        padding-right: 15px;
+    }
+    .mon-item-right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-shrink: 0;
+    }
+
+    .subject-list {
+        max-height: 420px;
+        overflow-y: auto;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background-color: #ffffff;
+    }
+
+    .table-custom th {
+        background-color: #eaf3fa;
+        color: var(--primary-color);
+        font-weight: 600;
+        border-bottom: 2px solid #cce0f0;
+        padding: 12px;
+        font-size: 0.85rem;
+    }
+    .table-custom td {
+        vertical-align: middle;
+        padding: 10px;
+    }
+
+    .split-layout {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2rem;
+    }
+    .split-layout .col-form {
+        flex: 1;
+        min-width: 480px;
+        border-right: 1px solid #e0e5ec;
+        padding-right: 1rem;
+    }
+    .split-layout .col-table {
+        flex: 1.2;
+        min-width: 500px;
+    }
+
+    .hk-accordion-header {
+        background-color: #eaf3fa;
+        color: var(--primary-color);
+        font-weight: 700;
+        padding: 12px 18px;
+        border: 1px solid #cce0f0;
+        border-radius: 8px;
+        margin-top: 10px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .hk-accordion-header:hover { background-color: #d8e9f8; }
+
+    @@media (max-width: 1024px) {
+        .split-layout .col-form { border-right: none; padding-right: 0; }
+    }
+</style>
+
+<div class="container-fluid py-4" style="max-width: 1400px;">
+    <h1 class="page-title">Lập Kế hoạch Đào tạo</h1>
+    <p class="page-subtitle">Khai báo thông tin Khóa học và phân bổ chương trình giảng dạy</p>
+
+    <!-- BƯỚC 1: KHỞI TẠO KHÓA HỌC CHÍNH QUY -->
+    <div class="custom-card">
+        <div class="card-heading">1. KHỞI TẠO KHÓA HỌC CHÍNH QUY</div>
+        
+        <div class="split-layout">
+            <!-- CỘT TRÁI: FORM NHẬP KHÓA -->
+            <div class="col-form">
+                <input type="hidden" id="isEditMode" value="false">
+
+                <div class="form-group-inline">
+                    <label>Ngành đào tạo</label>
+                    <select class="form-select" id="cboNganhF1"></select>
+                </div>
+
+                <div class="form-group-inline">
+                    <label>Mã Khóa</label>
+                    <input type="text" class="form-control" id="txtMaKhoa" placeholder="VD: K26_MKT">
+                </div>
+
+                <div class="form-group-inline">
+                    <label>Tên Khóa</label>
+                    <input type="text" class="form-control" id="txtTenKhoa" placeholder="VD: Khóa 26 (2026-2030)">
+                </div>
+
+                <div class="form-group-inline">
+                    <label>Năm bắt đầu</label>
+                    <input type="number" class="form-control" id="txtNamBD" value="2026">
+                </div>
+
+                <div class="form-group-inline">
+                    <label>Thời gian (Năm)</label>
+                    <select class="form-select" id="cboThoiGian">
+                        <option value="3">3 Năm (6 Học kỳ)</option>
+                        <option value="3.5">3.5 Năm (7 Học kỳ)</option>
+                        <option value="4" selected>4 Năm (8 Học kỳ)</option>
+                    </select>
+                </div>
+
+                <div class="mt-4" style="padding-left: 180px;">
+                    <button type="button" class="btn-pill-primary me-2" id="btnLuuKhoa" onclick="luuThongTinKhoa()">
+                        <i class="bi bi-save"></i> Lưu Dữ liệu Khởi tạo
+                    </button>
+                    <button type="button" class="btn-pill-secondary d-none-custom" id="btnThoatSua" onclick="thoatSuaKhoaHoc()">
+                        Thoát
+                    </button>
+                </div>
+            </div>
+
+            <!-- CỘT PHẢI: BẢNG KHÓA HỌC -->
+            <div class="col-table">
+                <p class="fw-bold mb-3 text-muted">Danh sách Khóa học đã lưu (CSDL)</p>
+                <div class="table-responsive subject-list">
+                    <table class="table table-hover table-custom mb-0 text-center" style="font-size:0.9rem;">
+                        <thead class="sticky-top bg-white">
+                            <tr>
+                                <th width="20%">MÃ KHÓA</th>
+                                <th width="35%" class="text-start">TÊN KHÓA</th>
+                                <th width="25%" class="text-start">NGÀNH</th>
+                                <th width="20%">THAO TÁC</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyDsKhoaHoc">
+                            <tr><td colspan="4" class="text-muted p-3">Đang kết nối cơ sở dữ liệu...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BƯỚC 2: LẬP KẾ HOẠCH MÔN HỌC -->
+    <div class="custom-card">
+        <div class="card-heading">2. LẬP DANH SÁCH MÔN HỌC THEO KẾ HOẠCH</div>
+
+        <div class="split-layout">
+            <!-- CỘT TRÁI: FORM LỰA CHỌN MÔN -->
+            <div class="col-form">
+                <div class="form-group-inline">
+                    <label>Khóa học áp dụng</label>
+                    <select class="form-select" id="cboKhoaF2" onchange="onChonKhoaF2()"></select>
+                </div>
+
+                <div class="form-group-inline">
+                    <label>Khai báo Học kỳ</label>
+                    <select class="form-select" id="cboHocKyF2"></select>
+                </div>
+
+                <!-- RADIO CHỌN NGUỒN MÔN HỌC -->
+                <div class="form-group-inline align-items-start">
+                    <label class="mt-1">Phương thức chọn:</label>
+                    <div class="d-flex gap-4 p-2 bg-light border rounded" style="flex: 1; max-width: 450px;">
+                        <div class="form-check mb-0">
+                            <input class="form-check-input" type="radio" name="radNguonMon" id="radTuCSDL" value="csdl" checked onchange="chuyenNguonMon()">
+                            <label class="form-check-label fw-semibold text-primary" for="radTuCSDL" style="cursor:pointer;">
+                                <i class="bi bi-database me-1"></i> Chọn từ danh sách CSDL
+                            </label>
+                        </div>
+                        <div class="form-check mb-0">
+                            <input class="form-check-input" type="radio" name="radNguonMon" id="radTuExcel" value="excel" onchange="chuyenNguonMon()">
+                            <label class="form-check-label fw-semibold text-success" for="radTuExcel" style="cursor:pointer;">
+                                <i class="bi bi-file-earmark-excel me-1"></i> Nhập từ file Excel
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NGUỒN 1: CHỌN TỪ CSDL -->
+                <div id="vungCSDL_Container" style="display: block;">
+                    <div class="mt-3 mb-2 fw-bold text-muted" style="font-size: 0.9rem;">Danh sách Môn học chưa chọn trong CSDL:</div>
+                    <div class="subject-list" id="vungChonMonF2">
+                        <div class="text-center p-4 text-muted" style="font-size: 0.9rem;">
+                            Vui lòng chọn Khóa học và Học kỳ ở trên để tải danh sách môn học.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NGUỒN 2: NHẬP TỪ EXCEL -->
+                <div id="vungExcel_Container" style="display: none;">
+                    <div class="mt-3 mb-2 fw-bold text-muted d-flex justify-content-between align-items-center" style="font-size: 0.9rem;">
+                        <span>Tải lên file Excel danh sách môn học:</span>
+                        <input type="file" id="fileExcelKeHoach" accept=".xlsx, .xls" class="form-control form-control-sm" style="max-width: 250px;" onchange="docExcelKeHoach(event)" />
+                    </div>
+                    
+                    <div class="subject-list p-0">
+                        <table class="table table-hover table-custom mb-0 text-center align-middle" style="font-size:0.85rem;">
+                            <thead class="sticky-top bg-white">
+                                <tr>
+                                    <th width="8%"><input type="checkbox" id="chkSelectAllExcel" onchange="toggleSelectAllExcel(this)" style="width:16px; height:16px;"></th>
+                                    <th width="16%">MÃ MÔN</th>
+                                    <th width="32%" class="text-start">TÊN MÔN HỌC</th>
+                                    <th width="14%">NGÀNH</th>
+                                    <th width="8%">STC</th>
+                                    <th width="7%">LT</th>
+                                    <th width="7%">TH</th>
+                                    <th width="8%">LOẠI</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyExcelPreview">
+                                <tr><td colspan="8" class="text-muted p-4">Chưa chọn file Excel. Vui lòng chọn file .xlsx ở trên.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- NÚT CHỐT DANH SÁCH -->
+                <div class="mt-4" style="padding-left: 180px;">
+                    <button type="button" class="btn-pill-primary" id="btnChotKeHoach" onclick="luuChuongTrinhHocKy()">
+                        <i class="bi bi-check-circle-fill"></i> Chốt danh sách Môn học
+                    </button>
+                </div>
+            </div>
+
+            <!-- CỘT PHẢI: KẾ HOẠCH ĐÃ LƯU -->
+            <div class="col-table">
+                <div class="form-group-inline mb-3">
+                    <label style="width: 120px;" class="fw-bold text-primary">Xem kế hoạch:</label>
+                    <select class="form-select" id="cboXemKhoaPhai" onchange="hienThiKeHoachDaLuuBenPhai()"></select>
+                </div>
+
+                <div id="vungHienThiKeHoachPhai" style="max-height: 480px; overflow-y: auto; padding-right: 5px;">
+                    <div class="text-center p-4 text-muted border rounded">
+                        Vui lòng chọn Khóa học ở trên để xem chi tiết Kế hoạch Đào tạo đã lưu.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_BASE_URL = "https://localhost:7081/api"; 
+    let dsKhoaHocCache = [];
+    let dsNganhCache = [];
+    let dsMonHocCache = [];
+    let dsExcelImportedCache = [];
+
+    let dbKeHoachDaoTao = JSON.parse(localStorage.getItem("KeHoachDaoTaoStorage")) || {};
+
+    document.addEventListener("DOMContentLoaded", function() {
+        chuyenNguonMon();
+        loadNganhDaoTao();
+        loadDanhSachKhoaHoc();
+        loadTatCaMonHoc();
+    });
+
+    // 1. Chuyển nguồn môn học
+    function chuyenNguonMon() {
+        const isExcel = document.getElementById('radTuExcel').checked;
+        const vungCSDL = document.getElementById('vungCSDL_Container');
+        const vungExcel = document.getElementById('vungExcel_Container');
+
+        if (isExcel) {
+            vungCSDL.style.display = 'none';
+            vungExcel.style.display = 'block';
+        } else {
+            vungCSDL.style.display = 'block';
+            vungExcel.style.display = 'none';
+        }
+    }
+
+    // 2. Lấy danh sách tất cả các môn đã chốt của Khóa học (ở bất kỳ học kỳ nào)
+    function getAllMonDaChotCuaKhoa(maKhoa) {
+        if (!maKhoa || !dbKeHoachDaoTao[maKhoa]) return [];
+        let list = [];
+        Object.keys(dbKeHoachDaoTao[maKhoa]).forEach(hkKey => {
+            let danhSach = dbKeHoachDaoTao[maKhoa][hkKey].danhSachMon || [];
+            danhSach.forEach(m => list.push(m));
+        });
+        return list;
+    }
+
+    // 3. Tải danh sách Ngành
+    async function loadNganhDaoTao() {
+        try {
+            const rootApi = typeof API_BASE !== 'undefined' ? API_BASE : API_BASE_URL;
+            let res = await fetch(`${rootApi}/NganhDaoTao`);
+            if (!res.ok) throw new Error("Lỗi nạp Ngành");
+
+            dsNganhCache = await res.json();
+            let htmlOptions = '<option value="" selected disabled>-- Chọn Ngành đào tạo --</option>'; 
+            dsNganhCache.forEach(nganh => {
+                htmlOptions += `<option value="${nganh.maNganh}">${nganh.tenNganh}</option>`;
+            });
+
+            document.getElementById('cboNganhF1').innerHTML = htmlOptions;
+        } catch (e) { 
+            console.error("Lỗi nạp Ngành:", e); 
+        }
+    }
+
+    // 4. Tải tất cả môn học từ CSDL
+    async function loadTatCaMonHoc() {
+        try {
+            const rootApi = typeof API_BASE !== 'undefined' ? API_BASE : API_BASE_URL;
+            let res = await fetch(`${rootApi}/MonHoc`);
+            if (res.ok) {
+                dsMonHocCache = await res.json();
+            }
+        } catch (e) {
+            console.error("Lỗi tải môn học:", e);
+        }
+    }
+
+    // 5. Load danh sách Khóa học
+    async function loadDanhSachKhoaHoc() {
+        const tbody = document.getElementById('tbodyDsKhoaHoc');
+        const cboKhoaF2 = document.getElementById('cboKhoaF2');
+        const cboXemKhoaPhai = document.getElementById('cboXemKhoaPhai');
+
+        try {
+            const rootApi = typeof API_BASE !== 'undefined' ? API_BASE : API_BASE_URL;
+            let res = await fetch(`${rootApi}/KhoaHoc`);
+            if (!res.ok) throw new Error(await res.text());
+
+            dsKhoaHocCache = await res.json();
+
+            if (!dsKhoaHocCache || dsKhoaHocCache.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-muted p-3">Chưa có khóa học nào.</td></tr>';
+                cboKhoaF2.innerHTML = '<option value="">-- Chưa có khóa học --</option>';
+                cboXemKhoaPhai.innerHTML = '<option value="">-- Chưa có khóa học --</option>';
+                return;
+            }
+
+            let htmlTbody = '';
+            let htmlSelectF2 = '<option value="" disabled selected>-- Chọn Khóa học áp dụng --</option>';
+
+            dsKhoaHocCache.forEach(k => {
+                htmlTbody += `
+                    <tr>
+                        <td class="fw-bold text-primary">${k.maKhoa}</td>
+                        <td class="text-start fw-medium text-dark">${k.tenKhoa}</td>
+                        <td class="text-start">${k.tenNganh || k.maNganh}</td>
+                        <td>
+                            <button class="btn-action-icon btn-action-edit me-1" onclick="moSuaKhoaHoc('${k.maKhoa}')" title="Sửa">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn-action-icon btn-action-delete" onclick="xoaKhoaHoc('${k.maKhoa}')" title="Xóa">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>`;
+
+                htmlSelectF2 += `<option value="${k.maKhoa}">${k.maKhoa} - ${k.tenKhoa}</option>`;
+            });
+
+            tbody.innerHTML = htmlTbody;
+            cboKhoaF2.innerHTML = htmlSelectF2;
+            cboXemKhoaPhai.innerHTML = htmlSelectF2;
+
+        } catch (e) {
+            tbody.innerHTML = `<tr><td colspan="4" class="text-danger p-3">Lỗi tải dữ liệu: ${e.message}</td></tr>`;
+        }
+    }
+
+    // 6. XỬ LÝ CHỌN KHÓA HỌC BÊN TRÁI -> ĐỒNG BỘ CỘT PHẢI & NẠP MÔN
+    function onChonKhoaF2() {
+        const maKhoaSelected = document.getElementById('cboKhoaF2').value;
+        const k = dsKhoaHocCache.find(x => x.maKhoa === maKhoaSelected);
+        if (!k) return;
+
+        // Ép combobox bên phải tự động nhảy theo đúng mã khóa đã chọn
+        document.getElementById('cboXemKhoaPhai').value = maKhoaSelected;
+        hienThiKeHoachDaLuuBenPhai();
+
+        // Nạp các môn thuộc ngành NHƯNG LOẠI BỎ những môn đã được khóa này chốt
+        loadMonHocTheoNganh(k.maNganh, maKhoaSelected);
+        capNhatDanhSachHocKyF2(k.thoiGianDaoTao, k.namBatDau);
+    }
+
+    // 7. Cập nhật Options Học kỳ
+    function capNhatDanhSachHocKyF2(soNam, namBD) {
+        soNam = parseFloat(soNam) || 4;
+        namBD = parseInt(namBD) || 2026;
+        let totalSemesters = Math.round(soNam * 2);
+
+        let optionsHtml = '<option value="" disabled selected>-- Chọn Học kỳ cần lập --</option>';
+
+        let hkCounter = 0;
+        let soNamHoc = Math.ceil(soNam);
+
+        for (let namIndex = 1; namIndex <= soNamHoc; namIndex++) {
+            let namHienTai = namBD + namIndex - 1;
+            let namKetiap = namHienTai + 1;
+            
+            if (hkCounter < totalSemesters) {
+                hkCounter++;
+                optionsHtml += `<option value="Nam${namIndex}_HK1" data-ten="Học kỳ 1 (${namHienTai} - ${namKetiap})">Học kỳ 1 (Năm học ${namHienTai} - ${namKetiap})</option>`;
+            }
+            
+            if (hkCounter < totalSemesters) {
+                hkCounter++;
+                optionsHtml += `<option value="Nam${namIndex}_HK2" data-ten="Học kỳ 2 (${namHienTai} - ${namKetiap})">Học kỳ 2 (Năm học ${namHienTai} - ${namKetiap})</option>`;
+            }
+        }
+
+        document.getElementById('cboHocKyF2').innerHTML = optionsHtml;
+    }
+
+    // 8. Nạp môn CSDL (LỌC BỎ CÁC MÔN ĐÃ ĐƯỢC CHỐT CỦA KHÓA NÀY)
+    function loadMonHocTheoNganh(maNganh, maKhoa) {
+        let vungChonMon = document.getElementById('vungChonMonF2');
+        vungChonMon.innerHTML = '';
+
+        // Lấy danh sách các môn đã được chốt của khóa hiện tại
+        let listMonDaChot = getAllMonDaChotCuaKhoa(maKhoa);
+        let setMaMonDaChot = new Set(listMonDaChot.map(m => (m.maMonHoc || m.MaMonHoc || '').toLowerCase()));
+
+        // Lọc môn thuộc ngành VÀ CHƯA CÓ trong danh sách đã chốt của khóa này
+        let listMon = dsMonHocCache.filter(m => {
+            let nganhMatch = (m.maNganh || m.MaNganh || '') === maNganh || !m.maNganh;
+            let maMonStr = (m.maMonHoc || m.MaMonHoc || '').toLowerCase();
+            let chưaChốt = !setMaMonDaChot.has(maMonStr);
+            return nganhMatch && chưaChốt;
+        });
+
+        if (listMon.length === 0) {
+            vungChonMon.innerHTML = '<div class="text-center p-4 text-muted">Tất cả môn học thuộc ngành này đã được phân bổ vào Kế hoạch đào tạo của khóa!</div>';
+            return;
+        }
+
+        listMon.forEach(mon => {
+            let maMon = mon.maMonHoc || mon.MaMonHoc;
+            let tenMon = mon.tenMonHoc || mon.TenMonHoc;
+            let tinChi = mon.soTinChi ?? mon.SoTinChi ?? 3;
+            let nganhObj = dsNganhCache.find(n => n.maNganh === (mon.maNganh || mon.MaNganh));
+            let tenNganh = nganhObj ? nganhObj.tenNganh : (mon.maNganh || 'Đại cương');
+            let laTuChon = mon.laMonTuChon ?? mon.LaMonTuChon ?? false;
+
+            vungChonMon.innerHTML += `
+                <div class="mon-item-row" onclick="this.querySelector('input').click()">
+                    <div class="mon-item-left">
+                        <input class="chk-mon" type="checkbox" value="${maMon}" 
+                               data-ten="${tenMon}" data-tc="${tinChi}" data-nganh="${tenNganh}" data-tuchon="${laTuChon}"
+                               style="width:18px; height:18px;" onclick="event.stopPropagation()">
+                        <div>
+                            <span class="fw-bold text-primary me-2">${maMon}</span> - 
+                            <span class="text-dark fw-medium">${tenMon}</span>
+                        </div>
+                    </div>
+                    <div class="mon-item-right">
+                        <span class="badge bg-light text-dark border me-1">${tinChi} TC</span>
+                        <span class="${laTuChon ? 'badge-tu-chon' : 'badge-bat-buoc'}">${laTuChon ? 'Tự chọn' : 'Bắt buộc'}</span>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    // 9. Đọc file Excel
+    function docExcelKeHoach(event) {
+        const file = event.target.files[0];
+        const tbody = document.getElementById('tbodyExcelPreview');
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(firstSheet, { defval: "" });
+
+                if (jsonData.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" class="text-warning p-3">File Excel rỗng!</td></tr>';
+                    return;
+                }
+
+                dsExcelImportedCache = [];
+                let htmlRes = '';
+
+                jsonData.forEach((row, idx) => {
+                    let maMon = (row["Mã môn"] || row["Mã môn học"] || row["MaMon"] || row["MaMonHoc"] || "").toString().trim();
+                    let tenMon = (row["Tên môn học"] || row["Tên môn"] || row["TenMonHoc"] || "").toString().trim();
+                    let maNganh = (row["Ngành"] || row["Mã ngành"] || row["MaNganh"] || "").toString().trim();
+                    let soTc = parseInt(row["Số TC"] || row["Số tín chỉ"] || row["SoTinChi"]) || 0;
+                    let tietLt = parseInt(row["Tiết LT"] || row["Số tiết LT"] || row["SoTietLyThuyet"]) || 0;
+                    let tietTh = parseInt(row["Tiết TH"] || row["Số tiết TH"] || row["SoTietThucHanh"]) || 0;
+                    let phanLoaiStr = (row["Phân loại"] || row["PhanLoai"] || "").toString().toLowerCase();
+                    let laTuChon = phanLoaiStr.includes("tự chọn") || phanLoaiStr.includes("tu chon");
+
+                    if (maMon && tenMon) {
+                        let itemObj = {
+                            maMonHoc: maMon,
+                            tenMonHoc: tenMon,
+                            maNganh: maNganh,
+                            soTinChi: soTc,
+                            soTietLyThuyet: tietLt,
+                            soTietThucHanh: tietTh,
+                            laMonTuChon: laTuChon
+                        };
+                        dsExcelImportedCache.push(itemObj);
+
+                        htmlRes += `
+                            <tr>
+                                <td><input type="checkbox" class="chk-excel-mon" value="${idx}" checked style="width:16px; height:16px;"></td>
+                                <td class="fw-bold text-primary">${maMon}</td>
+                                <td class="text-start fw-medium">${tenMon}</td>
+                                <td>${maNganh || '-'}</td>
+                                <td class="fw-bold">${soTc}</td>
+                                <td>${tietLt}</td>
+                                <td>${tietTh}</td>
+                                <td>
+                                    <span class="${laTuChon ? 'badge-tu-chon' : 'badge-bat-buoc'}">
+                                        ${laTuChon ? 'Tự chọn' : 'Bắt buộc'}
+                                    </span>
+                                </td>
+                            </tr>
+                        `;
+                    }
+                });
+
+                tbody.innerHTML = htmlRes || '<tr><td colspan="8" class="text-danger p-3">Không đọc được cột dữ liệu hợp lệ!</td></tr>';
+
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-danger p-3">Lỗi đọc file: ${err.message}</td></tr>`;
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    function toggleSelectAllExcel(masterChk) {
+        document.querySelectorAll('.chk-excel-mon').forEach(chk => chk.checked = masterChk.checked);
+    }
+
+    // 10. CHỐT DANH SÁCH MÔN HỌC (VỚI KIỂM TRA TỪ CHỐI TRÙNG MÔN Ở EXCEL)
+    async function luuChuongTrinhHocKy() {
+        const maKhoa = document.getElementById('cboKhoaF2').value;
+        const selHk = document.getElementById('cboHocKyF2');
+        const hkHienTai = selHk.value;
+        const tenHocKy = selHk.options[selHk.selectedIndex] ? selHk.options[selHk.selectedIndex].text : hkHienTai;
+
+        if (!maKhoa) return alert("Vui lòng chọn Khóa học áp dụng!");
+        if (!hkHienTai) return alert("Vui lòng chọn Học kỳ cần lập kế hoạch!");
+
+        const isExcelMode = document.getElementById('radTuExcel').checked;
+        let monDuocChon = [];
+
+        // Lấy danh sách tất cả các môn đã có trong kế hoạch của Khóa hiện tại
+        let dsMonDaCoTrongKhoa = getAllMonDaChotCuaKhoa(maKhoa);
+
+        if (isExcelMode) {
+            let selectedIndexes = [];
+            document.querySelectorAll('.chk-excel-mon:checked').forEach(chk => {
+                selectedIndexes.push(parseInt(chk.value));
+            });
+
+            if (selectedIndexes.length === 0) {
+                return alert("Vui lòng chọn ít nhất 1 môn học từ file Excel!");
+            }
+
+            // --- KIỂM TRA TỪ CHỐI CHỐT NẾU TRÙNG MÃ MÔN HOẶC TÊN MÔN CÙNG KHÓA ---
+            let dsTrung = [];
+            for (let idx of selectedIndexes) {
+                let item = dsExcelImportedCache[idx];
+                if (!item) continue;
+
+                let maTrim = (item.maMonHoc || "").trim().toLowerCase();
+                let tenTrim = (item.tenMonHoc || "").trim().toLowerCase();
+
+                let isDuplicateInKhoa = dsMonDaCoTrongKhoa.some(m => {
+                    let mMa = (m.maMonHoc || m.MaMonHoc || "").trim().toLowerCase();
+                    let mTen = (m.tenMonHoc || m.TenMonHoc || "").trim().toLowerCase();
+                    return (maTrim && maTrim === mMa) || (tenTrim && tenTrim === mTen);
+                });
+
+                if (isDuplicateInKhoa) {
+                    dsTrung.push(`${item.maMonHoc} - ${item.tenMonHoc}`);
+                }
+            }
+
+            if (dsTrung.length > 0) {
+                return alert(`TỪ CHỐI CHỐT DANH SÁCH!\n\nCác môn học sau đã tồn tại trong Kế hoạch đào tạo của khóa này (ở cột bên phải):\n- ` + dsTrung.join("\n- ") + `\n\nVui lòng bỏ chọn hoặc kiểm tra lại file Excel!`);
+            }
+
+            // Nếu không trùng -> Lưu môn mới vào CSDL Quản lý môn học (nếu chưa có trong CSDL tổng)
+            let countAddedToDb = 0;
+            let countSkippedDb = 0;
+            const rootApi = typeof API_BASE !== 'undefined' ? API_BASE : API_BASE_URL;
+
+            for (let idx of selectedIndexes) {
+                let item = dsExcelImportedCache[idx];
+                if (!item) continue;
+
+                let isExistInDb = dsMonHocCache.some(m => 
+                    (m.maMonHoc || m.MaMonHoc || '').toLowerCase() === item.maMonHoc.toLowerCase() ||
+                    (m.tenMonHoc || m.TenMonHoc || '').toLowerCase() === item.tenMonHoc.toLowerCase()
+                );
+
+                if (!isExistInDb) {
+                    try {
+                        let res = await fetch(`${rootApi}/MonHoc`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                MaMonHoc: item.maMonHoc,
+                                TenMonHoc: item.tenMonHoc,
+                                MaNganh: item.maNganh || "",
+                                SoTinChi: item.soTinChi,
+                                SoTietLyThuyet: item.soTietLyThuyet,
+                                SoTietThucHanh: item.soTietThucHanh,
+                                LaMonTuChon: item.laMonTuChon
+                            })
+                        });
+
+                        if (res.ok) countAddedToDb++;
+                        else countSkippedDb++;
+                    } catch (e) {
+                        countSkippedDb++;
+                    }
+                } else {
+                    countSkippedDb++;
+                }
+
+                monDuocChon.push({
+                    maMonHoc: item.maMonHoc,
+                    tenMonHoc: item.tenMonHoc,
+                    soTinChi: item.soTinChi,
+                    tenNganh: item.maNganh || 'Đại cương',
+                    laMonTuChon: item.laMonTuChon
+                });
+            }
+
+            await loadTatCaMonHoc();
+            alert(`Đã chốt kế hoạch Excel thành công!\n- Thêm mới vào CSDL Quản lý môn học: ${countAddedToDb} môn.\n- Đã có sẵn trong CSDL môn học: ${countSkippedDb} môn.`);
+
+        } else {
+            document.querySelectorAll('.chk-mon:checked').forEach(chk => {
+                monDuocChon.push({
+                    maMonHoc: chk.value,
+                    tenMonHoc: chk.dataset.ten,
+                    soTinChi: parseInt(chk.dataset.tc) || 3,
+                    tenNganh: chk.dataset.nganh,
+                    laMonTuChon: chk.dataset.tuchon === "true"
+                });
+            });
+
+            if (monDuocChon.length === 0) return alert("Bạn chưa chọn môn học nào cho học kỳ này!");
+        }
+
+        if (!dbKeHoachDaoTao[maKhoa]) dbKeHoachDaoTao[maKhoa] = {};
+        dbKeHoachDaoTao[maKhoa][hkHienTai] = {
+            tenHocKy: tenHocKy,
+            danhSachMon: monDuocChon
+        };
+
+        localStorage.setItem("KeHoachDaoTaoStorage", JSON.stringify(dbKeHoachDaoTao));
+
+        alert(`Đã chốt thành công ${monDuocChon.length} môn học vào ${tenHocKy}!`);
+
+        // Cập nhật Cột Phải & làm mới danh sách môn CSDL ở Cột Trái (để ẩn các môn đã chốt)
+        document.getElementById('cboXemKhoaPhai').value = maKhoa;
+        hienThiKeHoachDaLuuBenPhai();
+
+        const k = dsKhoaHocCache.find(x => x.maKhoa === maKhoa);
+        if (k) {
+            loadMonHocTheoNganh(k.maNganh, maKhoa);
+        }
+    }
+
+    // 11. Hiển thị Cột Phải
+    function hienThiKeHoachDaLuuBenPhai() {
+        const maKhoa = document.getElementById('cboXemKhoaPhai').value;
+        const vungContainer = document.getElementById('vungHienThiKeHoachPhai');
+
+        if (!maKhoa || !dbKeHoachDaoTao[maKhoa] || Object.keys(dbKeHoachDaoTao[maKhoa]).length === 0) {
+            vungContainer.innerHTML = '<div class="text-center p-4 text-muted border rounded">Khóa học này chưa được lập Kế hoạch Môn học nào.</div>';
+            return;
+        }
+
+        let htmlRes = '';
+        let keHoachKhoa = dbKeHoachDaoTao[maKhoa];
+
+        Object.keys(keHoachKhoa).forEach((hkKey, idx) => {
+            let hkData = keHoachKhoa[hkKey];
+            let listMon = hkData.danhSachMon || [];
+
+            htmlRes += `
+                <div class="mb-3">
+                    <div class="hk-accordion-header" onclick="toggleHkAccordion('hk_content_${idx}')">
+                        <span><i class="bi bi-journal-bookmark-fill me-2"></i> ${hkData.tenHocKy}</span>
+                        <span class="badge bg-primary rounded-pill">${listMon.length} Môn</span>
+                    </div>
+                    <div id="hk_content_${idx}" class="table-responsive border border-top-0 rounded-bottom bg-white p-2">
+                        <table class="table table-bordered table-hover table-custom text-center mb-0 align-middle" style="font-size: 0.88rem;">
+                            <thead>
+                                <tr>
+                                    <th width="18%">MÃ MÔN</th>
+                                    <th width="37%" class="text-start">TÊN MÔN HỌC</th>
+                                    <th width="20%" class="text-start">NGÀNH</th>
+                                    <th width="10%">STC</th>
+                                    <th width="15%">PHÂN LOẠI</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+            `;
+
+            listMon.forEach(m => {
+                htmlRes += `
+                    <tr>
+                        <td class="fw-bold text-primary">${m.maMonHoc}</td>
+                        <td class="text-start fw-medium">${m.tenMonHoc}</td>
+                        <td class="text-start text-muted">${m.tenNganh || '-'}</td>
+                        <td class="fw-bold text-primary">${m.soTinChi}</td>
+                        <td>
+                            <span class="${m.laMonTuChon ? 'badge-tu-chon' : 'badge-bat-buoc'}">
+                                ${m.laMonTuChon ? 'Tự chọn' : 'Bắt buộc'}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            htmlRes += `
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        });
+
+        vungContainer.innerHTML = htmlRes;
+    }
+
+    function toggleHkAccordion(id) {
+        let el = document.getElementById(id);
+        if (el.style.display === "none") {
+            el.style.display = "block";
+        } else {
+            el.style.display = "none";
+        }
+    }
+
+    // 12. Xử lý Bước 1 (Khởi tạo Khóa)
+    async function luuThongTinKhoa() {
+        const maNganh = document.getElementById('cboNganhF1').value;
+        const maKhoa = document.getElementById('txtMaKhoa').value.trim();
+        const tenKhoa = document.getElementById('txtTenKhoa').value.trim();
+        const namBD = parseInt(document.getElementById('txtNamBD').value) || 2026;
+        const soNam = parseFloat(document.getElementById('cboThoiGian').value);
+        const isEdit = document.getElementById('isEditMode').value === "true";
+
+        if (!maNganh || !maKhoa || !tenKhoa) {
+            return alert("Vui lòng nhập đầy đủ Ngành đào tạo, Mã khóa và Tên khóa học!");
+        }
+
+        const rootApi = typeof API_BASE !== 'undefined' ? API_BASE : API_BASE_URL;
+        const url = isEdit ? `${rootApi}/KhoaHoc/${maKhoa}` : `${rootApi}/KhoaHoc`;
+        const method = isEdit ? 'PUT' : 'POST';
+
+        try {
+            let res = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    MaKhoa: maKhoa,
+                    TenKhoa: tenKhoa,
+                    MaNganh: maNganh,
+                    NamBatDau: namBD,
+                    ThoiGianDaoTao: soNam
+                })
+            });
+
+            if (!res.ok) {
+                let errText = await res.text();
+                let jsonErr = {};
+                try { jsonErr = JSON.parse(errText); } catch(ex){}
+                throw new Error(jsonErr.message || errText);
+            }
+
+            alert(isEdit ? "Cập nhật khóa học thành công!" : "Lưu khóa học vào CSDL thành công!");
+            thoatSuaKhoaHoc();
+            await loadDanhSachKhoaHoc();
+
+        } catch (e) {
+            alert("Lỗi khi lưu Khóa học: " + e.message);
+        }
+    }
+
+    function moSuaKhoaHoc(maKhoa) {
+        let k = dsKhoaHocCache.find(x => x.maKhoa === maKhoa);
+        if (!k) return;
+
+        document.getElementById('cboNganhF1').value = k.maNganh;
+        document.getElementById('txtMaKhoa').value = k.maKhoa;
+        document.getElementById('txtMaKhoa').disabled = true; 
+        document.getElementById('txtTenKhoa').value = k.tenKhoa;
+        document.getElementById('txtNamBD').value = k.namBatDau;
+        document.getElementById('cboThoiGian').value = k.thoiGianDaoTao;
+
+        document.getElementById('isEditMode').value = "true";
+        document.getElementById('btnLuuKhoa').innerHTML = '<i class="bi bi-pencil-square"></i> Cập nhật Khóa học';
+        document.getElementById('btnThoatSua').classList.remove('d-none-custom');
+    }
+
+    function thoatSuaKhoaHoc() {
+        document.getElementById('isEditMode').value = "false";
+        document.getElementById('txtMaKhoa').disabled = false;
+        document.getElementById('txtMaKhoa').value = "";
+        document.getElementById('txtTenKhoa').value = "";
+        document.getElementById('cboNganhF1').value = "";
+        document.getElementById('txtNamBD').value = "2026";
+        document.getElementById('cboThoiGian').value = "4";
+
+        document.getElementById('btnLuuKhoa').innerHTML = '<i class="bi bi-save"></i> Lưu Dữ liệu Khởi tạo';
+        document.getElementById('btnThoatSua').classList.add('d-none-custom');
+    }
+
+    async function xoaKhoaHoc(maKhoa) {
+        if (!confirm(`Bạn có chắc chắn muốn XÓA khóa học [${maKhoa}]?`)) return;
+
+        try {
+            const rootApi = typeof API_BASE !== 'undefined' ? API_BASE : API_BASE_URL;
+            let res = await fetch(`${rootApi}/KhoaHoc/${maKhoa}`, { method: 'DELETE' });
+
+            if (res.ok) {
+                alert(`Đã xóa khóa học ${maKhoa}!`);
+                if (document.getElementById('txtMaKhoa').value === maKhoa) thoatSuaKhoaHoc();
+                await loadDanhSachKhoaHoc();
+            } else {
+                alert("Lỗi khi xóa: " + await res.text());
+            }
+        } catch (e) {
+            alert("Lỗi kết nối API xóa: " + e.message);
+        }
+    }
+</script>

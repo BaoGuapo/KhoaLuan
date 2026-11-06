@@ -3,140 +3,681 @@
     ViewData["UseBootstrap"] = true;
 }
 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 <style>
     :root {
         --huit-blue: #005b9f;
         --huit-light: #eaf3fa;
         --huit-border: #dbe4ec;
     }
+    body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
     .card-custom { border-radius: 12px; border: 1px solid var(--huit-border); box-shadow: 0 4px 12px rgba(0,0,0,0.03); background: #fff; }
-    .table-custom th { background-color: var(--huit-light); color: var(--huit-blue); font-weight: 600; text-align: center; border-bottom: 2px solid #cce0f0; padding: 15px 12px; }
+    .table-custom th { background-color: var(--huit-light); color: var(--huit-blue); font-weight: 600; text-align: center; border-bottom: 2px solid #cce0f0; padding: 14px 12px; }
     .table-custom td { padding: 12px; vertical-align: middle; text-align: center; border-bottom: 1px solid #f1f5f9; }
     
-    /* Thiết kế Toggle Switch cho đẹp mắt */
-    .form-switch .form-check-input { width: 3em; height: 1.5em; cursor: pointer; }
+    .form-group-inline { display: inline-block; margin-right: 15px; margin-bottom: 12px; }
+    .form-group-inline label { font-weight: 600; font-size: 0.88rem; color: #475569; display: block; margin-bottom: 4px; }
+    .form-group-inline select { min-width: 230px; border-radius: 8px; border: 1px solid var(--huit-border); padding: 7px 12px; font-size: 0.9rem; }
+
+    .loai-hk-btn-group .btn-check:checked + .btn { background-color: var(--huit-blue); color: white; border-color: var(--huit-blue); font-weight: 600; }
+    .form-switch .form-check-input { width: 3.2em; height: 1.6em; cursor: pointer; }
     .form-switch .form-check-input:checked { background-color: #10b981; border-color: #10b981; }
-    .form-switch .form-check-input:focus { box-shadow: 0 0 0 .25rem rgba(16, 185, 129, 0.25); }
     .status-text { font-weight: 600; font-size: 0.9rem; margin-left: 8px; }
+
+    .subject-header { background: var(--huit-light); color: var(--huit-blue); padding: 12px 18px; border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border: 1px solid #cce0f0; }
+    .subject-header:hover { background: #dbeeff; }
+
+    .badge-file-word { background-color: #1d4ed8; color: white; font-weight: 500; }
+    .badge-file-ppt { background-color: #c2410c; color: white; font-weight: 500; }
 </style>
 
-<div class="container-fluid py-4">
-    <!-- Nút quay lại và Tiêu đề -->
-    <div class="mb-4 d-flex align-items-center">
-        <!-- Đã sửa href thành /CanBoQuanLy/CanBoQuanLy theo route bạn vừa đổi -->
-        <a href="/CanBoQuanLy/CanBoQuanLy" class="btn btn-light border rounded-circle p-2 me-3 shadow-sm" title="Về trang chủ">
-            <i class="bi bi-arrow-left fs-5 text-dark"></i>
-        </a>
-        <div>
-            <h3 class="fw-bold text-dark mb-1">Mở cổng đăng ký Sinh viên</h3>
-            <p class="text-muted mb-0">Quản lý trạng thái hiển thị các lớp học phần lên cổng đăng ký của sinh viên.</p>
-        </div>
-    </div>
-
-    <!-- Thanh công cụ & Thống kê nhanh -->
-    <div class="row mb-4 g-3">
-        <div class="col-md-3">
-            <div class="card-custom p-3 bg-light border-0">
-                <div class="text-muted fw-medium mb-1">Tổng số lớp sẵn sàng</div>
-                <h3 class="fw-bold text-dark mb-0">120</h3>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card-custom p-3" style="background-color: #ecfdf5; border: none;">
-                <div class="text-success fw-medium mb-1">Đang mở đăng ký</div>
-                <h3 class="fw-bold text-success mb-0">85</h3>
-            </div>
-        </div>
-        <div class="col-md-6 d-flex align-items-center justify-content-end">
-            <div class="input-group w-75 shadow-sm rounded-3 overflow-hidden">
-                <input type="text" class="form-control border-0 px-3" placeholder="Tìm mã lớp, tên môn...">
-                <button class="btn text-white px-4" style="background-color: var(--huit-blue);"><i class="bi bi-search"></i> Tìm kiếm</button>
+<div class="container-fluid py-4" style="max-width: 1350px;">
+    <div class="mb-4 d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center">
+            <a href="/CanBoQuanLy/CanBoQuanLy" class="btn btn-light border rounded-circle p-2 me-3 shadow-sm" title="Về trang chủ">
+                <i class="bi bi-arrow-left fs-5 text-dark"></i>
+            </a>
+            <div>
+                <h3 class="fw-bold text-dark mb-1">Mở cổng đăng ký Sinh viên</h3>
+                <p class="text-muted mb-0">Quản lý lớp học phần & Tải giáo trình môn học dùng chung cho Giảng viên & Sinh viên</p>
             </div>
         </div>
     </div>
 
-    <!-- Bảng danh sách lớp -->
+    <!-- BỘ LỌC -->
+    <div class="card-custom p-4 mb-4">
+        <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
+            <span class="fw-bold text-dark me-3" style="font-size:0.95rem;">
+                <i class="bi bi-gear-wide-connected text-primary me-1"></i> Loại đợt mở đăng ký:
+            </span>
+            <div class="btn-group loai-hk-btn-group" role="group">
+                <input type="radio" class="btn-check" name="radLoaiHocKy" id="radChinhQuy" value="CHINH_QUY" checked onchange="thayDoiLoaiHocKy()">
+                <label class="btn btn-outline-primary px-3 py-1 text-sm" for="radChinhQuy">
+                    <i class="bi bi-journal-check me-1"></i> Học kỳ Chính quy
+                </label>
+
+                <input type="radio" class="btn-check" name="radLoaiHocKy" id="radHocKyHe" value="HOC_KY_HE" onchange="thayDoiLoaiHocKy()">
+                <label class="btn btn-outline-warning text-dark px-3 py-1 text-sm" for="radHocKyHe">
+                    <i class="bi bi-sun-fill text-warning me-1"></i> Học kỳ Hè (Học kỳ 3)
+                </label>
+            </div>
+        </div>
+
+        <div class="d-flex flex-wrap align-items-end">
+            <div class="form-group-inline">
+                <label><i class="bi bi-bookmark-star text-primary me-1"></i>Chọn Khóa học:</label>
+                <select class="form-select" id="cboKhoa" onchange="onThayDoiKhoaHoc()"></select>
+            </div>
+            
+            <div class="form-group-inline">
+                <label><i class="bi bi-mortarboard text-primary me-1"></i>Ngành đào tạo:</label>
+                <select class="form-select" id="cboNganh"></select>
+            </div>
+
+            <div class="form-group-inline">
+                <label><i class="bi bi-calendar3 text-primary me-1"></i>Chọn Học kỳ cần mở đăng ký:</label>
+                <select class="form-select" id="cboHocKy"></select>
+            </div>
+
+            <div class="mb-2 ms-auto">
+                <button type="button" class="btn text-white px-4 py-2 fw-bold shadow-sm rounded-pill" style="background-color: var(--huit-blue);" onclick="loadDanhSachLopPhan()">
+                    <i class="bi bi-filter me-1"></i> Lọc dữ liệu
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- KHU VỰC DANH SÁCH VÀ NÚT TẢI GIÁO TRÌNH HÀNG LOẠT -->
     <div class="card-custom p-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-list-check me-2 text-huit"></i>Danh sách lớp học phần</h5>
-            <button class="btn btn-outline-success rounded-pill px-4 fw-medium shadow-sm"><i class="bi bi-check-all me-2"></i>Mở đăng ký tất cả</button>
+            <div>
+                <h5 class="fw-bold mb-0 text-dark">
+                    <i class="bi bi-list-check me-2 text-primary"></i>Danh sách Lớp học phần & Giáo trình môn học
+                </h5>
+                <span class="text-muted small">Quản lý lớp học phần và giáo trình dùng chung cho môn học</span>
+            </div>
+            
+            <div class="d-flex gap-2">
+                <!-- NÚT TẢI GIÁO TRÌNH HÀNG LOẠT -->
+                <button class="btn btn-outline-primary rounded-pill px-3 fw-bold shadow-sm" onclick="kichHoatChonFileGiaoTrinh()">
+                    <i class="bi bi-cloud-upload-fill me-1"></i> Tải giáo trình lên (Word/PPT)
+                </button>
+                <input type="file" id="inpUploadGiaoTrinh" multiple accept=".doc,.docx,.ppt,.pptx" style="display: none;" onchange="xuLyFilesUploadSelected(this)">
+
+                <!-- NÚT MỞ ĐĂNG KÝ TẤT CẢ -->
+                <button class="btn btn-outline-success rounded-pill px-3 fw-bold shadow-sm" onclick="moDangKyTatCaLop()">
+                    <i class="bi bi-check-all me-1"></i> Mở đăng ký tất cả lớp này
+                </button>
+            </div>
         </div>
 
-        <div class="table-responsive rounded-3 border">
-            <table class="table table-hover table-custom mb-0">
-                <thead>
-                    <tr>
-                        <th width="12%">Mã Lớp HP</th>
-                        <th width="20%" class="text-start">Môn học</th>
-                        <th width="20%" class="text-start">Giảng viên</th>
-                        <th width="15%">Lịch học</th>
-                        <th width="10%">Sĩ số</th>
-                        <th width="23%">Trạng thái trên Cổng SV</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Dữ liệu mẫu -->
-                    <tr>
-                        <td class="fw-bold" style="color: var(--huit-blue);">IT01_HK1_01</td>
-                        <td class="text-start fw-medium">Lập trình Web ASP.NET</td>
-                        <td class="text-start">ThS. Nguyễn Văn A</td>
-                        <td><small class="bg-light border px-2 py-1 rounded text-nowrap">T2 | 1-3 | C101</small></td>
-                        <td><span class="badge bg-secondary">0 / 70</span></td>
-                        <td>
-                            <div class="form-check form-switch d-flex align-items-center justify-content-center">
-                                <input class="form-check-input" type="checkbox" id="toggle_IT01" checked onchange="thayDoiTrangThai('IT01_HK1_01', this)">
-                                <label class="form-check-label status-text text-success" for="toggle_IT01" id="lbl_IT01">Đang mở</label>
-                            </div>
-                        </td>
-                    </tr>
+        <div id="containerDanhSachLop">
+            <div class="text-center p-5 text-muted">
+                <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary"></i>
+                Vui lòng chọn bộ lọc Khóa - Ngành - Học kỳ và bấm <b>Lọc dữ liệu Lớp HP</b>.
+            </div>
+        </div>
+    </div>
+</div>
 
-                    <tr>
-                        <td class="fw-bold" style="color: var(--huit-blue);">IT02_HK1_01</td>
-                        <td class="text-start fw-medium">Cơ sở dữ liệu Nâng cao</td>
-                        <td class="text-start">TS. Trần Thị B</td>
-                        <td><small class="bg-light border px-2 py-1 rounded text-nowrap">T4 | 4-5 | C102</small></td>
-                        <td><span class="badge bg-secondary">0 / 50</span></td>
-                        <td>
-                            <div class="form-check form-switch d-flex align-items-center justify-content-center">
-                                <input class="form-check-input" type="checkbox" id="toggle_IT02" onchange="thayDoiTrangThai('IT02_HK1_01', this)">
-                                <label class="form-check-label status-text text-muted" for="toggle_IT02" id="lbl_IT02">Đang khóa</label>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+<!-- MODAL XEM TRƯỚC VÀ XÁC NHẬN LƯU GIÁO TRÌNH HÀNG LOẠT -->
+<div class="modal fade" id="modalUploadGiaoTrinh" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header bg-primary text-white border-0">
+                <h5 class="modal-header-title fw-bold mb-0">
+                    <i class="bi bi-file-earmark-arrow-up me-2"></i>Xác nhận & Phân loại Giáo trình Tải lên
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="text-muted small mb-3">Hệ thống đã tự động quét Tên file để khớp với Mã môn/Tên môn. Bạn có thể điều chỉnh lại chọn môn tương ứng trước khi lưu.</p>
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th width="40%">Tên File giáo trình</th>
+                                <th width="15%">Loại File</th>
+                                <th width="45%">Phân vào Môn học</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyPreviewUpload"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer bg-light border-0">
+                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Hủy bỏ</button>
+                <button type="button" class="btn btn-primary rounded-pill px-4 fw-bold" onclick="luuGiaoTrinhHangLoatVaoDb()">
+                    <i class="bi bi-save me-1"></i> Lưu Giáo Trình vào CSDL
+                </button>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    function thayDoiTrangThai(maLop, checkboxElem) {
-        const isChecked = checkboxElem.checked;
-        const lblElem = document.getElementById('lbl_' + maLop.split('_')[0]); // Lấy theo phần đầu mã lớp cho ví dụ này
+    const API_BASE_URL = "https://localhost:7081/api";
+    let dsKhoaHocCache = [];
+    let dsNganhCache = [];
+    let dsMonHocAllCache = [];
+    let dsMonCurrentFiltered = []; // Danh sách các môn học đang được lọc hiển thị bên dưới
+    let currentLoadedClasses = [];
+    let pendingUploadFiles = []; // Mảng chứa các file đang chờ lưu
+    let dsGiaoTrinhCache = {}; // Lưu trữ giáo trình theo MaMonHoc
 
-        // Cập nhật giao diện tạm thời
-        if (isChecked) {
-            lblElem.innerText = "Đang mở";
-            lblElem.classList.remove('text-muted');
-            lblElem.classList.add('text-success');
-        } else {
-            lblElem.innerText = "Đang khóa";
-            lblElem.classList.remove('text-success');
-            lblElem.classList.add('text-muted');
+    document.addEventListener("DOMContentLoaded", async function() {
+        await loadTatCaMonHoc();
+        await loadNganhDaoTao();
+        await loadDanhSachKhoaHoc();
+    });
+
+    async function loadTatCaMonHoc() {
+        try {
+            const rootApi = typeof API_BASE !== 'undefined' ? API_BASE : API_BASE_URL;
+            let res = await fetch(`${rootApi}/MonHoc`);
+            if (res.ok) {
+                let data = await res.json();
+                if (Array.isArray(data)) dsMonHocAllCache = data;
+            }
+        } catch (e) { console.error("Lỗi nạp môn học:", e); }
+    }
+
+    async function loadNganhDaoTao() {
+        const cboNganh = document.getElementById('cboNganh');
+        try {
+            const rootApi = typeof API_BASE !== 'undefined' ? API_BASE : API_BASE_URL;
+            let res = await fetch(`${rootApi}/NganhDaoTao`);
+            if (res.ok) {
+                dsNganhCache = await res.json();
+                let html = '';
+                dsNganhCache.forEach(n => {
+                    let ma = n.maNganh || n.MaNganh;
+                    let ten = n.tenNganh || n.TenNganh;
+                    html += `<option value="${ma}">${ten} (${ma})</option>`;
+                });
+                cboNganh.innerHTML = html;
+            }
+        } catch (e) { console.error("Lỗi nạp Ngành:", e); }
+    }
+
+    async function loadDanhSachKhoaHoc() {
+        const cboKhoa = document.getElementById('cboKhoa');
+        dsKhoaHocCache = [];
+        try {
+            const rootApi = typeof API_BASE !== 'undefined' ? API_BASE : API_BASE_URL;
+            let res = await fetch(`${rootApi}/KhoaHoc`);
+            if (res.ok) {
+                let data = await res.json();
+                if (Array.isArray(data)) dsKhoaHocCache = data;
+            }
+        } catch (e) { console.warn("Không thể gọi API KhoaHoc:", e); }
+
+        if (!dsKhoaHocCache || dsKhoaHocCache.length === 0) {
+            let dbKeHoach = JSON.parse(localStorage.getItem("KeHoachDaoTaoStorage")) || {};
+            let keys = Object.keys(dbKeHoach);
+            if (keys.length > 0) {
+                dsKhoaHocCache = keys.map(k => ({ maKhoa: k, tenKhoa: `Khóa ${k}`, maNganh: "CNTT", thoiGianDaoTao: 4, namBatDau: 2026 }));
+            }
         }
 
+        if (!dsKhoaHocCache || dsKhoaHocCache.length === 0) {
+            cboKhoa.innerHTML = '<option value="K26">K26 - Khóa 2026</option>';
+            onThayDoiKhoaHoc();
+            return;
+        }
 
-        fetch(`/api/v1/lop-hoc-phan/${maLop}/trang-thai-dang-ky`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ isOpend: isChecked })
-        }).then(response => {
-            if(!response.ok) {
-                alert("Có lỗi xảy ra, không thể thay đổi trạng thái!");
-                checkboxElem.checked = !isChecked; // Revert nếu lỗi
+        let optionsHtml = '';
+        dsKhoaHocCache.forEach(k => {
+            let maK = k.maKhoa || k.MaKhoa;
+            let tenK = k.tenKhoa || k.TenKhoa || maK;
+            optionsHtml += `<option value="${maK}">${maK} - ${tenK}</option>`;
+        });
+
+        cboKhoa.innerHTML = optionsHtml;
+        onThayDoiKhoaHoc();
+    }
+
+    function onThayDoiKhoaHoc() {
+        const maKhoaSelected = document.getElementById('cboKhoa').value;
+        const k = dsKhoaHocCache.find(x => (x.maKhoa || x.MaKhoa) === maKhoaSelected) || { thoiGianDaoTao: 4, namBatDau: 2026 };
+        let thoiGian = k.thoiGianDaoTao ?? k.ThoiGianDaoTao ?? 4;
+        let namBD = k.namBatDau ?? k.NamBatDau ?? 2026;
+        capNhatDanhSachHocKy(thoiGian, namBD);
+    }
+
+    function thayDoiLoaiHocKy() { onThayDoiKhoaHoc(); }
+
+    function capNhatDanhSachHocKy(soNam, namBD) {
+        soNam = parseFloat(soNam) || 4;
+        namBD = parseInt(namBD) || 2026;
+        const isHocKyHe = document.getElementById('radHocKyHe').checked;
+        const cboHocKy = document.getElementById('cboHocKy');
+        let optionsHtml = '';
+        let soNamHoc = Math.ceil(soNam);
+
+        for (let namIndex = 1; namIndex <= soNamHoc; namIndex++) {
+            let namHienTai = namBD + namIndex - 1;
+            let namKetiap = namHienTai + 1;
+            if (!isHocKyHe) {
+                optionsHtml += `<option value="Nam${namIndex}_HK1">Học kỳ 1 (${namHienTai} - ${namKetiap})</option>`;
+                optionsHtml += `<option value="Nam${namIndex}_HK2">Học kỳ 2 (${namHienTai} - ${namKetiap})</option>`;
+            } else {
+                optionsHtml += `<option value="Nam${namIndex}_HK3">Học kỳ 3 (${namHienTai} - ${namKetiap})</option>`;
+            }
+        }
+        cboHocKy.innerHTML = optionsHtml;
+    }
+
+    // LỌC DỮ LIỆU CÁC LỚP VÀ TẢI GIÁO TRÌNH TỪ CSDL
+    async function loadDanhSachLopPhan() {
+        const maKhoa = document.getElementById('cboKhoa').value;
+        const hkKey = document.getElementById('cboHocKy').value;
+        const isHocKyHe = document.getElementById('radHocKyHe').checked;
+        const container = document.getElementById('containerDanhSachLop');
+
+        if (!maKhoa || !hkKey) return alert("Vui lòng chọn đầy đủ Khóa học và Học kỳ!");
+
+        container.innerHTML = `<div class="text-center p-5"><div class="spinner-border text-primary" role="status"></div><div class="mt-2 text-muted fw-bold">Đang tải danh sách...</div></div>`;
+
+        try {
+            const rootApi = typeof API_BASE !== 'undefined' ? API_BASE : API_BASE_URL;
+            let res = await fetch(`${rootApi}/LopHocPhan/GetDanhSachDaPhanCong`);
+            if (!res.ok) throw new Error("Lỗi tải API phân công");
+
+            let dbData = await res.json();
+            if (!Array.isArray(dbData)) dbData = [];
+
+            let dbKeHoach = JSON.parse(localStorage.getItem("KeHoachDaoTaoStorage")) || {};
+            let dataKhoa = dbKeHoach[maKhoa] || dbKeHoach[maKhoa.toUpperCase()] || dbKeHoach[maKhoa.toLowerCase()] || {};
+            
+            let hkTargetKey = hkKey;
+            if (isHocKyHe) {
+                let parts = hkKey.split('_');
+                let namIndex = parseInt(parts[0].replace('Nam', '')) || 1;
+                hkTargetKey = `Nam${namIndex + 1}_HK1`;
+            }
+
+            let dsMonHocTarget = (dataKhoa[hkTargetKey] && dataKhoa[hkTargetKey].danhSachMon) ? dataKhoa[hkTargetKey].danhSachMon : [];
+            dsMonCurrentFiltered = dsMonHocTarget; // Lưu danh sách các môn đang lọc
+
+            let dsMaMonTarget = dsMonHocTarget.map(m => (m.maMonHoc || m.MaMonHoc || '').toUpperCase());
+
+            if (dsMaMonTarget.length === 0) {
+                container.innerHTML = `<div class="alert alert-warning text-center p-4 my-2 border-warning"><i class="bi bi-exclamation-triangle fs-3 d-block mb-2 text-warning"></i>Chưa có môn học nào được chốt kế hoạch đào tạo cho đợt này của Khóa [${maKhoa}]!</div>`;
+                return;
+            }
+
+            currentLoadedClasses = dbData.filter(x => {
+                let maGV = x.maGiangVien || x.MaGiangVien;
+                let cardIds = x.danhSachCardIds || x.DanhSachCardIds || [];
+                let maMon = (x.maMonHoc || x.MaMonHoc || '').toUpperCase();
+                let maHK = x.maHocKy || x.MaHocKy || '';
+
+                let isDaPhanCong = maGV && maGV !== "GV_DEFAULT" && cardIds.length > 0;
+                let isMatchMon = dsMaMonTarget.includes(maMon);
+                let isMatchHK = true;
+                if (maHK) isMatchHK = isHocKyHe ? (maHK === hkTargetKey || maHK === hkKey) : (maHK === hkKey);
+
+                return isDaPhanCong && isMatchMon && isMatchHK;
+            });
+
+            // Kéo dữ liệu Giáo trình từ CSDL về cho các môn này
+            await loadGiaoTrinhFromDb(dsMaMonTarget);
+
+            if (currentLoadedClasses.length === 0) {
+                container.innerHTML = `<div class="alert alert-info text-center p-4 my-2"><i class="bi bi-info-circle fs-3 d-block mb-2 text-info"></i>Các môn thuộc đợt này của Khóa [${maKhoa}] chưa được phân công Giảng viên & Phòng học!</div>`;
+                return;
+            }
+
+            renderGiaoDienLopHocPhan(currentLoadedClasses);
+
+        } catch (e) {
+            container.innerHTML = `<div class="alert alert-danger text-center">Lỗi hệ thống: ${e.message}</div>`;
+        }
+    }
+
+    // TẢI GIÁO TRÌNH TỪ CSDL HỆ THỐNG
+    async function loadGiaoTrinhFromDb(dsMaMon) {
+        try {
+            const rootApi = typeof API_BASE !== 'undefined' ? API_BASE : API_BASE_URL;
+            let res = await fetch(`${rootApi}/GiaoTrinh/GetByDanhSachMon`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dsMaMon)
+            });
+
+            if (res.ok) {
+                let list = await res.json();
+                dsGiaoTrinhCache = {};
+                list.forEach(item => {
+                    let ma = (item.maMonHoc || item.MaMonHoc || '').toUpperCase();
+                    if (!dsGiaoTrinhCache[ma]) dsGiaoTrinhCache[ma] = [];
+                    dsGiaoTrinhCache[ma].push(item);
+                });
+            }
+        } catch (e) { console.error("Lỗi nạp Giáo trình CSDL:", e); }
+    }
+
+    // RENDER GIAO DIỆN HIỂN THỊ CÁC NHÓM MÔN & THÊM VÙNG HIỂN THỊ GIÁO TRÌNH
+    function renderGiaoDienLopHocPhan(data) {
+        const container = document.getElementById('containerDanhSachLop');
+        let groups = {};
+
+        data.forEach(item => {
+            let maMon = item.maMonHoc || item.MaMonHoc || "MON_UNKNOWN";
+            if (!groups[maMon]) {
+                groups[maMon] = { maMon: maMon, tenMon: item.tenMonHoc || item.TenMonHoc, classes: [] };
+            }
+            groups[maMon].classes.push(item);
+        });
+
+        let html = '';
+        for (let maMon in groups) {
+            let subj = groups[maMon];
+            let monInfo = dsMonHocAllCache.find(m => (m.maMonHoc || m.MaMonHoc || '').toUpperCase() === maMon.toUpperCase());
+            let tenMonHocDisplay = (subj.tenMon && subj.tenMon.toUpperCase() !== maMon.toUpperCase()) ? subj.tenMon : (monInfo ? (monInfo.tenMonHoc || monInfo.TenMonHoc) : maMon);
+
+            // Render Danh sách Giáo trình đã lưu của môn này
+            let listGT = dsGiaoTrinhCache[maMon.toUpperCase()] || [];
+            let htmlGiaoTrinhBadges = '';
+
+            if (listGT.length > 0) {
+                listGT.forEach(gt => {
+                    let isWord = gt.loaiFile === 'WORD';
+                    let badgeClass = isWord ? 'badge-file-word' : 'badge-file-ppt';
+                    let iconClass = isWord ? 'bi-file-earmark-word-fill' : 'bi-file-earmark-slides-fill';
+                    
+                    htmlGiaoTrinhBadges += `
+                        <div class="d-inline-flex align-items-center me-2 mb-1 px-2 py-1 border rounded bg-white shadow-sm" style="font-size:0.8rem;">
+                            <span class="badge ${badgeClass} me-1"><i class="bi ${iconClass} me-1"></i>${gt.loaiFile}</span>
+                            <a href="${gt.duongDanFile}" target="_blank" class="text-dark fw-bold text-decoration-none me-2 text-truncate" style="max-width:200px;" title="${gt.tenFile}">${gt.tenFile}</a>
+                            <button type="button" class="btn-close ms-1" style="font-size:0.65rem;" title="Xóa giáo trình này" onclick="xoaGiaoTrinh(${gt.id}, '${maMon}')"></button>
+                        </div>`;
+                });
+            } else {
+                htmlGiaoTrinhBadges = `<span class="text-muted small fst-italic"><i class="bi bi-info-circle me-1"></i>Chưa có giáo trình nào (Word/PPT) được tải lên cho môn này.</span>`;
+            }
+
+            html += `
+            <div class="mb-4">
+                <div class="subject-header" onclick="toggleAccordion('sec_${maMon}')">
+                    <span>
+                        <i class="bi bi-journal-bookmark-fill me-2"></i> 
+                        Môn: <b>${tenMonHocDisplay}</b> (${maMon}) - <span class="badge bg-primary ms-1">${subj.classes.length} Nhóm lớp</span>
+                    </span>
+                    <i class="bi bi-chevron-down"></i>
+                </div>
+
+                <!-- KHU VỰC HIỂN THỊ GIÁO TRÌNH DÙNG CHUNG CỦA MÔN -->
+                <div class="p-3 bg-light border-start border-end border-top rounded-top-0 mb-0 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div>
+                        <strong class="text-primary me-2" style="font-size:0.88rem;"><i class="bi bi-book-half me-1"></i>Giáo trình áp dụng chung cho tất cả các nhóm:</strong>
+                        <div class="d-inline-block mt-1">${htmlGiaoTrinhBadges}</div>
+                    </div>
+                </div>
+
+                <div id="sec_${maMon}" class="table-responsive rounded-3 border bg-white">
+                    <table class="table table-hover table-custom mb-0">
+                        <thead>
+                            <tr>
+                                <th width="14%">Mã Lớp HP</th>
+                                <th width="18%" class="text-start">Giảng viên</th>
+                                <th width="12%">Loại phòng</th>
+                                <th width="26%">Thời khóa biểu & Lịch học</th>
+                                <th width="12%">Sĩ số đăng ký</th>
+                                <th width="18%">Trạng thái Cổng SV</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+            subj.classes.forEach(nhom => {
+                let maLop = nhom.maLopHocPhan || nhom.MaLopHocPhan;
+                let isOpened = (nhom.trangThai === '2'); 
+                let lichBadgeHtml = parseLichHocBadges(nhom.danhSachCardIds || nhom.DanhSachCardIds, nhom.ngayBatDau, nhom.ngayKetThuc);
+                let safeMaLop = maLop.replace(/[^a-zA-Z0-9_]/g, '');
+                let loaiPhongText = (nhom.loaiPhong === 'TH') ? 'Thực hành' : 'Lý thuyết';
+
+                html += `
+                <tr>
+                    <td class="fw-bold text-primary">${maLop}</td>
+                    <td class="text-start fw-bold text-dark">${nhom.tenGiangVien || 'Đã gán GV'}</td>
+                    <td><span class="badge ${nhom.loaiPhong === 'TH' ? 'bg-info text-dark' : 'bg-secondary'}">${loaiPhongText}</span></td>
+                    <td>${lichBadgeHtml}</td>
+                    <td><span class="badge bg-light text-dark border p-2" style="font-size:0.85rem;">0 / ${nhom.siSoToiDa || 70} SV</span></td>
+                    <td>
+                        <div class="form-check form-switch d-flex align-items-center justify-content-center">
+                            <input class="form-check-input" type="checkbox" id="toggle_${safeMaLop}" ${isOpened ? 'checked' : ''} onchange="thayDoiTrangThai('${maLop}', this)">
+                            <label class="form-check-label status-text ${isOpened ? 'text-success' : 'text-muted'}" for="toggle_${safeMaLop}" id="lbl_${safeMaLop}">${isOpened ? 'Đang mở' : 'Đang khóa'}</label>
+                        </div>
+                    </td>
+                </tr>`;
+            });
+
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            </div>`;
+        }
+
+        container.innerHTML = html;
+    }
+
+    // XỬ LÝ UPLOAD HÀNG LOẠT & NHẬN DIỆN MÃ MÔN TỰ ĐỘNG
+    function kichHoatChonFileGiaoTrinh() {
+        document.getElementById('inpUploadGiaoTrinh').click();
+    }
+
+    function xuLyFilesUploadSelected(inputElem) {
+        let files = Array.from(inputElem.files);
+        if (files.length === 0) return;
+
+        pendingUploadFiles = [];
+        let tbody = document.getElementById('tbodyPreviewUpload');
+        let html = '';
+
+        // Thu thập danh sách môn đang xuất hiện dưới màn hình
+        let optionsMonHtml = '<option value="">-- Chọn Môn áp dụng --</option>';
+        dsMonCurrentFiltered.forEach(m => {
+            let ma = m.maMonHoc || m.MaMonHoc;
+            let ten = m.tenMonHoc || m.TenMonHoc || ma;
+            optionsMonHtml += `<option value="${ma}">${ten} (${ma})</option>`;
+        });
+
+        files.forEach((file, idx) => {
+            let fileNameUpper = file.name.toUpperCase();
+            let matchedMaMon = "";
+
+            // Tự động quét Tên file xem có chứa Mã môn hoặc Tên môn không
+            for (let m of dsMonCurrentFiltered) {
+                let ma = (m.maMonHoc || m.MaMonHoc || '').toUpperCase();
+                let ten = (m.tenMonHoc || m.TenMonHoc || '').toUpperCase();
+                if (fileNameUpper.includes(ma) || (ten && fileNameUpper.includes(ten))) {
+                    matchedMaMon = m.maMonHoc || m.MaMonHoc;
+                    break;
+                }
+            }
+
+            let ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+            let loaiFile = (ext === '.doc' || ext === '.docx') ? 'Word' : 'PowerPoint';
+
+            pendingUploadFiles.push(file);
+
+            html += `
+                <tr>
+                    <td class="fw-bold text-dark text-truncate" style="max-width:250px;">${file.name}</td>
+                    <td><span class="badge ${loaiFile === 'Word' ? 'bg-primary' : 'bg-danger'}">${loaiFile}</span></td>
+                    <td>
+                        <select class="form-select form-select-sm sel-mon-match" id="sel_mon_${idx}">
+                            ${optionsMonHtml}
+                        </select>
+                    </td>
+                </tr>`;
+        });
+
+        tbody.innerHTML = html;
+
+        // Auto select môn được tìm thấy
+        files.forEach((file, idx) => {
+            let fileNameUpper = file.name.toUpperCase();
+            for (let m of dsMonCurrentFiltered) {
+                let ma = (m.maMonHoc || m.MaMonHoc || '').toUpperCase();
+                let ten = (m.tenMonHoc || m.TenMonHoc || '').toUpperCase();
+                if (fileNameUpper.includes(ma) || (ten && fileNameUpper.includes(ten))) {
+                    document.getElementById(`sel_mon_${idx}`).value = m.maMonHoc || m.MaMonHoc;
+                    break;
+                }
             }
         });
-        
-        console.log(`Đã ${isChecked ? 'MỞ' : 'KHÓA'} cổng đăng ký cho lớp ${maLop}`);
+
+        let modalElem = new bootstrap.Modal(document.getElementById('modalUploadGiaoTrinh'));
+        modalElem.show();
+    }
+
+    // NÚT LƯU GIÁO TRÌNH HÀNG LOẠT VÀO CSDL (ĐÃ XỬ LÝ LỖI BODY STREAM ALREADY READ)
+    async function luuGiaoTrinhHangLoatVaoDb() {
+        if (pendingUploadFiles.length === 0) return alert("Không có file nào để lưu!");
+
+        let formData = new FormData();
+        let validCount = 0;
+
+        pendingUploadFiles.forEach((file, idx) => {
+            let maMonVal = document.getElementById(`sel_mon_${idx}`).value;
+            if (maMonVal) {
+                formData.append("Files", file);
+                formData.append("MaMonHocs", maMonVal);
+                validCount++;
+            }
+        });
+
+        if (validCount === 0) {
+            return alert("Vui lòng chọn ít nhất 1 môn học tương ứng cho file giáo trình!");
+        }
+
+        try {
+            const rootApi = typeof API_BASE !== 'undefined' ? API_BASE : API_BASE_URL;
+            let res = await fetch(`${rootApi}/GiaoTrinh/LuuHangLoat`, {
+                method: 'POST',
+                body: formData
+            });
+
+            let responseText = await res.text();
+            let resData = {};
+
+            try {
+                resData = JSON.parse(responseText);
+            } catch (e) {
+                resData = { message: responseText };
+            }
+
+            if (res.ok) {
+                alert(resData.message || "Đã lưu thành công giáo trình vào CSDL!");
+                
+                let modalEl = document.getElementById('modalUploadGiaoTrinh');
+                let modalObj = bootstrap.Modal.getInstance(modalEl);
+                if (modalObj) modalObj.hide();
+
+                document.getElementById('inpUploadGiaoTrinh').value = '';
+                loadDanhSachLopPhan();
+            } else {
+                let errorMsg = resData.message || resData.title || `Mã lỗi HTTP ${res.status}`;
+                alert(`Lưu thất bại (${res.status}): ${errorMsg}`);
+            }
+        } catch (e) {
+            alert("Lỗi kết nối khi lưu giáo trình: " + e.message);
+        }
+    }
+
+    // XÓA 1 FILE GIÁO TRÌNH
+    async function xoaGiaoTrinh(id, maMon) {
+        if (!confirm("Bạn có chắc chắn muốn xóa file giáo trình này khỏi CSDL?")) return;
+
+        try {
+            const rootApi = typeof API_BASE !== 'undefined' ? API_BASE : API_BASE_URL;
+            let res = await fetch(`${rootApi}/GiaoTrinh/${id}`, { method: 'DELETE' });
+
+            if (res.ok) {
+                alert("Đã xóa file giáo trình!");
+                loadDanhSachLopPhan();
+            } else {
+                alert("Không thể xóa file!");
+            }
+        } catch (e) {
+            alert("Lỗi kết nối khi xóa file: " + e.message);
+        }
+    }
+
+    function parseLichHocBadges(cardIds, bd, kt) {
+        if (!cardIds || cardIds.length === 0) return `<span class="text-muted small">Chưa xếp lịch</span>`;
+        let badges = cardIds.map(id => {
+            let parts = id.split('_');
+            let thu = parts[0] || id;
+            let ca = parts[1] || '';
+            let phong = parts[2] || '';
+            return `<span class="badge bg-success-subtle text-success border border-success-subtle me-1 mb-1" style="font-size:0.78rem;"><i class="bi bi-clock me-1"></i>${thu} - Phòng ${phong} (${ca})</span>`;
+        }).join('');
+        let dateText = (bd && kt) ? `<div class="text-muted mt-1" style="font-size:0.75rem;"><i class="bi bi-calendar-range me-1"></i>${bd} ➔ ${kt}</div>` : '';
+        return `<div>${badges}${dateText}</div>`;
+    }
+
+    function toggleAccordion(id) {
+        let el = document.getElementById(id);
+        if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    }
+
+    async function thayDoiTrangThai(maLop, checkboxElem) {
+        const isChecked = checkboxElem.checked;
+        let safeMaLop = maLop.replace(/[^a-zA-Z0-9_]/g, '');
+        const lblElem = document.getElementById('lbl_' + safeMaLop);
+
+        if (isChecked) {
+            lblElem.innerText = "Đang mở";
+            lblElem.className = "form-check-label status-text text-success";
+        } else {
+            lblElem.innerText = "Đang khóa";
+            lblElem.className = "form-check-label status-text text-muted";
+        }
+
+        try {
+            const rootApi = typeof API_BASE !== 'undefined' ? API_BASE : API_BASE_URL;
+            let res = await fetch(`${rootApi}/LopHocPhan/${encodeURIComponent(maLop)}/trang-thai-dang-ky`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isOpened: isChecked })
+            });
+
+            if (!res.ok) throw new Error(await res.text());
+
+        } catch (e) {
+            alert("Không thể thay đổi trạng thái: " + e.message);
+            checkboxElem.checked = !isChecked;
+            lblElem.innerText = !isChecked ? "Đang mở" : "Đang khóa";
+            lblElem.className = !isChecked ? "form-check-label status-text text-success" : "form-check-label status-text text-muted";
+        }
+    }
+
+    async function moDangKyTatCaLop() {
+        if (!currentLoadedClasses || currentLoadedClasses.length === 0) return alert("Không có lớp nào!");
+        if (!confirm(`Xác nhận MỞ CỔNG ĐĂNG KÝ cho tất cả ${currentLoadedClasses.length} lớp học phần đang hiển thị?`)) return;
+
+        let danhSachMaLop = currentLoadedClasses.map(x => x.maLopHocPhan || x.MaLopHocPhan);
+        const rootApi = typeof API_BASE !== 'undefined' ? API_BASE : API_BASE_URL;
+
+        try {
+            let res = await fetch(`${rootApi}/LopHocPhan/MoDangKyTatCa`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(danhSachMaLop)
+            });
+
+            if (res.ok) {
+                alert("Đã mở cổng đăng ký tất cả!");
+                loadDanhSachLopPhan();
+            } else alert("Lỗi khi mở đăng ký hàng loạt!");
+        } catch (e) { alert("Lỗi API: " + e.message); }
     }
 </script>

@@ -33,3 +33,7 @@ Thumbs.db
 # Task-local SDKs and test artifacts
 .tools/
 .artifacts/
+
+# Công cụ AI Aider và file người dùng tải lên lúc chạy thử
+.aider*
+**/wwwroot/uploads/
