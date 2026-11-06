@@ -1,0 +1,65 @@
+@model AcademicResult
+@{
+    ViewData["Title"] = "Kết quả học tập";
+    string Gpa(decimal? value) => value?.ToString("0.00") ?? "—";
+    string WarningClass(string? level) => level switch { "CamThi" => "pt-status-danger", "CanhBao" => "pt-status-warning", _ => "pt-status-success" };
+    string WarningLabel(string? level) => level switch { "CamThi" => "Cấm thi", "CanhBao" => "Cảnh báo", _ => "Bình thường" };
+}
+<header class="pt-heading"><div><p class="pt-breadcrumb">Học tập / Kết quả học tập</p><h1>Kết quả học tập</h1><p>Điểm đã được công bố và chuyên cần theo từng học kỳ.</p></div></header>
+@if (Model.Error is not null)
+{
+    <section class="pt-empty pt-error" role="alert"><h2>Chưa tải được kết quả học tập</h2><p>@Model.Error</p><a class="button" asp-action="KetQuaHocTap">Thử lại</a></section>
+}
+else if (Model.HocKy.Count == 0)
+{
+    <section class="pt-empty"><h2>Chưa có kết quả học tập</h2><p>Kết quả sẽ hiển thị sau khi bạn đăng ký học phần và điểm được công bố.</p></section>
+}
+else
+{
+    <div class="pt-result-summary">
+        <div><span>Điểm trung bình tích lũy (hệ 4)</span><strong>@Gpa(Model.GpaTichLuy)</strong></div>
+        <div><span>Tín chỉ tích lũy</span><strong>@Model.TinChiTichLuy</strong></div>
+        <div><span>Tín chỉ chưa có điểm</span><strong>@Model.TinChiChuaCoDiem</strong></div>
+    </div>
+    @foreach (var hk in Model.HocKy)
+    {
+        <section class="pt-section pt-result" aria-labelledby="hk-@hk.MaHocKy">
+            <div class="pt-section-heading"><h2 id="hk-@hk.MaHocKy">@hk.TenHocKy</h2><strong>@hk.MonHoc.Count học phần · @hk.MonHoc.Sum(x => x.SoTinChi) tín chỉ</strong></div>
+            <div class="pt-table-scroll" tabindex="0">
+                <table class="pt-table">
+                    <thead><tr><th>Mã môn</th><th>Tên môn học</th><th>Lớp học phần</th><th>Tín chỉ</th><th>Điểm chữ</th><th>Thang 4</th><th>Kết quả</th><th>Chuyên cần</th></tr></thead>
+                    <tbody>
+                    @foreach (var mon in hk.MonHoc)
+                    {
+                        var cc = mon.ChuyenCan;
+                        <tr>
+                            <td>@mon.MaMonHoc</td>
+                            <td><strong>@mon.TenMonHoc</strong></td>
+                            <td>@(mon.MaLopHocPhan ?? "—")</td>
+                            <td>@mon.SoTinChi</td>
+                            <td>@(mon.DiemChu ?? "—")</td>
+                            <td>@(mon.Diem4?.ToString("0.0") ?? "—")</td>
+                            <td>
+                                @if (mon.TrangThai == "Dat") { <span class="pt-status pt-status-success">Đạt</span> }
+                                else if (mon.TrangThai == "KhongDat") { <span class="pt-status pt-status-danger">Không đạt</span> }
+                                else { <span class="pt-status">Chưa có điểm</span> }
+                            </td>
+                            <td>
+                                @if (cc is null) { <span>—</span> }
+                                else
+                                {
+                                    <span>Có mặt @(cc.CoMat + cc.DiTre)/@cc.TongSoBuoi</span>
+                                    <small>Trễ @cc.DiTre · Có phép @cc.CoPhep · Vắng @cc.Vang</small>
+                                    <span class="pt-status @WarningClass(cc.MucCanhBao)">@WarningLabel(cc.MucCanhBao)</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+            <p class="pt-table-note">Điểm trung bình học kỳ: <strong>@Gpa(hk.GpaHocKy)</strong> · Tín chỉ đạt: <strong>@hk.TinChiDat</strong> · Điểm trung bình tích lũy: <strong>@Gpa(hk.GpaTichLuy)</strong> · Tín chỉ tích lũy: <strong>@hk.TinChiTichLuy</strong></p>
+        </section>
+    }
+    <p class="pt-result-footnote">Điểm trung bình tích lũy lấy điểm cao nhất của mỗi môn khi học lại. Môn 0 tín chỉ không tính vào điểm trung bình. Chuyên cần: vắng từ 2 buổi bị cảnh báo, từ 4 buổi bị cấm thi.</p>
+}

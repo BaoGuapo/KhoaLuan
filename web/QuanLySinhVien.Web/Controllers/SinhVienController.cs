@@ -42,6 +42,12 @@ namespace QuanLySinhVien.Web.Controllers
             return View(model);
         }
 
+        public async Task<IActionResult> KetQuaHocTap(CancellationToken ct)
+        {
+            if (HttpContext.Session.GetString("AccessToken") is not { } token) return RedirectToAction("Login", "Account");
+            return View(await api.LoadResultsAsync(token, ct));
+        }
+
         public static void SelectSemester(StudentAcademicWorkspace model, string? selected)
         {
             var now = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "SE Asia Standard Time").Date;

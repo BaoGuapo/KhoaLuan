@@ -236,3 +236,16 @@ body.portal { color: #243746; background: #f3f5f7; font-family: system-ui, -appl
 @media (max-width: 1150px) { .sd-top, .sd-bottom { grid-template-columns: 1fr; } .sd-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 600px) { .sd-profile-body { grid-template-columns: 1fr; justify-items: center; } .sd-facts { grid-template-columns: 1fr; width: 100%; } .sd-stats { grid-template-columns: 1fr; } .sd-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .sd-bottom .pt-section > :not(.pt-section-heading) { margin: 14px 18px 18px; }
+
+/* Kết quả học tập */
+.pt-status-danger { color: #a33a3a; background: #fbeaea; }
+.pt-result-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 18px; }
+.pt-result-summary > div { background: #fff; border: 1px solid #dce2e7; border-radius: 5px; padding: 14px 16px; }
+.pt-result-summary span { display: block; font-size: 0.875rem; color: #70808a; }
+.pt-result-summary strong { display: block; margin-top: 4px; font-size: 1.5rem; color: #29485c; font-weight: 650; }
+.pt-result { margin-bottom: 18px; }
+.pt-result .pt-table { min-width: 860px; }
+.pt-result .pt-table td { padding: 12px 14px; }
+.pt-result .pt-status { margin-top: 0; }
+.pt-result td small + .pt-status { margin-top: 5px; }
+.pt-result-footnote { margin: 0 0 24px; color: #70808a; font-size: 0.875rem; }

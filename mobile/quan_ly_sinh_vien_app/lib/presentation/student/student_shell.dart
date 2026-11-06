@@ -6,6 +6,7 @@ import '../auth/auth_controller.dart';
 import '../shared/account_tab.dart';
 import '../shared/role_shell.dart';
 import '../shared/ui.dart';
+import 'results_view.dart';
 
 /// Màn hình sinh viên: buổi học hôm nay, lịch học, quét QR điểm danh và lịch sử.
 class StudentShell extends StatelessWidget {
@@ -39,6 +40,12 @@ class StudentShell extends StatelessWidget {
           icon: Icons.fact_check_outlined,
           selectedIcon: Icons.fact_check,
           page: TabPage(title: 'Lịch sử điểm danh', body: _HistoryView()),
+        ),
+        const ShellTab(
+          label: 'Kết quả',
+          icon: Icons.grading_outlined,
+          selectedIcon: Icons.grading,
+          page: TabPage(title: 'Kết quả học tập', body: ResultsView()),
         ),
         ShellTab(
           label: 'Tài khoản',

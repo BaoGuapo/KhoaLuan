@@ -45,6 +45,14 @@ public sealed class StudentAcademicApiClient(HttpClient client)
         catch (HttpRequestException) { return new(false, "Không thể kết nối backend. Chưa xác nhận đăng ký; hãy tải lại kết quả trước khi thử tiếp."); }
         catch (TaskCanceledException) when (!ct.IsCancellationRequested) { return new(false, "Chưa nhận được kết quả đăng ký. Hãy tải lại danh sách đã đăng ký trước khi thử tiếp."); }
     }
+    public async Task<AcademicResult> LoadResultsAsync(string token, CancellationToken ct)
+    {
+        try { return await Get<AcademicResult>(token, "api/v1/me/ket-qua-hoc-tap", ct); }
+        catch (Exception e) when (e is HttpRequestException or JsonException
+            || (e is TaskCanceledException && !ct.IsCancellationRequested))
+        { return new AcademicResult { Error = "Không thể tải kết quả học tập. Vui lòng thử lại." }; }
+    }
+
     private async Task<T> Get<T>(string token, string url, CancellationToken ct)
     {
         using var request = Request(token, HttpMethod.Get, url); using var response = await client.SendAsync(request, ct);
