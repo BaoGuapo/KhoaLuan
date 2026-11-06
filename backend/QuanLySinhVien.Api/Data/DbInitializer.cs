@@ -165,7 +165,9 @@ public static class DbInitializer
         }
 
         await db.SaveChangesAsync();
-        await DevelopmentTrainingSeed.SeedAsync(db, scope.ServiceProvider.GetRequiredService<IHostEnvironment>());
+        // Database đã nạp bộ dữ liệu demo đầy đủ (Checks --reset-demo-data) tắt bộ mẫu DEMO-* để không trộn dữ liệu.
+        if (scope.ServiceProvider.GetRequiredService<IConfiguration>().GetValue("DevelopmentSeed:TrainingDemo", true))
+            await DevelopmentTrainingSeed.SeedAsync(db, scope.ServiceProvider.GetRequiredService<IHostEnvironment>());
     }
     public static async Task SeedMarketingGiangVienAsync(AppDbContext context)
         {

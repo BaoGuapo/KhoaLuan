@@ -9,6 +9,21 @@ using QuanLySinhVien.Api.Services;
 
 if (args.Contains("--class-periods")) { ClassPeriodChecks.Run(); return; }
 if (args.Contains("--transcript")) { AcademicTranscriptChecks.Run(); return; }
+if (args.Contains("--reset-demo-data"))
+{
+    // Xoá sạch dữ liệu rồi nạp bộ demo; phải gõ lại đúng tên database: --confirm <TenDatabase>.
+    var confirmIndex = Array.IndexOf(args, "--confirm");
+    if (confirmIndex < 0 || confirmIndex + 1 >= args.Length)
+    {
+        Console.Error.WriteLine("Thiếu --confirm <TenDatabase>.");
+        Environment.ExitCode = 1;
+        return;
+    }
+    var secrets = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Microsoft", "UserSecrets", "d43cef33-5d2c-41ff-89c3-7322e0fef7cc", "secrets.json");
+    using var secretsDocument = JsonDocument.Parse(File.ReadAllText(secrets));
+    await DemoDataSeed.RunAsync(secretsDocument.RootElement.GetProperty("ConnectionStrings:DefaultConnection").GetString()!, args[confirmIndex + 1]);
+    return;
+}
 if (args.Contains("--campus-location")) { CampusLocationChecks.Run(); return; }
 if (args.Contains("--cloudinary")) { await CloudinaryPhotoChecks.Run(); return; }
 if (args.Contains("--email")) { await EmailSenderChecks.Run(); return; }

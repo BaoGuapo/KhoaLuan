@@ -118,8 +118,10 @@ public sealed class ClassGradeController(AppDbContext db) : ControllerBase
     private Task<Dictionary<string, StudentInfo>> StudentsAsync(string code, CancellationToken ct) =>
         db.DanhSachSinhVienLops.AsNoTracking()
             .Where(x => x.MaLopHocPhan == code)
+            // Chọn cột trong SQL; bộ chọn của ToDictionaryAsync chạy phía client nên không tự nạp SinhVien.
+            .Select(x => new { x.MaSinhVien, x.SinhVien.HoTen, x.TrangThaiCanhBao, x.TongSoBuoiVang })
             .ToDictionaryAsync(x => x.MaSinhVien,
-                x => new StudentInfo(x.SinhVien.HoTen, x.TrangThaiCanhBao == "CamThi", x.TongSoBuoiVang), ct);
+                x => new StudentInfo(x.HoTen, x.TrangThaiCanhBao == "CamThi", x.TongSoBuoiVang), ct);
 
     private IQueryable<KetQuaHocPhan> Results(ClassInfo lop) =>
         db.KetQuaHocPhans.Where(x => x.MaMonHoc == lop.MaMonHoc && x.MaHocKy == lop.MaHocKy
