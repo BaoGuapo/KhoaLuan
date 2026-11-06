@@ -16,6 +16,8 @@ public sealed class TeachingManagementController(AppDbContext db, AttendanceEmai
     private static readonly HashSet<string> AttendanceStatuses =
         ["CoMat", "DiTre", "CoPhep", "Vang"];
 
+    private readonly AttendanceFinalizer finalizer = new(db, notifier);
+
     [HttpGet("giang-vien/{maGiangVien}/phan-cong")]
     [Authorize(Roles = RoleNames.Admin + "," + RoleNames.CanBoQuanLy)]
     public async Task<ActionResult<LecturerAssignmentWorkspaceResponse>> GetAssignmentWorkspace(
@@ -467,7 +469,7 @@ public sealed class TeachingManagementController(AppDbContext db, AttendanceEmai
 
             // Buổi chưa chốt sẽ được tính khi chốt; buổi đã chốt phải tính lại ngay.
             var warningChanges = session.TrangThaiBuoiHoc == "DaChot"
-                ? await RecalculateWarningsAsync([enrollment], ct)
+                ? await finalizer.RecalculateWarningsAsync([enrollment], ct)
                 : [];
             await db.SaveChangesAsync(ct);
             await transaction.CommitAsync(ct);
@@ -499,55 +501,20 @@ public sealed class TeachingManagementController(AppDbContext db, AttendanceEmai
     [Authorize(Roles = RoleNames.Admin + "," + RoleNames.CanBoQuanLy + "," + RoleNames.GiangVien)]
     public async Task<IActionResult> FinalizeAttendance(string maBuoiHoc, CancellationToken ct)
     {
-        return await db.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
-        {
-            db.ChangeTracker.Clear();
-            await using var transaction = await db.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable, ct);
-            var session = await db.BuoiHocs
-                .Include(x => x.LichHoc)
-                .SingleOrDefaultAsync(x => x.MaBuoiHoc == maBuoiHoc, ct);
-            if (session is null) return NotFound(new { message = "Không tìm thấy buổi học." });
-            if (!await CanAccessClassAsync(session.LichHoc.MaLopHocPhan, ct)) return Forbid();
-            if (session.TrangThaiBuoiHoc == "DaChot") return NoContent();
-            // Chốt được buổi đã diễn ra kể cả sau giờ lên lớp, nhưng không chốt trước ngày học.
-            if (session.NgayHocCuThe.Date > ClassPeriods.BayGioVietNam().Date)
-                return Conflict(new
-                {
-                    code = "SessionNotStarted",
-                    message = $"Buổi học diễn ra ngày {session.NgayHocCuThe:dd/MM/yyyy}, chưa thể chốt điểm danh."
-                });
-
-            var enrollments = await db.DanhSachSinhVienLops
-                .Where(x => x.MaLopHocPhan == session.LichHoc.MaLopHocPhan)
-                .ToListAsync(ct);
-            var existingCodes = (await db.ChiTietDiemDanhs
-                .Where(x => x.MaBuoiHoc == maBuoiHoc)
-                .Select(x => x.MaSinhVien)
-                .ToListAsync(ct)).ToHashSet(StringComparer.OrdinalIgnoreCase);
-            foreach (var enrollment in enrollments.Where(x => !existingCodes.Contains(x.MaSinhVien)))
+        var session = await db.BuoiHocs.AsNoTracking()
+            .Where(x => x.MaBuoiHoc == maBuoiHoc)
+            .Select(x => new { x.NgayHocCuThe, x.LichHoc.MaLopHocPhan })
+            .SingleOrDefaultAsync(ct);
+        if (session is null) return NotFound(new { message = "Không tìm thấy buổi học." });
+        if (!await CanAccessClassAsync(session.MaLopHocPhan, ct)) return Forbid();
+        // Chốt được buổi đã diễn ra kể cả sau giờ lên lớp, nhưng không chốt trước ngày học.
+        if (session.NgayHocCuThe.Date > ClassPeriods.BayGioVietNam().Date)
+            return Conflict(new
             {
-                db.ChiTietDiemDanhs.Add(new ChiTietDiemDanh
-                {
-                    MaBuoiHoc = maBuoiHoc,
-                    MaSinhVien = enrollment.MaSinhVien,
-                    TrangThai = "Vang"
-                });
-        }
-
-        session.TrangThaiBuoiHoc = "DaChot";
-        session.ThoiGianDiemDanh ??= DateTime.UtcNow;
-        await db.SaveChangesAsync(ct);
-
-        var warningChanges = await RecalculateWarningsAsync(enrollments, ct);
-        await db.SaveChangesAsync(ct);
-        var openSessions = await db.PhienDiemDanhs.Where(x => x.MaBuoiHoc == maBuoiHoc && x.DongLucUtc == null).ToListAsync(ct);
-        foreach (var openSession in openSessions) openSession.DongLucUtc = DateTime.UtcNow;
-        await db.SaveChangesAsync(ct);
-        await transaction.CommitAsync(ct);
-        // Chỉ xếp thư sau khi giao dịch đã commit, để không báo cảnh báo cho một lần chốt bị rollback.
-        await notifier.NotifyAttendanceWarningsAsync(session.LichHoc.MaLopHocPhan, warningChanges, ct);
-        return (IActionResult)NoContent();
-        });
+                code = "SessionNotStarted",
+                message = $"Buổi học diễn ra ngày {session.NgayHocCuThe:dd/MM/yyyy}, chưa thể chốt điểm danh."
+            });
+        return await finalizer.FinalizeAsync(maBuoiHoc, ct) ? NoContent() : NotFound(new { message = "Không tìm thấy buổi học." });
     }
 
     private async Task<List<EligibleCourseResponse>> GetEligibleCoursesAsync(
@@ -645,30 +612,6 @@ public sealed class TeachingManagementController(AppDbContext db, AttendanceEmai
                 x.MaPhong,
                 x.PhongHoc.TenPhong))
             .FirstOrDefaultAsync(ct);
-
-    /// <summary>Tính lại số buổi vắng và mức cảnh báo; trả về mức cũ/mới để báo email.</summary>
-    private async Task<List<(string MaSinhVien, string MucCu, string MucMoi, int SoBuoiVang)>> RecalculateWarningsAsync(
-        IEnumerable<DanhSachSinhVienLop> enrollments,
-        CancellationToken ct)
-    {
-        var warningChanges = new List<(string MaSinhVien, string MucCu, string MucMoi, int SoBuoiVang)>();
-        foreach (var enrollment in enrollments)
-        {
-            var mucCu = enrollment.TrangThaiCanhBao ?? "BinhThuong";
-            enrollment.TongSoBuoiVang = await db.ChiTietDiemDanhs.CountAsync(x =>
-                x.MaSinhVien == enrollment.MaSinhVien
-                && x.BuoiHoc.LichHoc.MaLopHocPhan == enrollment.MaLopHocPhan
-                && x.TrangThai == "Vang", ct);
-            enrollment.TrangThaiCanhBao = enrollment.TongSoBuoiVang switch
-            {
-                >= 4 => "CamThi",
-                >= 2 => "CanhBao",
-                _ => "BinhThuong"
-            };
-            warningChanges.Add((enrollment.MaSinhVien, mucCu, enrollment.TrangThaiCanhBao, enrollment.TongSoBuoiVang));
-        }
-        return warningChanges;
-    }
 
     /// <summary>Số ngày giảng viên còn được sửa thủ công một buổi đã qua.</summary>
     private const int SoNgayDuocSuaDiemDanh = 14;

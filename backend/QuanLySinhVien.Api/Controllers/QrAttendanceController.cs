@@ -14,7 +14,7 @@ namespace QuanLySinhVien.Api.Controllers;
 [ApiController, Route("api/v1/qr-diem-danh"), Authorize, EnableRateLimiting("face-recognition")]
 public sealed class QrAttendanceController(AppDbContext db, AttendanceQrTokens qr, IFaceEvidenceService evidence,
     IFaceRecognitionService faces, FaceReviewPhotos reviewPhotos, IFacePhotoStorage photoStorage,
-    CampusLocationSettings campus, ILogger<QrAttendanceController> logger) : ControllerBase
+    CampusLocationSettings campus, AttendanceDemoSettings demo, ILogger<QrAttendanceController> logger) : ControllerBase
 {
     private const string Managers = RoleNames.GiangVien + "," + RoleNames.Admin + "," + RoleNames.CanBoQuanLy;
     private const string FaceApprovers = RoleNames.Admin + "," + RoleNames.CanBoQuanLy;
@@ -25,6 +25,23 @@ public sealed class QrAttendanceController(AppDbContext db, AttendanceQrTokens q
     private ObjectResult AlreadyRegistered(bool approved) => Error(approved ? "ProfileLocked" : "ProfilePendingApproval",
         approved ? "Hồ sơ khuôn mặt đã được duyệt và dùng chung cho tất cả lớp. Không cần đăng ký lại."
             : "Bạn đã đăng ký khuôn mặt và đang chờ duyệt một lần để dùng cho tất cả lớp. Không cần đăng ký lại.", 409);
+
+    /// <summary>
+    /// Lý do không được mở phiên QR, hoặc null khi được mở. Chỉ mở cho buổi hôm nay; giảng viên
+    /// còn phải trong giờ lên lớp, học vụ được mở cả ngày. Chế độ demo bỏ qua cả hai điều kiện.
+    /// </summary>
+    private (string Code, string Message)? OpenLockReason(BuoiHoc lesson)
+    {
+        if (demo.BoQuaKhungGio) return null;
+        if (lesson.NgayHocCuThe.Date != ClassPeriods.BayGioVietNam().Date)
+            return ("OutsideAttendanceDay", $"Chỉ mở điểm danh QR cho buổi học hôm nay. Buổi này diễn ra ngày {lesson.NgayHocCuThe:dd/MM/yyyy}.");
+        if (IsManager || ClassPeriods.DangTrongKhungGio(lesson.NgayHocCuThe, lesson.LichHoc.TietBatDau, lesson.LichHoc.TietKetThuc))
+            return null;
+        var khung = ClassPeriods.KhungGioDiemDanh(lesson.NgayHocCuThe, lesson.LichHoc.TietBatDau, lesson.LichHoc.TietKetThuc);
+        return ("OutsideAttendanceWindow", khung is null
+            ? $"Lịch học khai báo tiết {lesson.LichHoc.TietBatDau}–{lesson.LichHoc.TietKetThuc} ngoài bảng giờ của trường."
+            : $"Chỉ mở điểm danh QR trong giờ lên lớp: {khung.Value.MoLuc:HH\\:mm}–{khung.Value.DongLuc:HH\\:mm} hôm nay.");
+    }
 
     [HttpPost("huong-dan"), EnableRateLimiting("face-guidance"), RequestSizeLimit(1_500_000)]
     public async Task<IActionResult> Guidance(FaceGuidanceRequest request, CancellationToken ct)
@@ -41,7 +58,10 @@ public sealed class QrAttendanceController(AppDbContext db, AttendanceQrTokens q
     [HttpGet("buoi-hoc"), Authorize(Roles = Managers)]
     public async Task<IActionResult> Lessons(CancellationToken ct)
     {
-        var from = DateTime.UtcNow.AddHours(7).Date.AddDays(-7); var to = from.AddDays(22);
+        // Chỉ điểm danh buổi hôm nay; chế độ demo mở rộng ra 7 ngày trước đến 14 ngày tới để trình diễn.
+        var homNay = ClassPeriods.BayGioVietNam().Date;
+        var from = demo.BoQuaKhungGio ? homNay.AddDays(-7) : homNay;
+        var to = demo.BoQuaKhungGio ? homNay.AddDays(15) : homNay.AddDays(1);
         var rows = await ManagedLessons().AsNoTracking().Where(x => x.NgayHocCuThe >= from && x.NgayHocCuThe < to)
             .OrderBy(x => x.NgayHocCuThe).ThenBy(x => x.MaBuoiHoc)
             .Select(x => new AttendanceSessionSummary(x.MaBuoiHoc, x.LichHoc.MaLopHocPhan,
@@ -61,9 +81,10 @@ public sealed class QrAttendanceController(AppDbContext db, AttendanceQrTokens q
         {
             db.ChangeTracker.Clear();
             await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable, ct);
-            var lesson = await ManagedLessons().SingleOrDefaultAsync(x => x.MaBuoiHoc == code, ct);
+            var lesson = await ManagedLessons().Include(x => x.LichHoc).SingleOrDefaultAsync(x => x.MaBuoiHoc == code, ct);
             if (lesson is null) return Error("LessonNotFound", "Không tìm thấy buổi học thuộc quyền phụ trách.", 404);
             if (lesson.TrangThaiBuoiHoc == "DaChot") return Error("AttendanceFinalized", "Buổi học đã chốt.", 409);
+            if (OpenLockReason(lesson) is { } lyDo) return Error(lyDo.Code, lyDo.Message, 409);
             var now = DateTime.UtcNow;
             lesson.TrangThaiBuoiHoc = "DangDienRa";
             lesson.ThoiGianDiemDanh = now;

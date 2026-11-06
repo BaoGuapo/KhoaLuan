@@ -196,3 +196,43 @@ body.portal { color: #243746; background: #f3f5f7; font-family: system-ui, -appl
 .pt-sidebar-note strong { overflow-wrap: anywhere; }
 @media (max-width: 820px) { .portal .topbar nav .pt-user { max-width: 170px; } }
 @media (max-width: 600px) { .portal .topbar nav .pt-user { max-width: 44px; } .portal .topbar nav .pt-user { font-size: 0; gap: 0; } }
+/* Trang chủ sinh viên: thẻ hồ sơ + thẻ số liệu, lưới chức năng nhanh, lịch hôm nay và lớp học phần. */
+.sd-top { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(300px, 1fr); gap: 18px; align-items: stretch; }
+.sd-top > .pt-section { margin: 0; }
+.sd-profile-body { display: grid; grid-template-columns: 132px 1fr; gap: 24px; align-items: start; padding: 18px; }
+.sd-photo { position: relative; display: grid; place-items: center; width: 132px; height: 132px; overflow: hidden; border: 3px solid #d8e9f3; border-radius: 50%; color: #fff; background: linear-gradient(145deg, #0067a8, #00a6c8); font-size: 2.6rem; font-weight: 800; }
+.sd-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.sd-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 24px; margin: 0; }
+.sd-facts div { display: flex; gap: 6px; min-width: 0; }
+.sd-facts dt { flex: 0 0 auto; color: #5f7486; }
+.sd-facts dt::after { content: ":"; }
+.sd-facts dd { margin: 0; color: #1d3446; font-weight: 700; overflow-wrap: anywhere; }
+.sd-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.sd-stat { display: grid; align-content: start; gap: 6px; padding: 16px 18px; border: 1px solid #dce2e7; border-radius: 10px; color: #1d3446; background: #fff; text-decoration: none; }
+.sd-stat:hover { border-color: #8cc4e6; box-shadow: 0 6px 16px #0b3a5a12; }
+.sd-stat span { color: #5f7486; font-size: .9rem; }
+.sd-stat strong { color: #0b5c8b; font-size: 2.4rem; line-height: 1; }
+.sd-stat small { color: #1673aa; }
+.sd-stat-wide { grid-column: 1 / -1; }
+.sd-stat-blue { border-color: #bfe6f5; background: #e9f8fd; }
+.sd-stat-amber { border-color: #f6dfae; background: #fff7e6; }
+.sd-stat-amber strong, .sd-stat-amber small { color: #b26a00; }
+.sd-tiles { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; margin: 18px 0; }
+.sd-tiles a { display: grid; justify-items: center; gap: 10px; padding: 18px 10px; border: 1px solid #dce2e7; border-radius: 10px; color: #2b4357; background: #fff; text-align: center; text-decoration: none; }
+.sd-tiles a:hover { border-color: #8cc4e6; color: #0b5c8b; box-shadow: 0 6px 16px #0b3a5a12; }
+.sd-tile-icon { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; color: #1673aa; background: #eaf4fb; font-size: 1.4rem; }
+.sd-bottom { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 18px; align-items: start; }
+.sd-bottom > .pt-section { margin: 0; }
+.sd-empty { margin: 4px 0; color: #5f7486; }
+.sd-today, .sd-classes { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.sd-today li { display: flex; gap: 14px; align-items: center; padding: 10px 12px; border-left: 3px solid #1673aa; border-radius: 6px; background: #f5f9fc; }
+.sd-period { flex: 0 0 auto; color: #0b5c8b; font-weight: 700; }
+.sd-today strong, .sd-classes strong { display: block; color: #1d3446; }
+.sd-today small, .sd-classes small { color: #5f7486; }
+.sd-classes li { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 10px 12px; border: 1px solid #e4e9ed; border-radius: 8px; }
+.sd-classes li > span { align-self: start; padding: 2px 8px; border-radius: 999px; color: #0b5c8b; background: #eaf4fb; font-size: .8rem; font-weight: 700; }
+.sd-classes .sd-slots { grid-column: 1 / -1; }
+/* 6 ô chia đều 6 / 3 / 2 cột để không bao giờ có hàng lẻ. */
+@media (max-width: 1150px) { .sd-top, .sd-bottom { grid-template-columns: 1fr; } .sd-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .sd-profile-body { grid-template-columns: 1fr; justify-items: center; } .sd-facts { grid-template-columns: 1fr; width: 100%; } .sd-stats { grid-template-columns: 1fr; } .sd-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.sd-bottom .pt-section > :not(.pt-section-heading) { margin: 14px 18px 18px; }

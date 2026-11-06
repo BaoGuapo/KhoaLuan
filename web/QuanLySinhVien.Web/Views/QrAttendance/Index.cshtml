@@ -12,11 +12,35 @@
     {
         <section class="panel section-gap">
             <h2>Phiên điểm danh</h2>
-            <label for="lesson">Buổi học (7 ngày trước đến 14 ngày tới)</label><select id="lesson"></select>
+            <label for="lesson">Buổi học hôm nay</label><select id="lesson"></select>
             <label for="duration">Thời gian mở (phút)</label><input id="duration" type="number" min="1" max="30" value="10" />
             <div class="form-actions"><button id="open-session" class="button primary-link" type="button">Mở phiên mới</button><button id="resume-session" class="button secondary" type="button">Xem phiên đang mở</button><button id="close-session" class="button secondary" type="button" disabled>Đóng phiên</button></div>
-            <div id="qr-area" hidden><h3 id="session-title"></h3><div id="qr-image" style="background:white;padding:20px;display:inline-block"></div><p id="qr-countdown"></p><p>QR tự cập nhật. Sinh viên mở mục Điểm danh trên điện thoại để quét.</p></div>
+            <div id="qr-area" hidden><h3 id="session-title"></h3><div id="qr-image" style="background:white;padding:20px;display:inline-block"></div><p id="qr-countdown"></p><p>QR tự cập nhật. Sinh viên mở mục Điểm danh trên điện thoại để quét.</p>
+                <div class="form-actions"><button id="present-open" class="button primary-link" type="button">Trình chiếu toàn màn hình</button></div>
+                <p class="section-help">Dùng khi chiếu lên máy chiếu: mã QR phóng to hết màn hình, chỉ hiện số sinh viên đã điểm danh, không hiện tên hay vị trí. Nhấn Esc để thoát.</p>
+            </div>
             <h3>Kết quả buổi học</h3><p id="attendance-summary" class="section-help" aria-live="polite"></p><div class="table-card"><table><thead><tr><th>Sinh viên</th><th>Họ tên</th><th>Trạng thái</th><th>Thời gian</th><th>Vị trí</th></tr></thead><tbody id="attendance-results"></tbody></table></div>
+        </section>
+        @* Màn hình trình chiếu: chỉ thông tin cả lớp được thấy, không lộ tên, mã hay vị trí sinh viên. *@
+        <section id="qr-present" class="qr-present" hidden aria-label="Mã QR điểm danh trình chiếu">
+            <header class="qr-present-head">
+                <div><p class="qr-present-eyebrow">ĐIỂM DANH</p><h2 id="present-title"></h2><p id="present-subtitle"></p></div>
+                <button id="present-close" class="qr-present-close" type="button" aria-label="Thoát trình chiếu">Thoát (Esc)</button>
+            </header>
+            <div class="qr-present-body">
+                <div id="present-qr" class="qr-present-code"></div>
+                <aside class="qr-present-side">
+                    <div class="qr-present-stat"><span>Đã điểm danh</span><strong id="present-count">0</strong></div>
+                    <div class="qr-present-stat"><span>Mã đổi sau</span><strong id="present-qr-timer">—</strong><div class="qr-present-bar"><i id="present-qr-bar"></i></div></div>
+                    <div class="qr-present-stat"><span>Phiên còn</span><strong id="present-session-timer">—</strong></div>
+                    <ol class="qr-present-steps">
+                        <li>Mở <b id="present-url"></b> trên điện thoại và đăng nhập.</li>
+                        <li>Chọn <b>Mở camera quét QR</b>, quét mã này.</li>
+                        <li>Làm theo hướng dẫn xác minh khuôn mặt.</li>
+                    </ol>
+                </aside>
+            </div>
+            <p id="present-ended" class="qr-present-ended" hidden>Phiên điểm danh đã kết thúc.</p>
         </section>
     }
     else if (!enrollment)

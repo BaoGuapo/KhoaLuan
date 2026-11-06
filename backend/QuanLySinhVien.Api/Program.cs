@@ -101,6 +101,8 @@ builder.Services.AddSingleton(builder.Configuration.GetSection("Email").Get<Emai
 builder.Services.AddSingleton<EmailQueue>();
 builder.Services.AddSingleton<IEmailSender>(x => x.GetRequiredService<EmailQueue>());
 builder.Services.AddHostedService<EmailBackgroundSender>();
+builder.Services.AddScoped<AttendanceFinalizer>();
+builder.Services.AddHostedService<AutoFinalizeAttendanceService>();
 builder.Services.AddScoped<AttendanceEmailNotifier>();
 builder.Services.AddRateLimiter(options =>
 {

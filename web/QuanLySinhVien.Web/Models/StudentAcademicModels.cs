@@ -71,3 +71,21 @@ public sealed class StudentRegistrationWindow
     public DateTime DongLucUtc { get; set; }
     public string ClosingTime => TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.SpecifyKind(DongLucUtc, DateTimeKind.Utc), "SE Asia Standard Time").ToString("HH:mm dd/MM/yyyy");
 }
+
+/// <summary>Trang chủ sinh viên: hồ sơ, lớp học phần học kỳ hiện tại và lịch hôm nay/tuần này.</summary>
+public sealed class StudentDashboardViewModel
+{
+    public UserDetailModel? HoSo { get; init; }
+    public StudentAcademicWorkspace? HocTap { get; init; }
+    public DateTime HomNay { get; init; }
+
+    /// <summary>Thứ theo cách trường dùng: 2 là thứ Hai, 8 là Chủ nhật.</summary>
+    public int ThuHomNay => HomNay.DayOfWeek == DayOfWeek.Sunday ? 8 : (int)HomNay.DayOfWeek + 1;
+    public IReadOnlyList<StudentCourseClass> LopHocKy => HocTap?.SemesterRegistered.ToList() ?? [];
+    public int SoBuoiTrongTuan => LopHocKy.Sum(x => x.LichHoc.Count);
+    public int TinChiHocKy => LopHocKy.Sum(x => x.Credits);
+    public IReadOnlyList<(StudentCourseClass Lop, StudentScheduleSlot Buoi)> LichHomNay =>
+        LopHocKy.SelectMany(x => x.LichHoc.Where(s => s.ThuTrongTuan == ThuHomNay).Select(s => (x, s)))
+            .OrderBy(x => x.s.TietBatDau).ToList();
+    public string? TenHocKy => HocTap?.Semesters.FirstOrDefault(x => x.MaHocKy == HocTap.Semester)?.TenHocKy;
+}

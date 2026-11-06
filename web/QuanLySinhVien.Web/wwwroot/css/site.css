@@ -328,3 +328,27 @@ a.history-session:hover { border-color: #8cc4e6; background: #f6fbfe; }
 .identity-photo-form .button { justify-self: start; }
 .resend-warning { display: inline-flex; margin-left: 8px; }
 .resend-warning .button { padding: 4px 10px; font-size: .8rem; }
+/* Trình chiếu mã QR lên máy chiếu: nền trắng tương phản cao, chữ to đọc được từ cuối lớp. */
+body.is-presenting { overflow: hidden; }
+.qr-present { position: fixed; inset: 0; z-index: 2000; display: flex; flex-direction: column; gap: 16px; padding: 28px 44px; color: #0b2540; background: #fff; }
+.qr-present[hidden] { display: none; }
+.qr-present-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
+.qr-present-eyebrow { margin: 0; color: #0067a8; font-size: 1rem; font-weight: 800; letter-spacing: .12em; }
+.qr-present-head h2 { margin: 4px 0; color: #0b2540; font-size: clamp(1.8rem, 3.2vw, 3rem); line-height: 1.15; }
+.qr-present-head p { margin: 0; color: #4b6478; font-size: clamp(1.1rem, 1.6vw, 1.5rem); }
+.qr-present-close { flex: 0 0 auto; padding: 10px 16px; border: 1px solid #c9d8e3; border-radius: 10px; color: #4b6478; background: #f5f9fc; font-size: 1rem; cursor: pointer; }
+.qr-present-close:hover { color: #0b2540; background: #e9f2f8; }
+.qr-present-body { flex: 1; display: grid; grid-template-columns: auto minmax(260px, 440px); gap: clamp(24px, 4vw, 64px); align-items: center; justify-content: center; min-height: 0; }
+.qr-present-code { padding: 20px; border: 2px solid #dbe6ee; border-radius: 16px; background: #fff; }
+.qr-present-code canvas, .qr-present-code img { display: block; }
+.qr-present-side { display: grid; gap: 22px; }
+.qr-present-stat { display: grid; gap: 4px; }
+.qr-present-stat span { color: #4b6478; font-size: clamp(1rem, 1.4vw, 1.3rem); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+.qr-present-stat strong { color: #0067a8; font-size: clamp(2.4rem, 5vw, 4.6rem); line-height: 1; font-variant-numeric: tabular-nums; }
+.qr-present-bar { height: 8px; overflow: hidden; border-radius: 999px; background: #e3edf4; }
+.qr-present-bar i { display: block; height: 100%; width: 100%; background: #0077b8; transition: width .25s linear; }
+.qr-present-steps { margin: 6px 0 0; padding-left: 1.4em; color: #1d3a52; font-size: clamp(1.05rem, 1.5vw, 1.4rem); line-height: 1.5; }
+.qr-present-steps b { color: #0b2540; }
+.qr-present-ended { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; color: #b42318; font-size: clamp(2rem, 4vw, 3.5rem); font-weight: 800; pointer-events: none; }
+.qr-present.is-ended .qr-present-body { opacity: .25; }
+@media (max-width: 900px) { .qr-present { padding: 18px; overflow-y: auto; } .qr-present-body { grid-template-columns: 1fr; justify-items: center; } }

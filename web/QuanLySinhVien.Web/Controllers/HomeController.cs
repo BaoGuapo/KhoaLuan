@@ -6,7 +6,7 @@ using QuanLySinhVien.Web.Services;
 namespace QuanLySinhVien.Web.Controllers;
 
 [Authorize]
-public sealed class HomeController(IUserManagementApiClient userApi) : Controller
+public sealed class HomeController(IUserManagementApiClient userApi, StudentAcademicApiClient academicApi) : Controller
 {
     public IActionResult Index()
     {
@@ -32,10 +32,13 @@ public sealed class HomeController(IUserManagementApiClient userApi) : Controlle
         var token = HttpContext.Session.GetString("AccessToken");
         if (string.IsNullOrWhiteSpace(token)) return RedirectToAction("Login", "Account");
 
+        // Lớp học phần tự xử lý lỗi bên trong (trả Error), nên chạy song song với hồ sơ.
+        var academicTask = academicApi.LoadAsync(token, ct, includeOffers: false);
+        UserDetailModel? profile = null;
         try
         {
             var result = await userApi.GetMeAsync(token, ct);
-            if (result.Succeeded && result.Value is not null) return View(result.Value);
+            if (result.Succeeded) profile = result.Value;
         }
         catch (HttpRequestException)
         {
@@ -45,9 +48,12 @@ public sealed class HomeController(IUserManagementApiClient userApi) : Controlle
         {
             // An API timeout should not make the student's home page unavailable.
         }
+        if (profile is null) ViewData["ProfileUnavailable"] = true;
 
-        ViewData["ProfileUnavailable"] = true;
-        return View();
+        var academic = await academicTask;
+        SinhVienController.SelectSemester(academic, null);
+        var today = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.UtcNow, "SE Asia Standard Time").Date;
+        return View(new StudentDashboardViewModel { HoSo = profile, HocTap = academic, HomNay = today });
     }
 
     [AllowAnonymous]

@@ -19,7 +19,7 @@
 
 <section class="class-overview history-overview">
     <article><span>Tổng số buổi</span><strong>@sessions.Count</strong><small>@daDienRa.Count buổi đã diễn ra</small></article>
-    <article><span>Đã chốt</span><strong>@sessions.Count(x => x.DaChot)</strong><small>@daDienRa.Count(x => !x.DaChot) buổi đã qua chưa chốt</small></article>
+    <article><span>Đã chốt</span><strong>@sessions.Count(x => x.DaChot)</strong><small>Tự chốt khi buổi học kết thúc</small></article>
     <article><span>Sĩ số lớp</span><strong>@lop.SiSoHienTai</strong><small>Sinh viên đã đăng ký</small></article>
     <article><span>Ngoài khuôn viên</span><strong>@sessions.Sum(x => x.NgoaiKhuonVien)</strong><small>Lượt có mặt GPS báo ở xa</small></article>
     <article><span>Chuyên cần trung bình</span><strong>@(daDienRa.Count == 0 ? "—" : daDienRa.Average(x => x.TyLeChuyenCan).ToString("P0"))</strong><small>Trên các buổi đã diễn ra</small></article>
@@ -47,7 +47,7 @@
                     <strong>@item.NgayHocCuThe.ToString("dd/MM/yyyy")</strong>
                     @if (item.DaChot) { <span class="badge badge-success">Đã chốt</span> }
                     else if (item.LaHomNay) { <span class="badge badge-warning">Hôm nay</span> }
-                    else { <span class="badge badge-danger">Chưa chốt</span> }
+                    else { <span class="badge badge-warning" title="Hệ thống sẽ tự chốt trong vài phút, sau khi phiên QR đang mở (nếu có) hết hạn.">Đang chờ chốt</span> }
                     <span class="history-session-rate">@item.TyLeChuyenCan.ToString("P0")</span>
                 </div>
                 <div class="history-session-counts">

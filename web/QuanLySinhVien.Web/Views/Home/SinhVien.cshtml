@@ -1,12 +1,91 @@
-@model UserDetailModel?
-@{ ViewData["Title"] = "Trang chủ sinh viên"; var profile = Model?.AcademicProfile; string Show(string? value) => string.IsNullOrWhiteSpace(value) ? "Chưa cập nhật" : value; }
-<header class="pt-heading"><div><p class="pt-breadcrumb">Cổng sinh viên / Trang chủ</p><h1>Trang chủ</h1><p>Xin chào, @(Model?.FullName ?? User.TenHienThi()).</p></div><a class="pt-link" asp-controller="PersonalProfile" asp-action="Index">Thông tin cá nhân →</a></header>
+@model StudentDashboardViewModel
+@{
+    ViewData["Title"] = "Trang chủ sinh viên";
+    var hoSo = Model.HoSo;
+    var profile = hoSo?.AcademicProfile;
+    var hoTen = hoSo?.FullName ?? User.TenHienThi();
+    string Show(string? value) => string.IsNullOrWhiteSpace(value) ? "Chưa cập nhật" : value;
+    var lichHomNay = Model.LichHomNay;
+}
+<header class="pt-heading"><div><p class="pt-breadcrumb">Cổng sinh viên / Trang chủ</p><h1>Xin chào, @hoTen</h1><p>@Model.HomNay.ToString("dddd, dd/MM/yyyy", new System.Globalization.CultureInfo("vi-VN"))@(Model.TenHocKy is null ? "" : $" · {Model.TenHocKy}")</p></div></header>
 @if (ViewData["ProfileUnavailable"] is true) { <div class="pt-notice" role="status">Chưa tải được hồ sơ. <a asp-action="SinhVien">Tải lại trang</a></div> }
-<section class="pt-home-profile pt-section"><div class="pt-section-heading"><h2>Thông tin sinh viên</h2><span>@(Model?.ProfileCode ?? User.Identity?.Name)</span></div>
-    <dl class="pt-facts"><div><dt>Họ và tên</dt><dd>@Show(Model?.FullName)</dd></div><div><dt>Lớp</dt><dd>@Show(profile?.LopHoc)</dd></div><div><dt>Ngành</dt><dd>@Show(profile?.Nganh)</dd></div><div><dt>Khóa học</dt><dd>@Show(profile?.KhoaHoc)</dd></div><div><dt>Khoa</dt><dd>@Show(profile?.Khoa)</dd></div><div><dt>Bậc đào tạo</dt><dd>@Show(profile?.BacDaoTao)</dd></div></dl>
-</section>
-<div class="pt-home-actions">
-    <section class="pt-section"><h2>Đăng ký học phần</h2><p>Xem môn đang mở, chọn lớp phù hợp lịch học và theo dõi kết quả đăng ký.</p><a class="button primary-link" asp-controller="SinhVien" asp-action="DangKyHocPhan">Đăng ký học phần</a></section>
-    <section class="pt-section"><h2>Lịch học</h2><p>Tra cứu lịch theo tuần, phòng học và giảng viên của các lớp đã đăng ký.</p><a class="button" asp-controller="SinhVien" asp-action="XemLichHoc">Xem lịch học</a></section>
+@if (Model.HocTap?.Error is { } loiHocTap) { <div class="pt-notice" role="status">@loiHocTap</div> }
+
+<div class="sd-top">
+    @* Thẻ hồ sơ: ảnh thẻ lúc nhập học (chưa có thì ảnh mẫu) và các thông tin học vụ chính. *@
+    <section class="pt-section sd-profile">
+        <div class="pt-section-heading"><h2>Thông tin sinh viên</h2><a class="pt-link" asp-controller="PersonalProfile" asp-action="Index">Xem chi tiết →</a></div>
+        <div class="sd-profile-body">
+            <div class="sd-photo"><span>@(string.IsNullOrWhiteSpace(hoTen) ? "?" : hoTen.Trim().Split(' ')[^1][..1].ToUpperInvariant())</span><img src="@User.AnhDaiDien()" alt="Ảnh thẻ của @hoTen" onerror="this.remove()" /></div>
+            <dl class="sd-facts">
+                <div><dt>MSSV</dt><dd>@(hoSo?.ProfileCode ?? User.MaDangNhap())</dd></div>
+                <div><dt>Lớp học</dt><dd>@Show(profile?.LopHoc)</dd></div>
+                <div><dt>Họ tên</dt><dd>@hoTen</dd></div>
+                <div><dt>Khóa học</dt><dd>@Show(profile?.KhoaHoc)</dd></div>
+                <div><dt>Giới tính</dt><dd>@Show(profile?.GioiTinh)</dd></div>
+                <div><dt>Bậc đào tạo</dt><dd>@Show(profile?.BacDaoTao)</dd></div>
+                <div><dt>Ngày sinh</dt><dd>@(profile?.NgaySinh?.ToString("dd/MM/yyyy") ?? "Chưa cập nhật")</dd></div>
+                <div><dt>Loại hình đào tạo</dt><dd>@Show(profile?.LoaiHinhDaoTao)</dd></div>
+                <div><dt>Nơi sinh</dt><dd>@Show(profile?.NoiSinh)</dd></div>
+                <div><dt>Ngành</dt><dd>@Show(profile?.Nganh)</dd></div>
+            </dl>
+        </div>
+    </section>
+
+    <div class="sd-stats">
+        <a class="sd-stat sd-stat-wide" asp-controller="QrAttendance" asp-action="Index">
+            <span>Buổi học hôm nay</span><strong>@lichHomNay.Count</strong>
+            <small>@(lichHomNay.Count == 0 ? "Hôm nay không có lịch học" : "Mở Điểm danh QR khi giảng viên chiếu mã →")</small>
+        </a>
+        <a class="sd-stat sd-stat-blue" asp-controller="SinhVien" asp-action="XemLichHoc">
+            <span>Lịch học trong tuần</span><strong>@Model.SoBuoiTrongTuan</strong><small>Xem lịch theo tuần →</small>
+        </a>
+        <a class="sd-stat sd-stat-amber" asp-controller="SinhVien" asp-action="DangKyHocPhan">
+            <span>Tín chỉ học kỳ này</span><strong>@Model.TinChiHocKy</strong><small>@Model.LopHocKy.Count học phần đã đăng ký →</small>
+        </a>
+    </div>
 </div>
-<section class="pt-section pt-home-account"><h2>Hồ sơ và tài khoản</h2><a asp-controller="PersonalProfile" asp-action="Edit">Cập nhật thông tin liên hệ <span aria-hidden="true">→</span></a><a asp-controller="FaceRecognition" asp-action="Profile">Đăng ký / cập nhật khuôn mặt <span aria-hidden="true">→</span></a><a asp-controller="Account" asp-action="ChangePassword">Đổi mật khẩu <span aria-hidden="true">→</span></a></section>
+
+<nav class="sd-tiles" aria-label="Chức năng nhanh">
+    <a asp-controller="QrAttendance" asp-action="Index"><span class="sd-tile-icon" aria-hidden="true">▣</span>Điểm danh QR</a>
+    <a asp-controller="SinhVien" asp-action="XemLichHoc"><span class="sd-tile-icon" aria-hidden="true">▦</span>Lịch theo tuần</a>
+    <a asp-controller="SinhVien" asp-action="DangKyHocPhan"><span class="sd-tile-icon" aria-hidden="true">＋</span>Đăng ký học phần</a>
+    <a asp-controller="QrAttendance" asp-action="Profile"><span class="sd-tile-icon" aria-hidden="true">◎</span>Hồ sơ khuôn mặt</a>
+    <a asp-controller="PersonalProfile" asp-action="Index"><span class="sd-tile-icon" aria-hidden="true">☺</span>Thông tin cá nhân</a>
+    <a href="~/tai-khoan/doi-mat-khau"><span class="sd-tile-icon" aria-hidden="true">✱</span>Đổi mật khẩu</a>
+</nav>
+
+<div class="sd-bottom">
+    <section class="pt-section">
+        <div class="pt-section-heading"><h2>Lịch học hôm nay</h2><a class="pt-link" asp-controller="SinhVien" asp-action="XemLichHoc">Cả tuần →</a></div>
+        @if (lichHomNay.Count == 0)
+        {
+            <p class="sd-empty">Hôm nay không có buổi học nào.</p>
+        }
+        else
+        {
+            <ul class="sd-today">
+            @foreach (var (lop, buoi) in lichHomNay)
+            {
+                <li><span class="sd-period">Tiết @buoi.TietBatDau–@buoi.TietKetThuc</span><div><strong>@lop.TenMonHoc</strong><small>@lop.MaLopHocPhan · Phòng @buoi.TenPhong · @lop.HoTen</small></div></li>
+            }
+            </ul>
+        }
+    </section>
+    <section class="pt-section">
+        <div class="pt-section-heading"><h2>Lớp học phần</h2><span>@(Model.TenHocKy ?? "Học kỳ hiện tại")</span></div>
+        @if (Model.LopHocKy.Count == 0)
+        {
+            <p class="sd-empty">Chưa đăng ký lớp học phần nào trong học kỳ này. <a asp-controller="SinhVien" asp-action="DangKyHocPhan">Đăng ký học phần →</a></p>
+        }
+        else
+        {
+            <ul class="sd-classes">
+            @foreach (var lop in Model.LopHocKy)
+            {
+                <li><div><strong>@lop.TenMonHoc</strong><small>@lop.MaLopHocPhan · @lop.HoTen</small></div><span>@lop.Credits TC</span><small class="sd-slots">@string.Join(" · ", lop.LichHoc.Select(s => $"{s.Day} T{s.TietBatDau}–{s.TietKetThuc}"))</small></li>
+            }
+            </ul>
+        }
+    </section>
+</div>

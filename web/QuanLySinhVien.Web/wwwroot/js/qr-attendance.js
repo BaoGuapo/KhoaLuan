@@ -6,6 +6,9 @@
     const student = root.dataset.student === 'true';
     let stream, scanning = false, challenge, mode, frames = [], sessionId, qrExpires, sessionExpires, busy = false;
     let poll, scanFrame, farSeen = new Set(), farPrimed = false;
+    // Trình chiếu: lastQr giữ mã gần nhất để vẽ lại khi đổi kích thước; nextRefreshAt cho thanh đếm ngược.
+    const REFRESH_MS = 15000;
+    let lastQr = null, presentCount = 0, nextRefreshAt = 0, presenting = false, wakeLock = null;
     let liveRunning = false, captureRun = 0, guidanceTimer, poseGate;
 
     const message = (text, error = false) => { $('attendance-status').textContent = text; $('attendance-status').style.color = error ? '#b42318' : '#087443'; };
@@ -172,7 +175,7 @@
             if (row.maBuoiHoc === root.dataset.lesson) option.selected = true;
             $('lesson').append(option);
         }
-        if (!rows.length) message('Chưa có buổi học trong khoảng thời gian này. Tạo lịch học trước khi mở phiên.');
+        if (!rows.length) message('Hôm nay không có buổi học nào để mở điểm danh QR.');
     }
     async function updateSession() {
         if (!sessionId) return;
@@ -182,6 +185,8 @@
         new QRCode($('qr-image'), { text: value.qrToken, width: 300, height: 300, correctLevel: QRCode.CorrectLevel.M });
         $('session-title').textContent = `${value.maLopHocPhan} · ${value.tenMonHoc} · ${value.maBuoiHoc}`;
         $('close-session').disabled = false;
+        lastQr = value; nextRefreshAt = Date.now() + REFRESH_MS;
+        if (presenting) renderPresentQr();
         const rows = await api('results', undefined, { id: sessionId }); $('attendance-results').replaceChildren();
         const present = rows.filter(row => row.trangThai === 'CoMat' || row.trangThai === 'DiTre');
         const far = present.filter(row => row.ketQuaViTri === 'NgoaiKhuonVien');
@@ -196,6 +201,7 @@
         }
         const unverified = present.filter(row => !row.ketQuaViTri).length;
         $('attendance-summary').textContent = `${present.length} có mặt · ${far.length} ngoài khuôn viên · ${unverified} chưa xác minh vị trí`;
+        presentCount = present.length; $('present-count').textContent = presentCount;
         // Báo một lần cho mỗi sinh viên mới bị GPS ghi nhận ở xa; lần tải đầu chỉ ghi nhớ, không báo dồn.
         const fresh = far.filter(row => !farSeen.has(row.maSinhVien));
         fresh.forEach(row => farSeen.add(row.maSinhVien));
@@ -215,7 +221,47 @@
     async function resume(id) {
         clearInterval(poll); sessionId = id; farSeen = new Set(); farPrimed = false;
         await updateSession();
-        poll = setInterval(() => updateSession().catch(e => { clearInterval(poll); $('qr-area').hidden = true; message(e.message, true); }), 15000);
+        poll = setInterval(() => updateSession().catch(e => { clearInterval(poll); $('qr-area').hidden = true; message(e.message, true); showPresentEnded(); }), REFRESH_MS);
+    }
+    // Kích thước mã theo khung nhìn thật; trang có zoom toàn cục (site.css) nên chia lại cho hệ số zoom.
+    function renderPresentQr() {
+        if (!lastQr) return;
+        const zoom = parseFloat(getComputedStyle(document.documentElement).zoom) || 1;
+        const side = Math.floor(Math.min(innerHeight / zoom - 260, (innerWidth / zoom) * 0.55));
+        $('present-qr').replaceChildren();
+        new QRCode($('present-qr'), { text: lastQr.qrToken, width: Math.max(side, 240), height: Math.max(side, 240), correctLevel: QRCode.CorrectLevel.M });
+        $('present-title').textContent = `${lastQr.tenMonHoc}`;
+        $('present-subtitle').textContent = `Lớp ${lastQr.maLopHocPhan} · ${new Date().toLocaleDateString('vi-VN')}`;
+        $('present-ended').hidden = true; $('qr-present').classList.remove('is-ended');
+    }
+    function tickPresent() {
+        if (!presenting || !sessionId) return;
+        const leftMs = Math.max(0, nextRefreshAt - Date.now());
+        $('present-qr-timer').textContent = `${Math.ceil(leftMs / 1000)} giây`;
+        $('present-qr-bar').style.width = `${(leftMs / REFRESH_MS) * 100}%`;
+        const sessionLeft = Math.max(0, sessionExpires - Date.now());
+        $('present-session-timer').textContent = `${Math.floor(sessionLeft / 60000)}:${String(Math.floor(sessionLeft / 1000) % 60).padStart(2, '0')}`;
+        if (sessionLeft === 0) showPresentEnded();
+    }
+    function showPresentEnded() {
+        if (!presenting) return;
+        $('present-qr').replaceChildren(); $('present-ended').hidden = false; $('qr-present').classList.add('is-ended');
+    }
+    async function openPresent() {
+        if (!sessionId || !lastQr) throw new Error('Mở hoặc xem phiên đang mở trước khi trình chiếu.');
+        presenting = true; $('qr-present').hidden = false; document.body.classList.add('is-presenting');
+        $('present-url').textContent = `${location.host}/diem-danh`;
+        $('present-count').textContent = presentCount;
+        renderPresentQr(); tickPresent();
+        // Toàn màn hình và giữ màn hình sáng là tiện ích: trình duyệt từ chối thì vẫn trình chiếu trong trang.
+        try { await document.documentElement.requestFullscreen?.(); } catch { }
+        try { wakeLock = await navigator.wakeLock?.request('screen'); } catch { wakeLock = null; }
+    }
+    function closePresent() {
+        if (!presenting) return;
+        presenting = false; $('qr-present').hidden = true; document.body.classList.remove('is-presenting');
+        if (document.fullscreenElement) document.exitFullscreen?.().catch(() => { });
+        wakeLock?.release?.().catch(() => { }); wakeLock = null;
     }
     async function guarded(action) { if (busy) return; busy = true; try { await action(); } catch (e) { message(e.message, true); } finally { busy = false; } }
     $('capture-frame').onclick = capture; $('cancel-capture').onclick = cancelCapture;
@@ -238,8 +284,16 @@
             const value = await api('open', { minutes }, { code: $('lesson').value }); await resume(value.sessionId); await loadLessons(); message('Đã mở phiên điểm danh.');
         });
         $('resume-session').onclick = () => guarded(async () => { const id = $('lesson').selectedOptions[0]?.dataset.sessionId; if (!id) throw new Error('Buổi học chưa có phiên đang mở.'); await resume(id); });
-        $('close-session').onclick = () => guarded(async () => { await api('close', {}, { id: sessionId }); clearInterval(poll); sessionId = null; $('qr-area').hidden = true; $('close-session').disabled = true; await loadLessons(); message('Đã đóng phiên.'); });
-        setInterval(() => { if (sessionId && qrExpires) $('qr-countdown').textContent = `QR còn ${Math.max(0, Math.ceil((qrExpires - Date.now()) / 1000))} giây · Phiên còn ${Math.max(0, Math.ceil((sessionExpires - Date.now()) / 60000))} phút`; }, 1000);
+        $('close-session').onclick = () => guarded(async () => { await api('close', {}, { id: sessionId }); clearInterval(poll); closePresent(); sessionId = null; lastQr = null; $('qr-area').hidden = true; $('close-session').disabled = true; await loadLessons(); message('Đã đóng phiên.'); });
+        setInterval(() => { if (sessionId && qrExpires) $('qr-countdown').textContent = `QR còn ${Math.max(0, Math.ceil((qrExpires - Date.now()) / 1000))} giây · Phiên còn ${Math.max(0, Math.ceil((sessionExpires - Date.now()) / 60000))} phút`; tickPresent(); }, 250);
+        $('present-open').onclick = () => guarded(openPresent);
+        $('present-close').onclick = closePresent;
+        document.addEventListener('keydown', event => { if (presenting && event.key === 'Escape') closePresent(); });
+        // Thoát toàn màn hình bằng phím của trình duyệt cũng đóng màn hình trình chiếu.
+        document.addEventListener('fullscreenchange', () => { if (presenting && !document.fullscreenElement) closePresent(); });
+        window.addEventListener('resize', () => { if (presenting) renderPresentQr(); });
+        // Trình duyệt tự nhả khóa màn hình khi chuyển tab; quay lại thì xin lại.
+        document.addEventListener('visibilitychange', async () => { if (presenting && !document.hidden) { try { wakeLock = await navigator.wakeLock?.request('screen'); } catch { } } });
     }
     window.addEventListener('pagehide', () => { stopCamera(); clearInterval(poll); frames = []; });
     document.addEventListener('visibilitychange', () => { if (document.hidden) cancelCapture(); });

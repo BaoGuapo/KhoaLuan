@@ -37,6 +37,7 @@ internal static class AttendanceApiBindingChecks
         builder.Services.AddSingleton<AttendanceQrTokens>();
         // Chưa cấu hình tọa độ cơ sở: kiểm tra này không xét vị trí.
         builder.Services.AddSingleton(new CampusLocationSettings());
+        builder.Services.AddSingleton(new AttendanceDemoSettings());
         builder.Services.AddSingleton<FaceReviewPhotos>();
         // Kiểm tra chạy ngoại tuyến nên ảnh lưu trong cơ sở dữ liệu, không gọi Cloudinary.
         builder.Services.AddSingleton<DatabaseFacePhotoStorage>();

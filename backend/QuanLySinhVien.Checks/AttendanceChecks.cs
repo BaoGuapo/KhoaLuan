@@ -61,12 +61,14 @@ internal static class AttendanceChecks
             RegistrationPhotosProtected = photos.ProtectRegistration(RegistrationFrames()), ReviewVersion = Guid.NewGuid() });
         await db.SaveChangesAsync();
         var fake = new Evidence(vector);
-        QrAttendanceController Controller(string name, string role, CampusLocationSettings? campus = null)
+        QrAttendanceController Controller(string name, string role, CampusLocationSettings? campus = null, bool boQuaKhungGio = true)
         {
             // Kiểm tra này chạy ngoại tuyến nên ảnh vẫn lưu trong cơ sở dữ liệu, không gọi Cloudinary.
             // Mặc định chưa cấu hình tọa độ cơ sở, nên phần lớn kiểm tra không xét vị trí.
+            // Mặc định bỏ khóa giờ để kết quả không phụ thuộc giờ chạy; khóa giờ được kiểm tra riêng.
             var c = new QrAttendanceController(db, tokens, fake, recognition, photos,
                 new DatabaseFacePhotoStorage(photos), campus ?? new CampusLocationSettings(),
+                new AttendanceDemoSettings { BoQuaKhungGio = boQuaKhungGio },
                 NullLogger<QrAttendanceController>.Instance);
             var services = new ServiceCollection().AddSingleton(Options.Create(new FaceRecognitionOptions())).BuildServiceProvider();
             c.ControllerContext = new() { HttpContext = new DefaultHttpContext { RequestServices = services,
@@ -81,6 +83,28 @@ internal static class AttendanceChecks
             "lecturer cannot list, issue approval challenge, approve or revoke face profiles");
         Check(await officer.Pending(default) is OkObjectResult && await admin.Pending(default) is OkObjectResult, "CBQL and Admin may manage global profiles without teaching the student");
         Check((await Controller("OTHER", RoleNames.GiangVien).Open("BH", new(10), default) as ObjectResult)?.StatusCode == 404, "another lecturer cannot open this lesson");
+
+        // Khóa mở phiên QR: chỉ buổi hôm nay; giảng viên phải trong giờ lên lớp, học vụ được mở cả ngày.
+        var homNayVn = ClassPeriods.BayGioVietNam().Date;
+        db.BuoiHocs.AddRange(
+            new BuoiHoc { MaBuoiHoc = "BH-HOMQUA", MaLichHoc = "LH", NgayHocCuThe = homNayVn.AddDays(-1), TrangThaiBuoiHoc = "ChuaDienRa" },
+            new BuoiHoc { MaBuoiHoc = "BH-HOMNAY", MaLichHoc = "LH", NgayHocCuThe = homNayVn, TrangThaiBuoiHoc = "ChuaDienRa" });
+        await db.SaveChangesAsync();
+        var lecturerLocked = Controller("GV", RoleNames.GiangVien, boQuaKhungGio: false);
+        var officerLocked = Controller("CBQL", RoleNames.CanBoQuanLy, boQuaKhungGio: false);
+        Check(Code(await lecturerLocked.Open("BH-HOMQUA", new(10), default)) == "OutsideAttendanceDay"
+            && Code(await officerLocked.Open("BH-HOMQUA", new(10), default)) == "OutsideAttendanceDay",
+            "nobody opens QR attendance for a past lesson");
+        // Lịch học mẫu không khai báo tiết nên giảng viên luôn ngoài khung giờ, học vụ vẫn mở được.
+        Check(Code(await lecturerLocked.Open("BH-HOMNAY", new(10), default)) == "OutsideAttendanceWindow",
+            "lecturer cannot open QR attendance outside class hours");
+        Check(await officerLocked.Open("BH-HOMNAY", new(10), default) is OkObjectResult,
+            "academic staff may open QR attendance any time today");
+        Check(Value<IEnumerable<AttendanceSessionSummary>>(await lecturerLocked.Lessons(default)).All(x => x.NgayHoc.Date == homNayVn),
+            "lesson list only offers today's lessons");
+        db.PhienDiemDanhs.RemoveRange(db.PhienDiemDanhs.Where(x => x.MaBuoiHoc == "BH-HOMNAY"));
+        db.BuoiHocs.RemoveRange(db.BuoiHocs.Where(x => x.MaBuoiHoc == "BH-HOMQUA" || x.MaBuoiHoc == "BH-HOMNAY"));
+        await db.SaveChangesAsync();
         await lecturer.Open("BH", new(10), default);
         var session = await db.PhienDiemDanhs.AsNoTracking().SingleAsync(x => x.DongLucUtc == null);
         var qr = Value<AttendanceQrResponse>(await lecturer.GetQr(session.Id, default));
@@ -235,6 +259,32 @@ internal static class AttendanceChecks
             new AttendanceDemoSettings()) { ControllerContext = Controller("OTHER", RoleNames.GiangVien).ControllerContext };
         Check(await teachingOther.ResendAttendanceWarning("LOP", "SV1", default) is ForbidResult,
             "another lecturer cannot resend warnings for this class");
+
+        // Tự chốt: buổi đã kết thúc được chốt; buổi tương lai và buổi còn phiên QR mở thì chờ.
+        var ngayVn = ClassPeriods.BayGioVietNam().Date;
+        db.BuoiHocs.AddRange(
+            new BuoiHoc { MaBuoiHoc = "BH-XONG", MaLichHoc = "LH", NgayHocCuThe = ngayVn.AddDays(-2), TrangThaiBuoiHoc = "ChuaDienRa" },
+            new BuoiHoc { MaBuoiHoc = "BH-KHONGDD", MaLichHoc = "LH", NgayHocCuThe = ngayVn.AddDays(-3), TrangThaiBuoiHoc = "ChuaDienRa" },
+            new BuoiHoc { MaBuoiHoc = "BH-QRMO", MaLichHoc = "LH", NgayHocCuThe = ngayVn.AddDays(-1), TrangThaiBuoiHoc = "DangDienRa" },
+            new BuoiHoc { MaBuoiHoc = "BH-SAU", MaLichHoc = "LH", NgayHocCuThe = ngayVn.AddDays(3), TrangThaiBuoiHoc = "ChuaDienRa" });
+        db.PhienDiemDanhs.Add(new PhienDiemDanh { MaBuoiHoc = "BH-QRMO", QrTokenHash = "AUTO-FINALIZE-CHECK",
+            MoLucUtc = DateTime.UtcNow, HetHanLucUtc = DateTime.UtcNow.AddMinutes(10) });
+        // BH-XONG có phiên QR đã đóng (giảng viên có điểm danh); BH-KHONGDD không có gì.
+        db.PhienDiemDanhs.Add(new PhienDiemDanh { MaBuoiHoc = "BH-XONG", QrTokenHash = "AUTO-FINALIZE-TAKEN",
+            MoLucUtc = DateTime.UtcNow.AddDays(-2), HetHanLucUtc = DateTime.UtcNow.AddDays(-2).AddMinutes(10), DongLucUtc = DateTime.UtcNow.AddDays(-2) });
+        await db.SaveChangesAsync();
+        var finalizer = new AttendanceFinalizer(db, new AttendanceEmailNotifier(db, new EmailQueue(NullLogger<EmailQueue>.Instance)));
+        var tuChot = await finalizer.FinalizeEndedAsync(DateTime.UtcNow, default);
+        var trangThai = await db.BuoiHocs.AsNoTracking().Where(x => x.MaBuoiHoc.StartsWith("BH-XONG") || x.MaBuoiHoc == "BH-QRMO" || x.MaBuoiHoc == "BH-SAU")
+            .ToDictionaryAsync(x => x.MaBuoiHoc, x => x.TrangThaiBuoiHoc);
+        Check(trangThai["BH-XONG"] == "DaChot"
+            && await db.ChiTietDiemDanhs.AnyAsync(x => x.MaBuoiHoc == "BH-XONG" && x.MaSinhVien == "SV1" && x.TrangThai == "Vang"),
+            "ended lesson is finalized automatically and missing students marked absent");
+        Check(await db.ChiTietDiemDanhs.AnyAsync(x => x.MaBuoiHoc == "BH-KHONGDD" && x.MaSinhVien == "SV1" && x.TrangThai == "CoMat")
+            && await db.BuoiHocs.AnyAsync(x => x.MaBuoiHoc == "BH-KHONGDD" && x.TrangThaiBuoiHoc == "DaChot"),
+            "lesson without any attendance taken is auto-finalized as all present");
+        Check(trangThai["BH-QRMO"] != "DaChot" && trangThai["BH-SAU"] != "DaChot" && tuChot >= 1,
+            "auto-finalize waits for open QR sessions and future lessons");
 
         // One approved identity is reused across independent classes/lecturers.
         for (var n = 2; n <= 3; n++)
