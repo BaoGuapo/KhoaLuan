@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +9,7 @@ namespace QuanLySinhVien.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Roles = RoleNames.Admin + "," + RoleNames.CanBoQuanLy)]
 public class GiaoTrinhController : ControllerBase
 {
     private readonly AppDbContext _context;

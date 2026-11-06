@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QuanLySinhVien.Api.Data;
@@ -6,6 +7,7 @@ using QuanLySinhVien.Api.Models.Entities;
 namespace QuanLySinhVien.Api.Controllers;
 
 [Route("api/[controller]")]
+[Authorize(Roles = RoleNames.Admin + "," + RoleNames.CanBoQuanLy)]
 [ApiController]
 public class LopHocPhanController : ControllerBase
 {

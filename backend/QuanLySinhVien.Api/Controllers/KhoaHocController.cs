@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authorization;
+using QuanLySinhVien.Api.Models.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QuanLySinhVien.Api.Data;
@@ -9,6 +11,7 @@ using System.Threading.Tasks;
 namespace QuanLySinhVien.Api.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize(Roles = RoleNames.Admin + "," + RoleNames.CanBoQuanLy)]
     [ApiController]
     public class KhoaHocController : ControllerBase
     {
