@@ -37,6 +37,31 @@ class AuthController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Access token hợp lệ cho các API nghiệp vụ; hết phiên thì đưa về màn đăng nhập.
+  Future<String?> accessToken() async {
+    final current = _session;
+    if (current == null) return null;
+    if (!current.isAccessTokenExpired) return current.accessToken;
+    // Refresh token bị thu hồi sau mỗi lần dùng nên các request song song phải chờ chung một lần làm mới.
+    return _refreshing ??= _refresh(current).whenComplete(() => _refreshing = null);
+  }
+
+  Future<String?>? _refreshing;
+
+  Future<String?> _refresh(AuthSession current) async {
+    try {
+      final fresh = await _repository.ensureFresh(current);
+      _session = fresh;
+      return fresh.accessToken;
+    } on ApiException {
+      _session = null;
+      _status = AuthStatus.unauthenticated;
+      _noticeMessage = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+      notifyListeners();
+      return null;
+    }
+  }
+
   Future<bool> login({
     required String accountCode,
     required String password,

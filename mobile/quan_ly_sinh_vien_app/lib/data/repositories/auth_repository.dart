@@ -52,6 +52,17 @@ class AuthRepository {
     }
   }
 
+  /// Trả về phiên còn hạn, tự làm mới access token khi sắp hết hạn.
+  Future<AuthSession> ensureFresh(AuthSession session) async {
+    if (!session.isAccessTokenExpired) return session;
+    try {
+      return await _refresh(session.refreshToken);
+    } on ApiException {
+      await _sessionStorage.clear();
+      rethrow;
+    }
+  }
+
   Future<void> changePassword({
     required AuthSession session,
     required String currentPassword,

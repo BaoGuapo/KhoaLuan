@@ -8,6 +8,7 @@ import 'app.dart';
 import 'core/attendance/attendance_workflow_api.dart';
 import 'core/config/api_config.dart';
 import 'core/network/api_client.dart';
+import 'core/network/portal_api.dart';
 import 'data/local/secure_session_storage.dart';
 import 'data/repositories/auth_repository.dart';
 import 'presentation/auth/auth_controller.dart';
@@ -27,7 +28,8 @@ void main() {
     sessionStorage: sessionStorage,
   );
   final authController = AuthController(authRepository);
-  AttendanceWorkflowApi.accessTokenProvider = () async => authController.session?.accessToken;
+  AttendanceWorkflowApi.accessTokenProvider = authController.accessToken;
+  PortalApi.accessTokenProvider = authController.accessToken;
 
   runApp(QuanLySinhVienApp(authController: authController));
   unawaited(authController.initialize());
