@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using QuanLySinhVien.Api.Data;
 using QuanLySinhVien.Api.Services;
+using Microsoft.AspNetCore.Http.Features;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,7 +21,6 @@ if (string.IsNullOrWhiteSpace(connectionString))
 var jwtSettings = builder.Configuration.GetSection(JwtSettings.SectionName).Get<JwtSettings>()
     ?? throw new InvalidOperationException("JWT configuration is missing.");
 jwtSettings.Validate();
-
 builder.Services.AddControllers();
 builder.Services.AddCors(options =>
 {
@@ -145,7 +145,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 builder.Services.AddAuthorization();
-
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.ValueLengthLimit = int.MaxValue;
+    options.MultipartBodyLengthLimit = int.MaxValue; // Cho phép upload file lớn không giới hạn
+    options.MemoryBufferThreshold = int.MaxValue;
+});
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -221,6 +226,7 @@ app.Use(async (context, next) =>
 
     await next();
 });
+app.UseStaticFiles();
 app.UseAuthorization();
 app.MapControllers();
 
@@ -228,6 +234,20 @@ app.MapControllers();
 if (app.Environment.IsDevelopment())
 {
     await DbInitializer.SeedDevelopmentAdminAsync(app.Services);
+}
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<AppDbContext>();
+        await DbInitializer.SeedMarketingGiangVienAsync(context);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Lỗi khi seed dữ liệu Marketing");
+    }
 }
 
 app.Run();

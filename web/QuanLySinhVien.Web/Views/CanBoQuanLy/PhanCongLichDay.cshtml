@@ -1,0 +1,916 @@
+@{
+    ViewData["Title"] = "Phân công Lịch dạy & Phòng học";
+}
+
+<!-- Nhúng Bootstrap 5 & Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<style>
+    :root {
+        --primary-color: #005b9f;
+        --bg-light: #f4f6f9;
+        --border-color: #e0e5ec;
+        --text-main: #333333;
+        --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+        font-family: var(--font-family);
+        background-color: var(--bg-light);
+        color: var(--text-main);
+    }
+
+    .page-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 0.25rem;
+    }
+
+    .page-subtitle {
+        font-size: 0.95rem;
+        color: #6c757d;
+        margin-bottom: 1.5rem;
+    }
+
+    .custom-card {
+        background-color: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1.75rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+    }
+
+    .form-group-inline {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.25rem;
+    }
+
+    .form-group-inline label {
+        width: 200px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        margin-bottom: 0;
+        color: #495057;
+        flex-shrink: 0;
+    }
+
+    .form-group-inline .form-control, 
+    .form-group-inline .form-select {
+        flex: 1;
+        max-width: 450px;
+        height: 40px;
+        border-radius: 8px;
+        border: 1px solid #ced4da;
+        font-size: 0.95rem;
+    }
+
+    .btn-pill-primary {
+        background-color: var(--primary-color);
+        color: white;
+        border: 1px solid var(--primary-color);
+        padding: 8px 24px;
+        font-weight: 600;
+        border-radius: 30px;
+        font-size: 0.95rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0, 91, 159, 0.2);
+        cursor: pointer;
+    }
+    .btn-pill-primary:hover {
+        background-color: #00467a;
+        color: white;
+    }
+
+    .btn-pill-outline {
+        background-color: transparent;
+        color: var(--primary-color);
+        border: 1.5px solid var(--primary-color);
+        padding: 6px 18px;
+        font-weight: 600;
+        border-radius: 30px;
+        font-size: 0.88rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    .btn-pill-outline:hover {
+        background-color: #eaf3fa;
+        color: var(--primary-color);
+    }
+
+    /* UI ACCORDION GOM NHÓM MÔN HỌC */
+    .subject-group-header {
+        background-color: #eaf3fa;
+        color: var(--primary-color);
+        padding: 14px 20px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 1.05rem;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        border: 1px solid #cce0f0;
+        transition: all 0.2s ease;
+    }
+    .subject-group-header:hover { background-color: #d8e9f8; }
+
+    /* CARD NHÓM LỚP HỌC PHẦN */
+    .class-card {
+        background-color: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 1.25rem;
+        margin-bottom: 1.25rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+    .class-divider { border-top: 1px dashed #cbd5e1; margin: 1rem 0; }
+
+    .form-row { display: flex; align-items: center; margin-bottom: 0.8rem; }
+    .form-row .label-col { width: 160px; font-weight: 500; color: #333; font-size: 0.92rem; }
+    .form-row .input-col { flex: 1; max-width: 320px; }
+    .form-row .input-col .form-control, 
+    .form-row .input-col .form-select { height: 38px; border-radius: 6px; border: 1px solid #ced4da; font-size: 0.9rem; }
+
+    .badge-bat-buoc {
+        background-color: #146c43;
+        color: #ffffff;
+        font-weight: 500;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+    }
+    .badge-tu-chon {
+        background-color: #ffc107;
+        color: #000000;
+        font-weight: 600;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+    }
+
+    .badge-schedule-auto {
+        background-color: #ecfdf5;
+        color: #065f46;
+        border: 1px solid #a7f3d0;
+        padding: 6px 14px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-right: 8px;
+        margin-bottom: 6px;
+    }
+</style>
+
+<div class="container-fluid py-4" style="max-width: 1300px;">
+    <h1 class="page-title">Phân công Lịch dạy & Phòng học</h1>
+    <p class="page-subtitle">Khởi tạo nhóm lớp học phần và tự động sắp xếp thời khóa biểu theo số buổi học</p>
+
+    <!-- BỘ LỌC TÌM KIẾM KHÓA VÀ HỌC KỲ -->
+    <div class="custom-card">
+        <div class="form-group-inline">
+            <label><i class="bi bi-bookmark-star me-1 text-primary"></i>Chọn Khóa học:</label>
+            <select class="form-select" id="cboKhoa" onchange="onThayDoiKhoaHoc()"></select>
+        </div>
+
+        <div class="form-group-inline">
+            <label><i class="bi bi-mortarboard me-1 text-primary"></i>Ngành đào tạo:</label>
+            <input type="text" class="form-control" id="txtTenNganhDisplay" readonly placeholder="Tự động nạp theo khóa học...">
+            <input type="hidden" id="txtMaNganhDisplay">
+        </div>
+
+        <div class="form-group-inline">
+            <label><i class="bi bi-calendar3 me-1 text-primary"></i>Chọn Học kỳ cần xếp lịch:</label>
+            <select class="form-select" id="cboHocKy"></select>
+        </div>
+
+        <div class="mt-4" style="padding-left: 200px;">
+            <button type="button" class="btn-pill-primary" onclick="hienThiDanhSachMonHocPhan()">
+                <i class="bi bi-funnel-fill"></i> Lọc dữ liệu môn học
+            </button>
+        </div>
+    </div>
+
+    <!-- KHU VỰC PHÂN CÔNG & XẾP LỊCH TỰ ĐỘNG -->
+    <div id="vungPhanCong" style="display: none;">
+        <h5 class="fw-bold mb-3 text-dark d-flex align-items-center justify-content-between">
+            <span><i class="bi bi-list-task text-primary me-2"></i>Danh sách Môn học thuộc Học kỳ được chọn</span>
+            <span class="badge bg-primary fs-6 rounded-pill" id="lblTongSoMon">0 môn</span>
+        </h5>
+        
+        <div id="containerDanhSachMon"></div>
+    </div>
+</div>
+
+<script>
+    const API_BASE_URL = "https://localhost:7081/api"; 
+    let dsKhoaHocCache = [];
+    let dsNganhCache = [];
+    let dsGiangVienCache = [];
+    let dsMonHocAllCache = [];
+    let daPhanCongCache = {}; // Cache lưu trạng thái các nhóm đã phân công
+
+    // Lưu danh sách lịch đã xếp toàn hệ thống tránh trùng
+    let globalBookedSchedules = [];
+    let autoSelectedSchedulesPerGroup = {}; 
+
+    const danhSachThu = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
+    const caLyThuyet = ["Sáng (1-3)", "Sáng (4-6)", "Chiều (7-9)", "Chiều (10-12)", "Tối (13-15)"];
+    const caThucHanh = ["Sáng (1-5)", "Chiều (7-11)", "Tối (13-17)"];
+    let danhSachPhongDB = { TH: [], LT: [] };
+
+    document.addEventListener("DOMContentLoaded", function() {
+        sinhDanhSachPhongTuDong();
+        loadNganhDaoTao();
+        loadDanhSachKhoaHoc();
+        loadDanhSachGiangVien();
+        loadTatCaMonHocFromDb();
+    });
+
+    // 1. Sinh phòng học tự động
+    function sinhDanhSachPhongTuDong() {
+        danhSachPhongDB = { TH: [], LT: [] };
+        for(let tang = 1; tang <= 5; tang++) {
+            for(let i = 1; i <= 5; i++) {
+                danhSachPhongDB.TH.push(`A${tang}0${i}`);
+                danhSachPhongDB.LT.push(`B${tang}0${i}`);
+            }
+        }
+    }
+
+    // 2. Tải ngành đào tạo
+    async function loadNganhDaoTao() {
+        try {
+            const rootApi = typeof API_BASE !== 'undefined' ? API_BASE : API_BASE_URL;
+            let res = await fetch(`${rootApi}/NganhDaoTao`);
+            if (res.ok) {
+                let data = await res.json();
+                if (Array.isArray(data)) dsNganhCache = data;
+            }
+        } catch (e) {
+            console.error("Lỗi tải Ngành:", e);
+        }
+    }
+
+    // 3. Tải môn học từ CSDL
+    async function loadTatCaMonHocFromDb() {
+        try {
+            const rootApi = typeof API_BASE !== 'undefined' ? API_BASE : API_BASE_URL;
+            let res = await fetch(`${rootApi}/MonHoc`);
+            if (res.ok) {
+                let data = await res.json();
+                if (Array.isArray(data)) dsMonHocAllCache = data;
+            }
+        } catch (e) {
+            console.error("Lỗi tải môn học:", e);
+        }
+    }
+
+    // 4. Tải danh sách giảng viên
+    async function loadDanhSachGiangVien() {
+        try {
+            const rootApi = typeof API_BASE !== 'undefined' ? API_BASE : API_BASE_URL;
+            let res = await fetch(`${rootApi}/GiangVien`);
+            if (res.ok) {
+                let data = await res.json();
+                if (Array.isArray(data)) dsGiangVienCache = data;
+            }
+        } catch (e) {
+            console.error("Lỗi nạp giảng viên:", e);
+            dsGiangVienCache = [];
+        }
+    }
+
+    // 4.1 Tải danh sách nhóm đã phân công từ CSDL (khi F5 / Lọc)
+    async function loadDaPhanCongFromDb() {
+        try {
+            const rootApi = typeof API_BASE !== 'undefined' ? API_BASE : API_BASE_URL;
+            let res = await fetch(`${rootApi}/LopHocPhan/GetDanhSachDaPhanCong`);
+            if (res.ok) {
+                let dataList = await res.json();
+                if (Array.isArray(dataList)) {
+                    daPhanCongCache = {};
+                    dataList.forEach(item => {
+                        let maNhom = item.maLopHocPhan || item.MaLopHocPhan;
+                        let maGV = item.maGiangVien || item.MaGiangVien;
+                        let cardIds = item.danhSachCardIds || item.DanhSachCardIds || [];
+
+                        if (maNhom && maGV && maGV !== "GV_DEFAULT" && cardIds.length > 0) {
+                            daPhanCongCache[maNhom] = {
+                                MaLopHocPhan: maNhom,
+                                MaMonHoc: item.maMonHoc || item.MaMonHoc,
+                                MaGiangVien: maGV,
+                                TenGiangVien: item.tenGiangVien || item.TenGiangVien,
+                                SiSoToiDa: item.siSoToiDa || item.SiSoToiDa || 70,
+                                LoaiPhong: item.loaiPhong || item.LoaiPhong || 'LT',
+                                SoBuoi: item.soBuoi || item.SoBuoi || 1,
+                                NgayBatDau: item.ngayBatDau || item.NgayBatDau,
+                                NgayKetThuc: item.ngayKetThuc || item.NgayKetThuc,
+                                DanhSachCardIds: cardIds
+                            };
+
+                            let currStart = parseDate(daPhanCongCache[maNhom].NgayBatDau);
+                            let currEnd = parseDate(daPhanCongCache[maNhom].NgayKetThuc);
+                            cardIds.forEach(cardId => {
+                                globalBookedSchedules.push({
+                                    cardId: cardId,
+                                    startMs: currStart,
+                                    endMs: currEnd,
+                                    maNhom: maNhom
+                                });
+                            });
+                        }
+                    });
+                }
+            }
+        } catch (e) {
+            console.error("Lỗi nạp phân công từ CSDL:", e);
+        }
+    }
+
+    // 5. TẢI KHÓA HỌC (CÓ CƠ CHẾ DỰ PHÒNG CHỐNG LỖI COMBOBOX TRẮNG)
+    async function loadDanhSachKhoaHoc() {
+        const cboKhoa = document.getElementById('cboKhoa');
+        if (!cboKhoa) return;
+
+        dsKhoaHocCache = [];
+        try {
+            const rootApi = typeof API_BASE !== 'undefined' ? API_BASE : API_BASE_URL;
+            let res = await fetch(`${rootApi}/KhoaHoc`);
+            if (res.ok) {
+                let data = await res.json();
+                if (Array.isArray(data)) dsKhoaHocCache = data;
+            }
+        } catch (e) {
+            console.warn("Không thể gọi API KhoaHoc, đang nạp dữ liệu dự phòng...", e);
+        }
+
+        // Dự phòng: Nếu API rỗng hoặc lỗi, lấy danh sách Khóa học từ KeHoachDaoTaoStorage trong localStorage
+        if (!Array.isArray(dsKhoaHocCache) || dsKhoaHocCache.length === 0) {
+            let dbKeHoach = JSON.parse(localStorage.getItem("KeHoachDaoTaoStorage")) || {};
+            let keys = Object.keys(dbKeHoach);
+            if (keys.length > 0) {
+                dsKhoaHocCache = keys.map(k => ({
+                    maKhoa: k,
+                    tenKhoa: `Khóa ${k}`,
+                    maNganh: "CNTT",
+                    thoiGianDaoTao: 4,
+                    namBatDau: 2026
+                }));
+            }
+        }
+
+        if (!Array.isArray(dsKhoaHocCache) || dsKhoaHocCache.length === 0) {
+            cboKhoa.innerHTML = '<option value="">-- Chưa có khóa học nào --</option>';
+            return;
+        }
+
+        let optionsHtml = '<option value="" disabled selected>-- Chọn Khóa học áp dụng --</option>';
+        dsKhoaHocCache.forEach(k => {
+            let maK = k.maKhoa || k.MaKhoa || '';
+            let tenK = k.tenKhoa || k.TenKhoa || maK;
+            optionsHtml += `<option value="${maK}">${maK} - ${tenK}</option>`;
+        });
+
+        cboKhoa.innerHTML = optionsHtml;
+    }
+
+    // 5.1 Sự kiện chọn Khóa học
+    function onThayDoiKhoaHoc() {
+        const maKhoaSelected = document.getElementById('cboKhoa').value;
+        const k = dsKhoaHocCache.find(x => (x.maKhoa || x.MaKhoa) === maKhoaSelected);
+        if (!k) return;
+
+        let maNganhVal = k.maNganh || k.MaNganh || '';
+        let nganhObj = dsNganhCache.find(n => (n.maNganh || n.MaNganh) === maNganhVal);
+        
+        let tenNganhVal = nganhObj ? (nganhObj.tenNganh || nganhObj.TenNganh) : maNganhVal;
+        document.getElementById('txtTenNganhDisplay').value = tenNganhVal;
+        document.getElementById('txtMaNganhDisplay').value = maNganhVal;
+
+        let thoiGian = k.thoiGianDaoTao ?? k.ThoiGianDaoTao ?? 4;
+        let namBD = k.namBatDau ?? k.NamBatDau ?? 2026;
+
+        capNhatDanhSachHocKy(thoiGian, namBD);
+    }
+
+    function capNhatDanhSachHocKy(soNam, namBD) {
+        soNam = parseFloat(soNam) || 4;
+        namBD = parseInt(namBD) || 2026;
+        let totalSemesters = Math.round(soNam * 2);
+
+        let optionsHtml = '<option value="" disabled selected>-- Chọn Học kỳ cần phân công --</option>';
+        let hkCounter = 0;
+        let soNamHoc = Math.ceil(soNam);
+
+        for (let namIndex = 1; namIndex <= soNamHoc; namIndex++) {
+            let namHienTai = namBD + namIndex - 1;
+            let namKetiap = namHienTai + 1;
+            
+            if (hkCounter < totalSemesters) {
+                hkCounter++;
+                optionsHtml += `<option value="Nam${namIndex}_HK1">Học kỳ 1 (Năm học ${namHienTai} - ${namKetiap})</option>`;
+            }
+            if (hkCounter < totalSemesters) {
+                hkCounter++;
+                optionsHtml += `<option value="Nam${namIndex}_HK2">Học kỳ 2 (Năm học ${namHienTai} - ${namKetiap})</option>`;
+            }
+        }
+
+        document.getElementById('cboHocKy').innerHTML = optionsHtml;
+    }
+
+    // 6. Lọc môn học
+    async function hienThiDanhSachMonHocPhan() {
+        const maKhoa = document.getElementById('cboKhoa').value;
+        const hkKey = document.getElementById('cboHocKy').value;
+        const container = document.getElementById('containerDanhSachMon');
+
+        if (!maKhoa) return alert("Vui lòng chọn Khóa học!");
+        if (!hkKey) return alert("Vui lòng chọn Học kỳ!");
+
+        document.getElementById('vungPhanCong').style.display = 'block';
+
+        // Tải thông tin phân công đã chốt từ CSDL trước khi dựng giao diện
+        await loadDaPhanCongFromDb();
+
+        let dbKeHoachDaoTao = JSON.parse(localStorage.getItem("KeHoachDaoTaoStorage")) || {};
+        let dataKhoa = dbKeHoachDaoTao[maKhoa] || dbKeHoachDaoTao[maKhoa.toUpperCase()] || dbKeHoachDaoTao[maKhoa.toLowerCase()];
+
+        if (!dataKhoa || !dataKhoa[hkKey] || !dataKhoa[hkKey].danhSachMon || dataKhoa[hkKey].danhSachMon.length === 0) {
+            container.innerHTML = `
+                <div class="custom-card text-center p-4 text-warning fw-bold">
+                    <i class="bi bi-exclamation-triangle fs-3 d-block mb-2"></i>
+                    Chưa có môn học nào được chốt cho Học kỳ này của Khóa [${maKhoa}]!<br>
+                    <span class="fw-normal text-muted" style="font-size:0.9rem;">Vui lòng chuyển qua trang <b>Lập kế hoạch đào tạo</b> để chốt danh sách môn học trước.</span>
+                </div>`;
+            document.getElementById('lblTongSoMon').innerText = "0 môn";
+            return;
+        }
+
+        let listMonChot = dataKhoa[hkKey].danhSachMon;
+        document.getElementById('lblTongSoMon').innerText = `${listMonChot.length} môn`;
+
+        renderGiaoDienMonHoc(listMonChot, maKhoa, hkKey);
+    }
+
+    // 7. Render danh sách môn
+    function renderGiaoDienMonHoc(listMon, maKhoa, hkKey) {
+        const container = document.getElementById('containerDanhSachMon');
+        let html = '';
+
+        listMon.forEach((mon) => {
+            let maMon = mon.maMonHoc || mon.MaMonHoc;
+            let tenMon = mon.tenMonHoc || mon.TenMonHoc;
+            let stc = mon.soTinChi || mon.SoTinChi || 3;
+            let laTuChon = mon.laMonTuChon ?? mon.LaMonTuChon ?? false;
+
+            html += `
+                <div class="custom-card p-3 mb-4">
+                    <div class="subject-group-header" onclick="toggleAccordion('mon_body_${maMon}')">
+                        <span>
+                            <i class="bi bi-journal-check me-2 text-primary"></i>
+                            <strong>${maMon}</strong> - ${tenMon} 
+                            <span class="badge bg-light text-dark border ms-2">${stc} STC</span>
+                            <span class="${laTuChon ? 'badge-tu-chon' : 'badge-bat-buoc'} ms-1">${laTuChon ? 'Tự chọn' : 'Bắt buộc'}</span>
+                        </span>
+                        <span><i class="bi bi-chevron-down"></i></span>
+                    </div>
+
+                    <div id="mon_body_${maMon}" style="display: block;">
+                        <div class="p-3 bg-light border rounded mb-3 d-flex align-items-center gap-3">
+                            <label class="fw-bold text-dark mb-0" style="font-size:0.9rem;">
+                                <i class="bi bi-diagram-3-fill text-primary me-1"></i>Số nhóm Lớp học phần:
+                            </label>
+                            <input type="number" id="txtSoNhom_${maMon}" class="form-control form-control-sm" value="2" min="1" max="10" style="width: 90px;">
+                            <button type="button" class="btn-pill-outline" onclick="taoNhomLopHocPhan('${maMon}', '${tenMon}', ${stc})">
+                                <i class="bi bi-plus-square"></i> Tạo / Cập nhật Danh sách Nhóm
+                            </button>
+                        </div>
+                        <div id="container_nhom_${maMon}"></div>
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+
+        listMon.forEach(mon => {
+            let maMon = mon.maMonHoc || mon.MaMonHoc;
+            let tenMon = mon.tenMonHoc || mon.TenMonHoc;
+            let stc = mon.soTinChi || mon.SoTinChi || 3;
+            taoNhomLopHocPhan(maMon, tenMon, stc);
+        });
+    }
+
+    // 8. Tạo nhóm và chuyển trạng thái View Mode / Form Mode
+    function taoNhomLopHocPhan(maMon, tenMon, stc) {
+        const soNhom = parseInt(document.getElementById(`txtSoNhom_${maMon}`).value) || 1;
+        const container = document.getElementById(`container_nhom_${maMon}`);
+        let htmlNhom = '';
+
+        for (let i = 1; i <= soNhom; i++) {
+            let maNhomLop = `${maMon}_0${i}`;
+            htmlNhom += `<div class="class-card" id="box_wrapper_${maNhomLop}"></div>`;
+        }
+        container.innerHTML = htmlNhom;
+
+        for (let i = 1; i <= soNhom; i++) {
+            let maNhomLop = `${maMon}_0${i}`;
+            if (daPhanCongCache[maNhomLop]) {
+                renderViewModeNhomLop(maNhomLop, maMon, stc, daPhanCongCache[maNhomLop]);
+            } else {
+                hienThiFormTaoNhomLop(maNhomLop, maMon, tenMon, stc);
+            }
+        }
+    }
+
+    function hienThiFormTaoNhomLop(maNhomLop, maMon, tenMon, stc, savedData = null) {
+        const wrapper = document.getElementById(`box_wrapper_${maNhomLop}`);
+        if (!wrapper) return;
+
+        let today = new Date().toISOString().split('T')[0];
+        let monInfo = dsMonHocAllCache.find(x => (x.maMonHoc || x.MaMonHoc) === maMon) || {};
+        let tietLT = monInfo.soTietLyThuyet ?? monInfo.SoTietLyThuyet ?? 15;
+        let tietTH = monInfo.soTietThucHanh ?? monInfo.SoTietThucHanh ?? 0;
+        
+        let loaiPhongTuDong = tietTH > tietLT ? 'TH' : 'LT';
+        let tenLoaiPhong = loaiPhongTuDong === 'TH' ? 'Thực hành (Phòng A)' : 'Lý thuyết (Phòng B)';
+
+        // Lọc giảng viên theo CSDL
+        let maMonUpper = (maMon || '').toUpperCase();
+        let maNganhDisplay = (document.getElementById('txtMaNganhDisplay')?.value || '').toUpperCase();
+        let tenNganhDisplay = (document.getElementById('txtTenNganhDisplay')?.value || '').toUpperCase();
+
+        let isMarketing = maMonUpper.includes('MKT') || maMonUpper.includes('MARKETING') || maNganhDisplay.includes('MKT') || tenNganhDisplay.includes('MARKETING');
+        let isCNTT = maMonUpper.includes('CNTT') || maMonUpper.includes('IT') || maNganhDisplay.includes('CNTT') || tenNganhDisplay.includes('THÔNG TIN') || tenNganhDisplay.includes('CÔNG NGHỆ');
+        let isQTKD = maMonUpper.includes('QTKD') || maNganhDisplay.includes('QTKD') || tenNganhDisplay.includes('QUẢN TRỊ');
+
+        let dsGiangVienPhuHop = dsGiangVienCache.filter(gv => {
+            let cn = (gv.chuyenNganh || gv.ChuyenNganh || '').toUpperCase();
+            let ma = (gv.maGiangVien || gv.maGV || '').toUpperCase();
+
+            if (isCNTT) return ma.includes('CNTT') || ma.includes('DEMO') || ma.includes('HKH') || cn.includes('CNTT') || cn.includes('PHẦN MỀM') || cn.includes('THÔNG TIN') || cn.includes('MÁY TÍNH') || cn.includes('TRÍ TUỆ NHÂN TẠO');
+            if (isMarketing) return cn === 'MARKETING' || cn.includes('MARKETING') || ma.includes('MKT');
+            if (isQTKD) return (ma.includes('QTKD') || cn.includes('DOANH NGHIỆP') || cn.includes('QUỐC TẾ') || cn.includes('NHÂN SỰ') || cn.includes('TÀI CHÍNH')) && ma !== 'GV_QTKD02';
+            return true;
+        });
+
+        let selectedGV = savedData ? savedData.MaGiangVien : '';
+        let optionsGV = '<option value="">-- Chọn Giảng viên phân công --</option>';
+        dsGiangVienPhuHop.forEach(gv => {
+            let maVal = gv.maGiangVien || gv.maGV || '';
+            let tenVal = gv.hoTen || gv.tenGV || '';
+            let cnVal = gv.chuyenNganh || gv.ChuyenNganh || '';
+            let isSel = (maVal === selectedGV) ? 'selected' : '';
+            optionsGV += `<option value="${maVal}" ${isSel}>${tenVal} (${maVal} - ${cnVal})</option>`;
+        });
+
+        wrapper.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="fw-bold text-primary mb-0">
+                    <i class="bi bi-person-video3 me-1"></i> Nhóm lớp: <span class="badge bg-primary fs-6">${maNhomLop}</span>
+                </h6>
+                <span class="text-muted small">
+                    Môn: <b>${tenMon}</b> (${stc} TC | LT: ${tietLT}b, TH: ${tietTH}b)
+                    <span class="badge bg-info text-dark ms-2">Loại phòng: ${tenLoaiPhong}</span>
+                </span>
+                <input type="hidden" id="tc_${maNhomLop}" value="${stc}">
+                <input type="hidden" id="loai_phong_${maNhomLop}" value="${loaiPhongTuDong}">
+            </div>
+
+            <div class="class-divider"></div>
+
+            <div class="row g-3 mb-2">
+                <div class="col-md-6">
+                    <div class="form-row">
+                        <div class="label-col"><i class="bi bi-person-badge me-1 text-primary"></i>Giảng viên:</div>
+                        <div class="input-col">
+                            <select class="form-select" id="cboGV_${maNhomLop}">${optionsGV}</select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-row">
+                        <div class="label-col">Sĩ số tối đa:</div>
+                        <div class="input-col">
+                            <input type="number" class="form-control" id="siso_${maNhomLop}" value="${savedData ? savedData.SiSoToiDa : 70}" min="1" max="500">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-2">
+                <div class="col-md-4">
+                    <div class="form-row">
+                        <div class="label-col">Số buổi/tuần:</div>
+                        <div class="input-col">
+                            <input type="number" class="form-control" id="so_buoi_${maNhomLop}" value="${savedData ? savedData.SoBuoi : 1}" min="1" max="6" onchange="capNhatNgayVaXepLichTuDong('${maNhomLop}')">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-row">
+                        <div class="label-col">Ngày bắt đầu:</div>
+                        <div class="input-col">
+                            <input type="date" class="form-control inp-ngay-bd" id="ngay_bd_${maNhomLop}" value="${savedData ? savedData.NgayBatDau : today}" onchange="capNhatNgayVaXepLichTuDong('${maNhomLop}')">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-row">
+                        <div class="label-col">Dự kiến kết thúc:</div>
+                        <div class="input-col">
+                            <input type="text" class="form-control inp-ngay-kt" id="ngay_kt_${maNhomLop}" readonly placeholder="Tự động tính...">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3 p-3 bg-light rounded border">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-bold text-primary" style="font-size:0.9rem;">
+                        <i class="bi bi-cpu-fill me-1"></i>Lịch học & Phòng học (Hệ thống tự động sắp xếp không trùng):
+                    </span>
+                    <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="xepLichTuDongForNhom('${maNhomLop}')">
+                        <i class="bi bi-arrow-repeat me-1"></i>Sắp xếp lại
+                    </button>
+                </div>
+                <div id="vungHienThiLichAuto_${maNhomLop}">
+                    <span class="text-muted small">Đang tính toán sắp xếp lịch trống...</span>
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <button type="button" class="btn-pill-primary" onclick="luuPhanCongNhomLop('${maNhomLop}', '${maMon}', ${stc})">
+                    <i class="bi bi-save-fill"></i> Lưu Phân công Nhóm này
+                </button>
+            </div>
+        `;
+
+        capNhatNgayVaXepLichTuDong(maNhomLop);
+    }
+
+    function renderViewModeNhomLop(maNhomLop, maMon, stc, data) {
+        const wrapper = document.getElementById(`box_wrapper_${maNhomLop}`);
+        if (!wrapper) return;
+
+        let htmlBadgeLich = '';
+        (data.DanhSachCardIds || []).forEach(cardId => {
+            let parts = cardId.split('_');
+            let thu = parts[0] || cardId;
+            let ca = parts[1] || '';
+            let phong = parts[2] || '';
+            htmlBadgeLich += `
+                <span class="badge-schedule-auto" style="background-color: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0;">
+                    <i class="bi bi-check-circle-fill text-success me-1"></i>
+                    ${thu} ${phong ? '- Phòng ' + phong : ''} ${ca ? '(' + ca + ')' : ''}
+                </span>`;
+        });
+
+        let tenLoaiPhong = data.LoaiPhong === 'TH' ? 'Thực hành (Phòng A)' : 'Lý thuyết (Phòng B)';
+
+        wrapper.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="fw-bold text-success mb-0">
+                    <i class="bi bi-check-circle-fill me-1"></i> Nhóm lớp: <span class="badge bg-success fs-6">${maNhomLop}</span>
+                    <span class="badge bg-secondary ms-2" style="font-size:0.75rem;">Đã phân công</span>
+                </h6>
+                <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3 fw-bold" onclick="suaPhanCongNhomLop('${maNhomLop}', '${maMon}', ${stc})">
+                    <i class="bi bi-pencil-square me-1"></i> Sửa phân công
+                </button>
+            </div>
+
+            <div class="class-divider"></div>
+
+            <div class="row g-3 mb-2">
+                <div class="col-md-5">
+                    <div class="small"><b><i class="bi bi-person-badge text-primary me-1"></i>Giảng viên:</b> <span class="text-primary fw-bold">${data.TenGiangVien}</span></div>
+                </div>
+                <div class="col-md-3">
+                    <div class="small"><b><i class="bi bi-people me-1"></i>Sĩ số tối đa:</b> ${data.SiSoToiDa} SV</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="small"><b><i class="bi bi-door-open me-1"></i>Loại phòng:</b> ${tenLoaiPhong}</div>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-2">
+                <div class="col-md-4">
+                    <div class="small"><b><i class="bi bi-clock-history me-1"></i>Số buổi/tuần:</b> ${data.SoBuoi} buổi</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="small"><b><i class="bi bi-calendar-event me-1"></i>Ngày bắt đầu:</b> ${data.NgayBatDau}</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="small"><b><i class="bi bi-calendar-check me-1"></i>Dự kiến kết thúc:</b> ${data.NgayKetThucDisplay || data.NgayKetThuc}</div>
+                </div>
+            </div>
+
+            <div class="mt-2 p-2 bg-light rounded border">
+                <div class="fw-bold text-primary mb-1 small"><i class="bi bi-calendar3 me-1"></i>Lịch học & Phòng học đã chốt:</div>
+                <div>${htmlBadgeLich}</div>
+            </div>
+        `;
+    }
+
+    function suaPhanCongNhomLop(maNhomLop, maMon, stc) {
+        let savedData = daPhanCongCache[maNhomLop];
+        let monInfo = dsMonHocAllCache.find(x => (x.maMonHoc || x.MaMonHoc) === maMon) || {};
+        let tenMon = monInfo.tenMonHoc || monInfo.TenMonHoc || maMon;
+        hienThiFormTaoNhomLop(maNhomLop, maMon, tenMon, stc, savedData);
+    }
+
+    function toggleAccordion(id) {
+        let el = document.getElementById(id);
+        if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    }
+
+    // 9. Tính toán ngày & thời khóa biểu không trùng
+    function capNhatNgayVaXepLichTuDong(maNhomLop) {
+        tinhNgayKetThuc(maNhomLop);
+        xepLichTuDongForNhom(maNhomLop);
+    }
+
+    function tinhNgayKetThuc(ma) {
+        const bd = document.getElementById(`ngay_bd_${ma}`)?.value;
+        const loai = document.getElementById(`loai_phong_${ma}`)?.value;
+        const buoi = parseInt(document.getElementById(`so_buoi_${ma}`)?.value) || 1;
+        const tc = parseInt(document.getElementById(`tc_${ma}`)?.value) || 3;
+        const kt = document.getElementById(`ngay_kt_${ma}`);
+
+        if (!bd || !kt) return;
+
+        let dateBD = new Date(bd);
+        let soTuan = Math.ceil((tc * 15) / ((loai === 'TH') ? 5 : 3) / buoi);
+        let dateKT = new Date(dateBD.getTime());
+        dateKT.setDate(dateKT.getDate() + (soTuan * 7));
+
+        let dayStr = dateKT.getDate().toString().padStart(2, '0');
+        let monthStr = (dateKT.getMonth() + 1).toString().padStart(2, '0');
+        kt.value = `${dayStr}/${monthStr}/${dateKT.getFullYear()}`;
+        kt.dataset.raw = dateKT.toISOString().split('T')[0];
+    }
+
+    function parseDate(dateString) { return dateString ? new Date(dateString).getTime() : 0; }
+
+    function xepLichTuDongForNhom(maNhomLop) {
+        const loaiInput = document.getElementById(`loai_phong_${maNhomLop}`);
+        const bdInput = document.getElementById(`ngay_bd_${maNhomLop}`);
+        const ktInput = document.getElementById(`ngay_kt_${maNhomLop}`);
+        const buoiInput = document.getElementById(`so_buoi_${maNhomLop}`);
+        const container = document.getElementById(`vungHienThiLichAuto_${maNhomLop}`);
+
+        if (!bdInput || !ktInput || !container) return;
+
+        const loai = loaiInput.value;
+        const bd = bdInput.value;
+        const ktRaw = ktInput.dataset.raw || ktInput.value;
+        const soBuoi = parseInt(buoiInput.value) || 1;
+
+        if (!bd || !ktRaw) return;
+
+        let currStart = parseDate(bd);
+        let currEnd = parseDate(ktRaw);
+
+        let cacPhong = (loai === 'TH') ? danhSachPhongDB.TH : danhSachPhongDB.LT;
+        let cacCa = (loai === 'TH') ? caThucHanh : caLyThuyet;
+
+        let selectedCards = [];
+
+        for (let phong of cacPhong) {
+            if (selectedCards.length >= soBuoi) break;
+
+            for (let thu of danhSachThu) {
+                if (selectedCards.length >= soBuoi) break;
+
+                for (let ca of cacCa) {
+                    if (selectedCards.length >= soBuoi) break;
+
+                    let cardId = `${thu}_${ca}_${phong}`;
+                    let isConflict = false;
+
+                    for (let booked of globalBookedSchedules) {
+                        if (booked.cardId === cardId && booked.maNhom !== maNhomLop) {
+                            if (currStart <= booked.endMs && currEnd >= booked.startMs) {
+                                isConflict = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!isConflict) {
+                        selectedCards.push({ cardId, thu, ca, phong });
+                    }
+                }
+            }
+        }
+
+        autoSelectedSchedulesPerGroup[maNhomLop] = selectedCards.map(x => x.cardId);
+
+        globalBookedSchedules = globalBookedSchedules.filter(x => x.maNhom !== maNhomLop);
+        selectedCards.forEach(c => {
+            globalBookedSchedules.push({
+                cardId: c.cardId,
+                startMs: currStart,
+                endMs: currEnd,
+                maNhom: maNhomLop
+            });
+        });
+
+        if (selectedCards.length === 0) {
+            container.innerHTML = '<span class="text-danger fw-bold"><i class="bi bi-x-circle me-1"></i>Không còn phòng/lịch trống phù hợp trong khoảng thời gian này!</span>';
+            return;
+        }
+
+        let htmlBadge = '';
+        selectedCards.forEach(c => {
+            htmlBadge += `
+                <span class="badge-schedule-auto">
+                    <i class="bi bi-check-circle-fill text-success"></i>
+                    ${c.thu} - Phòng ${c.phong} (${c.ca})
+                </span>`;
+        });
+
+        container.innerHTML = htmlBadge;
+    }
+
+    // 10. Lưu phân công & chuyển View mode
+    async function luuPhanCongNhomLop(maNhomLop, maMon, stc) {
+        const gvSelect = document.getElementById(`cboGV_${maNhomLop}`);
+        const sisoInput = document.getElementById(`siso_${maNhomLop}`);
+        const loaiSelect = document.getElementById(`loai_phong_${maNhomLop}`);
+        const buoiInput = document.getElementById(`so_buoi_${maNhomLop}`);
+        const bdInput = document.getElementById(`ngay_bd_${maNhomLop}`);
+        const ktInput = document.getElementById(`ngay_kt_${maNhomLop}`);
+        const hkSelect = document.getElementById(`cboHocKy`);
+
+        const maGiangVien = gvSelect.value;
+        const tenGiangVien = gvSelect.options[gvSelect.selectedIndex] ? gvSelect.options[gvSelect.selectedIndex].text : '';
+        const siSo = parseInt(sisoInput.value) || 70;
+        const loai = loaiSelect.value;
+        const soBuoi = parseInt(buoiInput.value) || 1;
+        const bd = bdInput.value;
+        const ktDisplay = ktInput.value;
+        const ktRaw = ktInput.dataset.raw || ktInput.value;
+        const maHocKy = hkSelect ? hkSelect.value : "HK1";
+
+        if (!maGiangVien) return alert("Vui lòng chọn Giảng viên phân công cho nhóm này!");
+        
+        const cardIds = autoSelectedSchedulesPerGroup[maNhomLop] || [];
+        if (cardIds.length === 0) {
+            return alert("Không có lịch trống hợp lệ được chọn tự động!");
+        }
+
+        const payload = {
+            MaLopHocPhan: maNhomLop,
+            MaMonHoc: maMon,
+            MaGiangVien: maGiangVien,
+            TenGiangVien: tenGiangVien,
+            MaHocKy: maHocKy,
+            SiSoToiDa: siSo,
+            LoaiPhong: loai,
+            SoBuoi: soBuoi,
+            NgayBatDau: bd,
+            NgayKetThuc: ktRaw,
+            NgayKetThucDisplay: ktDisplay,
+            DanhSachCardIds: cardIds
+        };
+
+        try {
+            const rootApi = typeof API_BASE !== 'undefined' ? API_BASE : API_BASE_URL;
+            let res = await fetch(`${rootApi}/LopHocPhan/LuuLichNhom`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) {
+                let errText = await res.text();
+                alert(`Lưu CSDL thất bại: ${errText}`);
+                return;
+            }
+
+            alert(`Đã lưu thành công nhóm [${maNhomLop}] vào CSDL SQL Server!`);
+            daPhanCongCache[maNhomLop] = payload;
+            renderViewModeNhomLop(maNhomLop, maMon, stc, payload);
+
+        } catch (e) {
+            alert(`Lỗi kết nối khi lưu phân công: ${e.message}`);
+        }
+    }
+</script>

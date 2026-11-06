@@ -9,17 +9,17 @@ public partial class LinkAcademicProfilesToUsers : Migration
 {
     protected override void Up(MigrationBuilder migrationBuilder)
     {
-        migrationBuilder.AddColumn<Guid>(
-            name: "UserId",
-            table: "SinhVien",
-            type: "uniqueidentifier",
-            nullable: true);
+        //migrationBuilder.AddColumn<Guid>(
+            //name: "UserId",
+            //table: "SinhVien",
+            //type: "uniqueidentifier",
+            //nullable: true);
 
-        migrationBuilder.AddColumn<Guid>(
-            name: "UserId",
-            table: "GiangVien",
-            type: "uniqueidentifier",
-            nullable: true);
+        //migrationBuilder.AddColumn<Guid>(
+            //name: "UserId",
+            //table: "GiangVien",
+            //type: "uniqueidentifier",
+            //nullable: true);
 
         migrationBuilder.CreateIndex(
             name: "IX_SinhVien_UserId",

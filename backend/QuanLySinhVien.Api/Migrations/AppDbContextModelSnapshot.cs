@@ -374,6 +374,118 @@ namespace QuanLySinhVien.Api.Migrations
                         .HasFilter("[UserId] IS NOT NULL");
 
                     b.ToTable("GiangVien", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            MaGiangVien = "GV_MKT01",
+                            ChuyenNganh = "Marketing",
+                            Email = "phuongntm@huit.edu.vn",
+                            HoTen = "Nguyễn Thị Mai Phương",
+                            MatKhauLegacy = "",
+                            SoDienThoai = "0901234567",
+                            TrangThaiTaiKhoan = true,
+                            TrinhDoHocVan = "Tiến sĩ"
+                        },
+                        new
+                        {
+                            MaGiangVien = "GV_MKT02",
+                            ChuyenNganh = "Marketing",
+                            Email = "namth@huit.edu.vn",
+                            HoTen = "Trần Hoàng Nam",
+                            MatKhauLegacy = "",
+                            SoDienThoai = "0902345678",
+                            TrangThaiTaiKhoan = true,
+                            TrinhDoHocVan = "Thạc sĩ"
+                        },
+                        new
+                        {
+                            MaGiangVien = "GV_MKT03",
+                            ChuyenNganh = "Marketing",
+                            Email = "tulc@huit.edu.vn",
+                            HoTen = "Lê Cẩm Tú",
+                            MatKhauLegacy = "",
+                            SoDienThoai = "0903456789",
+                            TrangThaiTaiKhoan = true,
+                            TrinhDoHocVan = "Thạc sĩ"
+                        },
+                        new
+                        {
+                            MaGiangVien = "GV_MKT04",
+                            ChuyenNganh = "Marketing",
+                            Email = "baopv@huit.edu.vn",
+                            HoTen = "Phạm Vũ Bảo",
+                            MatKhauLegacy = "",
+                            SoDienThoai = "0904567890",
+                            TrangThaiTaiKhoan = true,
+                            TrinhDoHocVan = "Phó Giáo sĩ / Tiến sĩ"
+                        },
+                        new
+                        {
+                            MaGiangVien = "GV_MKT05",
+                            ChuyenNganh = "Marketing",
+                            Email = "trangdtt@huit.edu.vn",
+                            HoTen = "Đỗ Thị Thu Trang",
+                            MatKhauLegacy = "",
+                            SoDienThoai = "0905678901",
+                            TrangThaiTaiKhoan = true,
+                            TrinhDoHocVan = "Thạc sĩ"
+                        },
+                        new
+                        {
+                            MaGiangVien = "GV_MKT06",
+                            ChuyenNganh = "Marketing",
+                            Email = "khoavm@huit.edu.vn",
+                            HoTen = "Võ Minh Khoa",
+                            MatKhauLegacy = "",
+                            SoDienThoai = "0906789012",
+                            TrangThaiTaiKhoan = true,
+                            TrinhDoHocVan = "Thạc sĩ"
+                        },
+                        new
+                        {
+                            MaGiangVien = "GV_MKT07",
+                            ChuyenNganh = "Marketing",
+                            Email = "anhbh@huit.edu.vn",
+                            HoTen = "Bùi Hoàng Anh",
+                            MatKhauLegacy = "",
+                            SoDienThoai = "0907890123",
+                            TrangThaiTaiKhoan = true,
+                            TrinhDoHocVan = "Tiến sĩ"
+                        },
+                        new
+                        {
+                            MaGiangVien = "GV_MKT08",
+                            ChuyenNganh = "Marketing",
+                            Email = "linhnp@huit.edu.vn",
+                            HoTen = "Ngô Phương Linh",
+                            MatKhauLegacy = "",
+                            SoDienThoai = "0908901234",
+                            TrangThaiTaiKhoan = true,
+                            TrinhDoHocVan = "Thạc sĩ"
+                        },
+                        new
+                        {
+                            MaGiangVien = "GV_MKT09",
+                            ChuyenNganh = "Marketing",
+                            Email = "huydq@huit.edu.vn",
+                            HoTen = "Đặng Quốc Huy",
+                            MatKhauLegacy = "",
+                            SoDienThoai = "0909012345",
+                            TrangThaiTaiKhoan = true,
+                            TrinhDoHocVan = "Tiến sĩ"
+                        },
+                        new
+                        {
+                            MaGiangVien = "GV_MKT10",
+                            ChuyenNganh = "Marketing",
+                            Email = "vannpk@huit.edu.vn",
+                            HoTen = "Nguyễn Phan Khánh Vân",
+                            MatKhauLegacy = "",
+                            SoDienThoai = "0901122334",
+                            TrangThaiTaiKhoan = true,
+                            TrinhDoHocVan = "Thạc sĩ"
+                        });
                 });
 
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.HoSoHocVu", b =>
@@ -580,19 +692,36 @@ namespace QuanLySinhVien.Api.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
+                    b.Property<string>("LichHoc")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LoaiPhong")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("MaGiangVien")
                         .IsRequired()
                         .HasColumnType("nvarchar(30)");
 
                     b.Property<string>("MaHocKy")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("MaMonHoc")
                         .IsRequired()
                         .HasColumnType("nvarchar(30)");
 
+                    b.Property<string>("MonHocMaMonHoc")
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("NgayBatDau")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NgayKetThuc")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("SiSoToiDa")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SoBuoi")
                         .HasColumnType("int");
 
                     b.Property<byte?>("TrangThai")
@@ -603,6 +732,8 @@ namespace QuanLySinhVien.Api.Migrations
                     b.HasIndex("MaGiangVien");
 
                     b.HasIndex("MaMonHoc");
+
+                    b.HasIndex("MonHocMaMonHoc");
 
                     b.ToTable("LopHocPhan", (string)null);
                 });
@@ -643,6 +774,21 @@ namespace QuanLySinhVien.Api.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
+                    b.Property<bool>("LaMonTuChon")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("MaNganh")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SoTietLyThuyet")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SoTietThucHanh")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SoTinChi")
+                        .HasColumnType("int");
+
                     b.Property<int>("SoTinChiLyThuyet")
                         .HasColumnType("int");
 
@@ -680,6 +826,20 @@ namespace QuanLySinhVien.Api.Migrations
                     b.HasIndex("MaMonHoc");
 
                     b.ToTable("MonKeHoachDaoTao", (string)null);
+                });
+
+            modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.NganhDaoTao", b =>
+                {
+                    b.Property<string>("MaNganh")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("TenNganh")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("MaNganh");
+
+                    b.ToTable("NganhDaoTaos");
                 });
 
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.PhienDiemDanh", b =>
@@ -1288,6 +1448,10 @@ namespace QuanLySinhVien.Api.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("QuanLySinhVien.Api.Models.Entities.MonHoc", null)
+                        .WithMany("LopHocPhans")
+                        .HasForeignKey("MonHocMaMonHoc");
+
                     b.Navigation("GiangVien");
 
                     b.Navigation("MonHoc");
@@ -1416,6 +1580,11 @@ namespace QuanLySinhVien.Api.Migrations
                     b.Navigation("DanhSachSinhVien");
 
                     b.Navigation("LichHocs");
+                });
+
+            modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.MonHoc", b =>
+                {
+                    b.Navigation("LopHocPhans");
                 });
 
             modelBuilder.Entity("QuanLySinhVien.Api.Models.Entities.Role", b =>
