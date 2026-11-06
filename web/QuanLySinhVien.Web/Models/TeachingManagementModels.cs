@@ -157,3 +157,26 @@ public sealed class ClassAttendanceHistoryPageViewModel
     public LecturerClassWorkspaceModel? ChiTietBuoi { get; init; }
     public IReadOnlyCollection<AttendanceCorrectionModel> LichSuSua { get; init; } = [];
 }
+
+public sealed class ClassGradeSheetModel
+{
+    public string MaLopHocPhan { get; set; } = "";
+    public string MaMonHoc { get; set; } = "";
+    public string TenMonHoc { get; set; } = "";
+    public string MaHocKy { get; set; } = "";
+    public string TenHocKy { get; set; } = "";
+    public string HoTenGiangVien { get; set; } = "";
+    public bool DaCongBo { get; set; }
+    public DateTime? NhapLucUtc { get; set; }
+    public List<ClassGradeRowModel> SinhVien { get; set; } = [];
+}
+
+public sealed class ClassGradeRowModel
+{
+    public string MaSinhVien { get; set; } = "";
+    public string HoTen { get; set; } = "";
+    public decimal? DiemTongKet { get; set; }
+    public string? DiemChu { get; set; }
+    public bool CamThi { get; set; }
+    public int SoBuoiVang { get; set; }
+}

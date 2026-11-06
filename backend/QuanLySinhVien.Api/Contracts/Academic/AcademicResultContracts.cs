@@ -14,7 +14,8 @@ public sealed record CourseResultResponse(
     string TenMonHoc,
     string? MaLopHocPhan,
     int SoTinChi,
-    // Chỉ có khi điểm đã được công bố.
+    // Chỉ có khi điểm đã được công bố. Điểm tổng kết null với kết quả học vụ nhập thẳng điểm chữ.
+    decimal? DiemTongKet,
     string? DiemChu,
     decimal? Diem4,
     // Dat, KhongDat hoặc ChuaCoDiem.
@@ -38,3 +39,34 @@ public sealed record AcademicResultResponse(
     int TinChiChuaCoDiem,
     // Học kỳ mới nhất đứng đầu.
     IReadOnlyCollection<SemesterResultResponse> HocKy);
+
+public sealed record ClassGradeRowResponse(
+    string MaSinhVien,
+    string HoTen,
+    decimal? DiemTongKet,
+    string? DiemChu,
+    // Sinh viên bị cấm thi vì chuyên cần thì nhận F, không cần nhập điểm.
+    bool CamThi,
+    int SoBuoiVang);
+
+public sealed record ClassGradeSheetResponse(
+    string MaLopHocPhan,
+    string MaMonHoc,
+    string TenMonHoc,
+    string MaHocKy,
+    string TenHocKy,
+    string HoTenGiangVien,
+    bool DaCongBo,
+    DateTime? NhapLucUtc,
+    IReadOnlyCollection<ClassGradeRowResponse> SinhVien);
+
+public sealed class SaveClassGradesRequest
+{
+    public List<GradeEntry> Diem { get; init; } = [];
+
+    public sealed class GradeEntry
+    {
+        public string MaSinhVien { get; init; } = "";
+        public decimal? DiemTongKet { get; init; }
+    }
+}

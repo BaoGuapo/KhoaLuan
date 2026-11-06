@@ -71,6 +71,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
             e.ToTable("KetQuaHocPhan"); e.HasKey(x => new { x.MaSinhVien, x.MaMonHoc, x.MaHocKy });
             e.Property(x => x.MaSinhVien).HasMaxLength(30); e.Property(x => x.MaMonHoc).HasMaxLength(30);
             e.Property(x => x.MaHocKy).HasMaxLength(30); e.Property(x => x.DiemChu).HasMaxLength(2);
+            e.Property(x => x.DiemTongKet).HasPrecision(4, 2); e.Property(x => x.NguoiNhap).HasMaxLength(50);
             e.HasOne(x => x.SinhVien).WithMany().HasForeignKey(x => x.MaSinhVien).OnDelete(DeleteBehavior.Restrict);
             e.HasOne<MonHoc>().WithMany().HasForeignKey(x => x.MaMonHoc).OnDelete(DeleteBehavior.Restrict);
             e.HasOne(x => x.HocKy).WithMany().HasForeignKey(x => x.MaHocKy).OnDelete(DeleteBehavior.Restrict);

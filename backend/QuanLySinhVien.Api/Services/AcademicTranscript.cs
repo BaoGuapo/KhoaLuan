@@ -10,7 +10,8 @@ public sealed record TranscriptCourse(
     string? MaLopHocPhan,
     int SoTinChi,
     string? DiemChu,
-    AttendanceTallyResponse? ChuyenCan);
+    AttendanceTallyResponse? ChuyenCan,
+    decimal? DiemTongKet = null);
 
 public sealed record TranscriptSemester(string MaHocKy, string TenHocKy, DateTime? NgayBatDau);
 
@@ -24,6 +25,13 @@ public static class AcademicTranscript
     {
         "A" => 4m, "B+" => 3.5m, "B" => 3m, "C+" => 2.5m, "C" => 2m, "D+" => 1.5m, "D" => 1m, "F" => 0m,
         _ => null
+    };
+
+    /// <summary>Quy đổi điểm tổng kết thang 10 sang điểm chữ theo quy chế HUIT.</summary>
+    public static string DiemChuTuDiem10(decimal diem) => diem switch
+    {
+        >= 8.5m => "A", >= 7.8m => "B+", >= 7.0m => "B", >= 6.3m => "C+",
+        >= 5.5m => "C", >= 4.8m => "D+", >= 4.0m => "D", _ => "F"
     };
 
     public static AcademicResultResponse Build(
@@ -78,7 +86,7 @@ public static class AcademicTranscript
         var diem = Diem4(row.DiemChu);
         var status = diem is null ? "ChuaCoDiem" : diem > 0 ? "Dat" : "KhongDat";
         return new CourseResultResponse(row.MaMonHoc, row.TenMonHoc, row.MaLopHocPhan, row.SoTinChi,
-            diem is null ? null : row.DiemChu, diem, status, row.ChuyenCan);
+            diem is null ? null : row.DiemTongKet, diem is null ? null : row.DiemChu, diem, status, row.ChuyenCan);
     }
 
     private static decimal? Average(IEnumerable<(decimal Diem, int TinChi)> values)

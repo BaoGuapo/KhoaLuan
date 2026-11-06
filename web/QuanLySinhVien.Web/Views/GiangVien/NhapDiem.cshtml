@@ -1,0 +1,91 @@
+@model ClassGradeSheetModel
+@{
+    ViewData["Title"] = "Nhập điểm";
+    var daNhap = Model.SinhVien.Count(x => x.DiemChu is not null);
+    var camThi = Model.SinhVien.Count(x => x.CamThi);
+}
+<div class="page-heading">
+    <div><p class="eyebrow blue">NHẬP ĐIỂM</p><h1>@Model.TenMonHoc</h1><p>@Model.MaLopHocPhan · @Model.TenHocKy</p></div>
+    <div class="heading-actions">
+        <a class="button secondary" asp-action="QuanLyLop" asp-route-maLop="@Model.MaLopHocPhan">Quản lý lớp</a>
+        <a class="button secondary" asp-action="LichGiangDay">Quay lại lịch dạy</a>
+    </div>
+</div>
+
+<section class="class-overview">
+    <article><span>Sĩ số</span><strong>@Model.SinhVien.Count</strong><small>Sinh viên đã đăng ký</small></article>
+    <article><span>Đã có điểm</span><strong>@daNhap</strong><small>Gồm cả sinh viên cấm thi</small></article>
+    <article><span>Cấm thi</span><strong>@camThi</strong><small>Vắng từ 4 buổi, tự nhận F</small></article>
+    <article><span>Trạng thái</span><strong>@(Model.DaCongBo ? "Đã công bố" : "Nháp")</strong><small>@(Model.NhapLucUtc is { } t ? "Cập nhật " + t.ToLocalTime().ToString("HH:mm dd/MM/yyyy") : "Chưa nhập điểm")</small></article>
+</section>
+
+<section class="panel section-gap">
+    <h2>Bảng điểm lớp</h2>
+    @if (Model.DaCongBo)
+    {
+        <p class="section-help">Điểm đã công bố cho sinh viên nên không sửa được nữa. Liên hệ phòng đào tạo nếu cần điều chỉnh.</p>
+    }
+    else
+    {
+        <p class="section-help">Nhập điểm tổng kết thang 10 (lẻ tối đa 0,1), hệ thống tự quy đổi sang điểm chữ. Bấm <strong>Lưu nháp</strong> để lưu; sinh viên chỉ thấy điểm sau khi bạn <strong>Công bố</strong>. Phải nhập đủ điểm cho cả lớp mới công bố được.</p>
+    }
+    <form method="post" asp-action="LuuDiem" id="grade-form">
+        <input type="hidden" name="maLop" value="@Model.MaLopHocPhan" />
+        <div class="table-card" role="region" aria-label="Bảng điểm lớp" tabindex="0"><table><thead><tr><th scope="col">Sinh viên</th><th scope="col">Số buổi vắng</th><th scope="col">Điểm tổng kết</th><th scope="col">Điểm chữ</th></tr></thead><tbody>
+        @foreach (var sv in Model.SinhVien)
+        {
+            <tr>
+                <td><strong>@sv.MaSinhVien</strong><small>@sv.HoTen</small></td>
+                <td>@sv.SoBuoiVang@if (sv.CamThi) { <span class="badge badge-danger">Cấm thi</span> }</td>
+                <td>
+                    @if (sv.CamThi)
+                    {
+                        <span>—</span><small>Không nhập điểm</small>
+                    }
+                    else if (Model.DaCongBo)
+                    {
+                        <span>@(sv.DiemTongKet?.ToString("0.0") ?? "—")</span>
+                    }
+                    else
+                    {
+                        <input type="hidden" name="maSinhVien" value="@sv.MaSinhVien" />
+                        <input class="grade-input" name="diem" type="text" inputmode="decimal" autocomplete="off" pattern="^(10([.,]0)?|\d([.,]\d)?)$"
+                               value="@sv.DiemTongKet?.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)"
+                               aria-label="Điểm tổng kết của @sv.HoTen (@sv.MaSinhVien)" title="Từ 0 đến 10, lẻ tối đa 0,1" />
+                    }
+                </td>
+                <td><span class="grade-letter" data-for="@sv.MaSinhVien">@(sv.DiemChu ?? "—")</span></td>
+            </tr>
+        }
+        @if (Model.SinhVien.Count == 0) { <tr><td colspan="4" class="empty-state">Lớp chưa có sinh viên đăng ký.</td></tr> }
+        </tbody></table></div>
+        @if (!Model.DaCongBo && Model.SinhVien.Count > 0)
+        {
+            <div class="heading-actions section-gap"><button class="button" type="submit">Lưu nháp</button></div>
+        }
+    </form>
+    @if (!Model.DaCongBo && Model.SinhVien.Count > 0)
+    {
+        <form method="post" asp-action="CongBoDiem" class="section-gap" data-confirm="Công bố điểm lớp @Model.MaLopHocPhan? Sau khi công bố, sinh viên xem được điểm và bạn không sửa được nữa. Hãy Lưu nháp trước nếu vừa thay đổi điểm.">
+            <input type="hidden" name="maLop" value="@Model.MaLopHocPhan" />
+            <button class="button success-button" type="submit">Công bố điểm</button>
+        </form>
+    }
+    <p class="section-help">Thang quy đổi: A ≥ 8,5 · B+ ≥ 7,8 · B ≥ 7,0 · C+ ≥ 6,3 · C ≥ 5,5 · D+ ≥ 4,8 · D ≥ 4,0 · F &lt; 4,0.</p>
+</section>
+
+<script>
+    // Xem trước điểm chữ khi giảng viên gõ; kết quả cuối cùng vẫn do backend quy đổi.
+    (() => {
+        const steps = [[8.5, 'A'], [7.8, 'B+'], [7.0, 'B'], [6.3, 'C+'], [5.5, 'C'], [4.8, 'D+'], [4.0, 'D']];
+        document.querySelectorAll('#grade-form .grade-input').forEach(input => {
+            const code = input.previousElementSibling.value;
+            const label = document.querySelector(`.grade-letter[data-for="${CSS.escape(code)}"]`);
+            input.addEventListener('input', () => {
+                const value = Number(input.value.trim().replace(',', '.'));
+                label.textContent = input.value.trim() === '' || Number.isNaN(value) || value < 0 || value > 10
+                    ? '—' : (steps.find(([min]) => value >= min)?.[1] ?? 'F');
+            });
+        });
+    })();
+</script>

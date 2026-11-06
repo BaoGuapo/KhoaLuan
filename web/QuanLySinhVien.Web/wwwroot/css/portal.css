@@ -244,7 +244,7 @@ body.portal { color: #243746; background: #f3f5f7; font-family: system-ui, -appl
 .pt-result-summary span { display: block; font-size: 0.875rem; color: #70808a; }
 .pt-result-summary strong { display: block; margin-top: 4px; font-size: 1.5rem; color: #29485c; font-weight: 650; }
 .pt-result { margin-bottom: 18px; }
-.pt-result .pt-table { min-width: 860px; }
+.pt-result .pt-table { min-width: 920px; }
 .pt-result .pt-table td { padding: 12px 14px; }
 .pt-result .pt-status { margin-top: 0; }
 .pt-result td small + .pt-status { margin-top: 5px; }

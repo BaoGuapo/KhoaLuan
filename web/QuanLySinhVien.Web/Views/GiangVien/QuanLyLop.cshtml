@@ -13,6 +13,7 @@
     <div><p class="eyebrow blue">LỚP PHỤ TRÁCH</p><h1>@Model.LopHocPhan.TenMonHoc</h1><p>@Model.LopHocPhan.MaLopHocPhan · @Model.LopHocPhan.TenHocKy · @Model.LopHocPhan.MaPhong</p></div>
     <div class="heading-actions">
         <a class="button secondary" asp-action="LichSuDiemDanh" asp-route-maLop="@Model.LopHocPhan.MaLopHocPhan">Lịch sử điểm danh</a>
+        <a class="button secondary" asp-action="NhapDiem" asp-route-maLop="@Model.LopHocPhan.MaLopHocPhan">Nhập điểm</a>
         <a class="button secondary" asp-action="LichGiangDay">Quay lại lịch dạy</a>
     </div>
 </div>

@@ -27,7 +27,7 @@ else
             <div class="pt-section-heading"><h2 id="hk-@hk.MaHocKy">@hk.TenHocKy</h2><strong>@hk.MonHoc.Count học phần · @hk.MonHoc.Sum(x => x.SoTinChi) tín chỉ</strong></div>
             <div class="pt-table-scroll" tabindex="0">
                 <table class="pt-table">
-                    <thead><tr><th>Mã môn</th><th>Tên môn học</th><th>Lớp học phần</th><th>Tín chỉ</th><th>Điểm chữ</th><th>Thang 4</th><th>Kết quả</th><th>Chuyên cần</th></tr></thead>
+                    <thead><tr><th>Mã môn</th><th>Tên môn học</th><th>Lớp học phần</th><th>Tín chỉ</th><th>Điểm 10</th><th>Điểm chữ</th><th>Thang 4</th><th>Kết quả</th><th>Chuyên cần</th></tr></thead>
                     <tbody>
                     @foreach (var mon in hk.MonHoc)
                     {
@@ -37,6 +37,7 @@ else
                             <td><strong>@mon.TenMonHoc</strong></td>
                             <td>@(mon.MaLopHocPhan ?? "—")</td>
                             <td>@mon.SoTinChi</td>
+                            <td>@(mon.DiemTongKet?.ToString("0.0") ?? "—")</td>
                             <td>@(mon.DiemChu ?? "—")</td>
                             <td>@(mon.Diem4?.ToString("0.0") ?? "—")</td>
                             <td>

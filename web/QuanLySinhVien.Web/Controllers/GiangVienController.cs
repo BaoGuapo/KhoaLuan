@@ -137,6 +137,55 @@ public sealed class GiangVienController(ITeachingManagementApiClient api) : Cont
         return RedirectToAction(nameof(QuanLyLop), new { maLop, maBuoiHoc });
     }
 
+    public async Task<IActionResult> NhapDiem(string maLop, CancellationToken ct)
+    {
+        var token = AccessToken;
+        if (token is null) return LoginRedirect();
+        var result = await SafeAsync(() => api.GetGradeSheetAsync(token, maLop, ct));
+        if (!result.Succeeded || result.Value is null)
+        {
+            TempData["Error"] = result.Error;
+            return RedirectToAction(nameof(LichGiangDay));
+        }
+        return View(result.Value);
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> LuuDiem(string maLop, List<string> maSinhVien, List<string?> diem, CancellationToken ct)
+    {
+        var token = AccessToken;
+        if (token is null) return LoginRedirect();
+        var grades = new List<(string, decimal?)>();
+        for (var i = 0; i < maSinhVien.Count; i++)
+        {
+            var text = i < diem.Count ? diem[i]?.Trim().Replace(',', '.') : null;
+            if (string.IsNullOrEmpty(text)) { grades.Add((maSinhVien[i], null)); continue; }
+            if (!decimal.TryParse(text, System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var value))
+            {
+                TempData["Error"] = $"Điểm của sinh viên {maSinhVien[i]} không phải là số.";
+                return RedirectToAction(nameof(NhapDiem), new { maLop });
+            }
+            grades.Add((maSinhVien[i], value));
+        }
+        var result = await SafeAsync(() => api.SaveGradesAsync(token, maLop, grades, ct));
+        TempData[result.Succeeded ? "Success" : "Error"] = result.Succeeded
+            ? "Đã lưu điểm nháp. Sinh viên chưa thấy điểm cho tới khi công bố."
+            : result.Error;
+        return RedirectToAction(nameof(NhapDiem), new { maLop });
+    }
+
+    [HttpPost, ValidateAntiForgeryToken]
+    public async Task<IActionResult> CongBoDiem(string maLop, CancellationToken ct)
+    {
+        var token = AccessToken;
+        if (token is null) return LoginRedirect();
+        var result = await SafeAsync(() => api.PublishGradesAsync(token, maLop, ct));
+        TempData[result.Succeeded ? "Success" : "Error"] = result.Succeeded
+            ? "Đã công bố điểm. Sinh viên đã xem được kết quả."
+            : result.Error;
+        return RedirectToAction(nameof(NhapDiem), new { maLop });
+    }
+
     private string? AccessToken => HttpContext.Session.GetString("AccessToken");
     private IActionResult LoginRedirect() => RedirectToAction("Login", "Account");
 

@@ -568,6 +568,17 @@ namespace QuanLySinhVien.Api.Migrations
                         .HasMaxLength(2)
                         .HasColumnType("nvarchar(2)");
 
+                    b.Property<decimal?>("DiemTongKet")
+                        .HasPrecision(4, 2)
+                        .HasColumnType("decimal(4,2)");
+
+                    b.Property<string>("NguoiNhap")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("NhapLucUtc")
+                        .HasColumnType("datetime2");
+
                     b.HasKey("MaSinhVien", "MaMonHoc", "MaHocKy");
 
                     b.HasIndex("MaHocKy");

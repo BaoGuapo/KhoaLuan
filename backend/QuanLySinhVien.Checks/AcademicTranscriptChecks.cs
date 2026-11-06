@@ -11,6 +11,12 @@ internal static class AcademicTranscriptChecks
     {
         Check(AcademicTranscript.Diem4("A") == 4m && AcademicTranscript.Diem4("B+") == 3.5m
             && AcademicTranscript.Diem4("D") == 1m && AcademicTranscript.Diem4("F") == 0m, "quy đổi điểm chữ sang thang 4");
+        Check(AcademicTranscript.DiemChuTuDiem10(10m) == "A" && AcademicTranscript.DiemChuTuDiem10(8.5m) == "A"
+            && AcademicTranscript.DiemChuTuDiem10(8.4m) == "B+" && AcademicTranscript.DiemChuTuDiem10(7.8m) == "B+"
+            && AcademicTranscript.DiemChuTuDiem10(7.0m) == "B" && AcademicTranscript.DiemChuTuDiem10(6.3m) == "C+"
+            && AcademicTranscript.DiemChuTuDiem10(5.5m) == "C" && AcademicTranscript.DiemChuTuDiem10(4.8m) == "D+"
+            && AcademicTranscript.DiemChuTuDiem10(4.0m) == "D" && AcademicTranscript.DiemChuTuDiem10(3.9m) == "F"
+            && AcademicTranscript.DiemChuTuDiem10(0m) == "F", "quy đổi điểm thang 10 sang điểm chữ theo ngưỡng HUIT");
         Check(AcademicTranscript.Diem4("") is null && AcademicTranscript.Diem4(null) is null, "chưa có điểm thì không quy đổi");
 
         var semesters = new[]

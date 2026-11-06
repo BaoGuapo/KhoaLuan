@@ -17,7 +17,11 @@ public sealed class KetQuaHocPhan
     public string MaMonHoc { get; set; } = "";
     public string MaHocKy { get; set; } = "";
     public string DiemChu { get; set; } = "";
+    // Điểm tổng kết thang 10 do giảng viên phụ trách nhập; null với kết quả học vụ nhập thẳng điểm chữ.
+    public decimal? DiemTongKet { get; set; }
     public bool DaCongBo { get; set; }
+    public string? NguoiNhap { get; set; }
+    public DateTime? NhapLucUtc { get; set; }
     public SinhVien SinhVien { get; set; } = null!;
     public HocKyThucTe HocKy { get; set; } = null!;
 }

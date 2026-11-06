@@ -17,6 +17,9 @@ public interface ITeachingManagementApiClient
     Task<ApiResult> CorrectAttendanceAsync(string token, string sessionCode, string studentCode, string status, string reason, CancellationToken ct);
     Task<ApiResult<IReadOnlyCollection<AttendanceCorrectionModel>>> GetCorrectionsAsync(string token, string sessionCode, CancellationToken ct);
     Task<ApiResult> ResendAttendanceWarningAsync(string token, string classCode, string studentCode, CancellationToken ct);
+    Task<ApiResult<ClassGradeSheetModel>> GetGradeSheetAsync(string token, string classCode, CancellationToken ct);
+    Task<ApiResult> SaveGradesAsync(string token, string classCode, IReadOnlyCollection<(string MaSinhVien, decimal? DiemTongKet)> grades, CancellationToken ct);
+    Task<ApiResult> PublishGradesAsync(string token, string classCode, CancellationToken ct);
 }
 
 public sealed class TeachingManagementApiClient(HttpClient httpClient) : ITeachingManagementApiClient
@@ -102,6 +105,20 @@ public sealed class TeachingManagementApiClient(HttpClient httpClient) : ITeachi
         SendAsync(token, HttpMethod.Post,
             $"api/v1/giang-day/lop/{Uri.EscapeDataString(classCode)}/sinh-vien/{Uri.EscapeDataString(studentCode)}/gui-canh-bao",
             new { }, ct);
+
+    public Task<ApiResult<ClassGradeSheetModel>> GetGradeSheetAsync(string token, string classCode, CancellationToken ct) =>
+        GetAsync<ClassGradeSheetModel>(token, $"api/v1/giang-day/lop/{Uri.EscapeDataString(classCode)}/diem", ct);
+
+    public Task<ApiResult> SaveGradesAsync(
+        string token,
+        string classCode,
+        IReadOnlyCollection<(string MaSinhVien, decimal? DiemTongKet)> grades,
+        CancellationToken ct) =>
+        SendAsync(token, HttpMethod.Put, $"api/v1/giang-day/lop/{Uri.EscapeDataString(classCode)}/diem",
+            new { diem = grades.Select(x => new { maSinhVien = x.MaSinhVien, diemTongKet = x.DiemTongKet }) }, ct);
+
+    public Task<ApiResult> PublishGradesAsync(string token, string classCode, CancellationToken ct) =>
+        SendAsync(token, HttpMethod.Post, $"api/v1/giang-day/lop/{Uri.EscapeDataString(classCode)}/diem/cong-bo", new { }, ct);
 
     private async Task<ApiResult<T>> GetAsync<T>(string token, string path, CancellationToken ct)
     {

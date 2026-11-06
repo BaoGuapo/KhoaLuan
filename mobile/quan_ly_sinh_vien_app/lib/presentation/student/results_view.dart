@@ -195,9 +195,12 @@ class _CourseRow extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      course['diem4'] is num
-                          ? (course['diem4'] as num).toStringAsFixed(1)
-                          : 'Chưa có',
+                      // Ưu tiên điểm thang 10 giảng viên nhập; kết quả học vụ chỉ có điểm chữ thì hiện thang 4.
+                      course['diemTongKet'] is num
+                          ? (course['diemTongKet'] as num).toStringAsFixed(1)
+                          : course['diem4'] is num
+                              ? 'Hệ 4: ${(course['diem4'] as num).toStringAsFixed(1)}'
+                              : 'Chưa có',
                       style: TextStyle(color: gradeColor, fontSize: 10),
                     ),
                   ],

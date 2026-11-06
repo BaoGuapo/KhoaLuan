@@ -26,6 +26,7 @@ public sealed class AcademicCourseResult
     public string TenMonHoc { get; set; } = "";
     public string? MaLopHocPhan { get; set; }
     public int SoTinChi { get; set; }
+    public decimal? DiemTongKet { get; set; }
     public string? DiemChu { get; set; }
     public decimal? Diem4 { get; set; }
     public string TrangThai { get; set; } = "ChuaCoDiem";

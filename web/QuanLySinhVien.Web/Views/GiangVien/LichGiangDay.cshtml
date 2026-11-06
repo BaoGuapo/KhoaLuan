@@ -8,7 +8,7 @@
     <article class="schedule-item">
         <div class="schedule-day">@(item.ThuTrongTuan == 8 ? "CN" : $"T{item.ThuTrongTuan}")<small>Tiết @item.TietBatDau-@item.TietKetThuc</small></div>
         <div class="schedule-content"><p class="eyebrow blue">@item.MaLopHocPhan</p><h2>@item.TenMonHoc</h2><p>@item.TenHocKy · @item.MaPhong - @item.TenPhong</p><span class="badge badge-success">Sĩ số @item.SiSoHienTai/@item.SiSoToiDa</span></div>
-        <a class="button primary-link" asp-action="QuanLyLop" asp-route-maLop="@item.MaLopHocPhan">Quản lý lớp</a>
+        <a class="button primary-link" asp-action="QuanLyLop" asp-route-maLop="@item.MaLopHocPhan">Quản lý lớp</a><a class="button secondary" asp-action="NhapDiem" asp-route-maLop="@item.MaLopHocPhan">Nhập điểm</a>
     </article>
 }
 @if (Model.Count == 0)

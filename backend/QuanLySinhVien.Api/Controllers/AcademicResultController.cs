@@ -41,7 +41,7 @@ public sealed class AcademicResultController(AppDbContext db) : ControllerBase
         // Điểm chưa công bố không được lộ ra, kể cả dưới dạng "chưa có điểm".
         var grades = await db.KetQuaHocPhans.AsNoTracking()
             .Where(x => x.MaSinhVien == student && x.DaCongBo)
-            .Select(x => new { x.MaMonHoc, x.MaHocKy, x.DiemChu })
+            .Select(x => new { x.MaMonHoc, x.MaHocKy, x.DiemChu, x.DiemTongKet })
             .ToListAsync(ct);
 
         var courseCodes = enrollments.Select(x => x.MaMonHoc).Concat(grades.Select(x => x.MaMonHoc)).Distinct().ToList();
@@ -55,7 +55,7 @@ public sealed class AcademicResultController(AppDbContext db) : ControllerBase
 
         var gradeByKey = grades
             .GroupBy(x => (x.MaMonHoc, x.MaHocKy))
-            .ToDictionary(x => x.Key, x => x.First().DiemChu);
+            .ToDictionary(x => x.Key, x => (x.First().DiemChu, x.First().DiemTongKet));
         var rows = new List<TranscriptCourse>();
         foreach (var e in enrollments)
         {
@@ -69,12 +69,12 @@ public sealed class AcademicResultController(AppDbContext db) : ControllerBase
 
         return Ok(AcademicTranscript.Build(semesters, rows));
 
-        TranscriptCourse Row(string course, string semester, string? classCode, string? diem, AttendanceTallyResponse? tally)
+        TranscriptCourse Row(string course, string semester, string? classCode, (string? DiemChu, decimal? DiemTongKet) diem, AttendanceTallyResponse? tally)
         {
             subjects.TryGetValue(course, out var subject);
             var credits = subject is null ? 0 : subject.SoTinChiLyThuyet + subject.SoTinChiThucHanh;
             if (credits == 0 && subject is not null) credits = subject.SoTinChi;
-            return new TranscriptCourse(course, subject?.TenMonHoc ?? course, semester, classCode, credits, diem, tally);
+            return new TranscriptCourse(course, subject?.TenMonHoc ?? course, semester, classCode, credits, diem.DiemChu, tally, diem.DiemTongKet);
         }
     }
 }

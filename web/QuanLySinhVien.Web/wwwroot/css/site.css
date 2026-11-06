@@ -352,3 +352,8 @@ body.is-presenting { overflow: hidden; }
 .qr-present-ended { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; color: #b42318; font-size: clamp(2rem, 4vw, 3.5rem); font-weight: 800; pointer-events: none; }
 .qr-present.is-ended .qr-present-body { opacity: .25; }
 @media (max-width: 900px) { .qr-present { padding: 18px; overflow-y: auto; } .qr-present-body { grid-template-columns: 1fr; justify-items: center; } }
+
+/* Nhập điểm */
+.grade-input { width: 5.5rem; text-align: center; }
+.grade-input:invalid { border-color: #c0392b; }
+.grade-letter { font-weight: 700; }
