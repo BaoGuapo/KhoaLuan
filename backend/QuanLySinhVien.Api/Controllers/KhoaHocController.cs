@@ -107,7 +107,8 @@ namespace QuanLySinhVien.Api.Controllers
 
                 using (var cmd = conn.CreateCommand())
                 {
-                    cmd.CommandText = $"SELECT COUNT(1) FROM KhoaHoc WHERE MaKhoa = '{model.MaKhoa.Trim()}'";
+                    cmd.AddParameter("@ma", model.MaKhoa.Trim());
+                    cmd.CommandText = "SELECT COUNT(1) FROM KhoaHoc WHERE MaKhoa = @ma";
                     var count = Convert.ToInt32(await cmd.ExecuteScalarAsync());
                     if (count > 0)
                         return BadRequest(new { message = $"Mã khóa [{model.MaKhoa}] đã tồn tại!" });

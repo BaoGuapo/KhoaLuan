@@ -87,6 +87,10 @@ Chọn **Yes** nếu Windows yêu cầu xác nhận tin cậy chứng chỉ.
 
 ## 5. Entity Framework Core và database
 
+> Database không dựng được từ đầu chỉ bằng migration. Khi chạy trên máy mới, khôi phục database từ
+> file `QuanLySinhVien.bacpac` nộp kèm theo hướng dẫn tại [docs/DATABASE.md](docs/DATABASE.md),
+> sau đó mới chạy lệnh migration dưới đây.
+
 Cài công cụ migration một lần:
 
 ```powershell

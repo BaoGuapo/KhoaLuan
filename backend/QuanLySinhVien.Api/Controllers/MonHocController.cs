@@ -100,13 +100,16 @@ public class MonHocController : ControllerBase
                 using (var cmd = conn.CreateCommand())
                 {
                     // 1. Kiểm tra trùng Mã môn
-                    cmd.CommandText = $"SELECT COUNT(1) FROM MonHoc WHERE LOWER(MaMonHoc) = LOWER('{maMonTrim}')";
+                    // Dùng tham số thay vì ghép chuỗi để chống SQL injection.
+                    cmd.AddParameter("@ma", maMonTrim);
+                    cmd.AddParameter("@ten", tenMonTrim);
+                    cmd.CommandText = "SELECT COUNT(1) FROM MonHoc WHERE LOWER(MaMonHoc) = LOWER(@ma)";
                     int countMa = Convert.ToInt32(await cmd.ExecuteScalarAsync());
                     if (countMa > 0)
                         return BadRequest(new { message = $"Mã môn học '{maMonTrim}' đã tồn tại trong hệ thống!" });
-                    
+
                     // 2. Kiểm tra trùng Tên môn
-                    cmd.CommandText = $"SELECT COUNT(1) FROM MonHoc WHERE LOWER(TenMonHoc) = LOWER(N'{tenMonTrim}')";
+                    cmd.CommandText = "SELECT COUNT(1) FROM MonHoc WHERE LOWER(TenMonHoc) = LOWER(@ten)";
                     int countTen = Convert.ToInt32(await cmd.ExecuteScalarAsync());
                     if (countTen > 0)
                         return BadRequest(new { message = $"Tên môn học '{tenMonTrim}' đã tồn tại trong hệ thống!" });
@@ -169,12 +172,14 @@ public class MonHocController : ControllerBase
                 using (var cmd = conn.CreateCommand())
                 {
                     // 1. Kiểm tra môn học tồn tại
-                    cmd.CommandText = $"SELECT COUNT(1) FROM MonHoc WHERE MaMonHoc = '{id}'";
+                    cmd.AddParameter("@id", id);
+                    cmd.AddParameter("@ten", tenMonTrim);
+                    cmd.CommandText = "SELECT COUNT(1) FROM MonHoc WHERE MaMonHoc = @id";
                     int exists = Convert.ToInt32(await cmd.ExecuteScalarAsync());
                     if (exists == 0) return NotFound(new { message = "Không tìm thấy môn học!" });
 
                     // 2. Kiểm tra trùng Tên môn học với môn khác
-                    cmd.CommandText = $"SELECT COUNT(1) FROM MonHoc WHERE LOWER(TenMonHoc) = LOWER(N'{tenMonTrim}') AND MaMonHoc != '{id}'";
+                    cmd.CommandText = "SELECT COUNT(1) FROM MonHoc WHERE LOWER(TenMonHoc) = LOWER(@ten) AND MaMonHoc != @id";
                     int countTen = Convert.ToInt32(await cmd.ExecuteScalarAsync());
                     if (countTen > 0)
                         return BadRequest(new { message = $"Tên môn học '{tenMonTrim}' đã trùng với một môn học khác trong hệ thống!" });

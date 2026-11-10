@@ -12,13 +12,24 @@ namespace QuanLySinhVien.Api.Controllers;
 [Authorize(Roles = RoleNames.Admin + "," + RoleNames.CanBoQuanLy)]
 public class GiaoTrinhController : ControllerBase
 {
+    // Chỉ nhận đúng các định dạng mà giao diện cho chọn (Word/PowerPoint).
+    private static readonly Dictionary<string, string> AllowedExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        [".doc"] = "WORD", [".docx"] = "WORD", [".ppt"] = "PPT", [".pptx"] = "PPT"
+    };
+    private const long MaxFileBytes = 20 * 1024 * 1024;
+    // Website chuyển tiếp upload qua proxy với giới hạn mặc định 30 MB của Kestrel.
+    private const long MaxRequestBytes = 30 * 1024 * 1024;
+
     private readonly AppDbContext _context;
     private readonly IWebHostEnvironment _env;
+    private readonly ILogger<GiaoTrinhController> _logger;
 
-    public GiaoTrinhController(AppDbContext context, IWebHostEnvironment env)
+    public GiaoTrinhController(AppDbContext context, IWebHostEnvironment env, ILogger<GiaoTrinhController> logger)
     {
         _context = context;
         _env = env;
+        _logger = logger;
     }
 
     private async Task EnsureTableCreatedAsync()
@@ -39,12 +50,16 @@ public class GiaoTrinhController : ControllerBase
                 END";
             await _context.Database.ExecuteSqlRawAsync(sql);
         }
-        catch { }
+        catch (Exception ex)
+        {
+            // Bảng có thể đã được migration tạo sẵn; ghi log để còn lần ra lỗi thật nếu có.
+            _logger.LogWarning(ex, "Không kiểm tra/tạo được bảng GiaoTrinh.");
+        }
     }
 
     [HttpPost("LuuHangLoat")]
-    [DisableRequestSizeLimit]
-    [RequestFormLimits(MultipartBodyLengthLimit = int.MaxValue, ValueLengthLimit = int.MaxValue)]
+    [RequestSizeLimit(MaxRequestBytes)]
+    [RequestFormLimits(MultipartBodyLengthLimit = MaxRequestBytes)]
     public async Task<IActionResult> LuuHangLoat([FromForm] GiaoTrinhUploadRequest model)
     {
         try
@@ -66,20 +81,44 @@ public class GiaoTrinhController : ControllerBase
                 Directory.CreateDirectory(uploadFolder);
             }
 
-            var resultList = new List<GiaoTrinh>();
+            // Kiểm tra toàn bộ file trước khi ghi, để không lưu dở dang một nửa lô.
+            var requestedCodes = (model.MaMonHocs ?? new List<string>())
+                .Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).Distinct().ToList();
+            var existingCodes = (await _context.MonHocs.AsNoTracking()
+                    .Where(x => requestedCodes.Contains(x.MaMonHoc))
+                    .Select(x => x.MaMonHoc)
+                    .ToListAsync())
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
+            var uploads = new List<(IFormFile File, string MaMon, string Ext, string LoaiFile)>();
             for (int i = 0; i < model.Files.Count; i++)
             {
                 var file = model.Files[i];
-                string maMon = (model.MaMonHocs != null && i < model.MaMonHocs.Count) ? model.MaMonHocs[i] : "";
+                string maMon = (model.MaMonHocs != null && i < model.MaMonHocs.Count) ? model.MaMonHocs[i]?.Trim() ?? "" : "";
 
                 if (string.IsNullOrEmpty(maMon) || file == null || file.Length == 0) continue;
 
-                string ext = Path.GetExtension(file.FileName).ToLower();
-                string loaiFile = (ext == ".doc" || ext == ".docx") ? "WORD" : (ext == ".ppt" || ext == ".pptx") ? "PPT" : "KHAC";
+                // Mã môn được ghép vào tên file nên bắt buộc phải là môn có thật (chặn "../" thoát thư mục).
+                if (!existingCodes.Contains(maMon))
+                    return BadRequest(new { message = $"Mã môn học '{maMon}' không tồn tại." });
 
-                string uniqueFileName = $"{maMon}_{Guid.NewGuid().ToString().Substring(0, 8)}{ext}";
+                string ext = Path.GetExtension(file.FileName);
+                if (!AllowedExtensions.TryGetValue(ext, out var loaiFile))
+                    return BadRequest(new { message = $"File '{Path.GetFileName(file.FileName)}' không hợp lệ. Chỉ nhận .doc, .docx, .ppt, .pptx." });
+                if (file.Length > MaxFileBytes)
+                    return BadRequest(new { message = $"File '{Path.GetFileName(file.FileName)}' vượt quá {MaxFileBytes / 1024 / 1024} MB." });
+
+                uploads.Add((file, maMon, ext.ToLowerInvariant(), loaiFile));
+            }
+
+            var resultList = new List<GiaoTrinh>();
+            foreach (var (file, maMon, ext, loaiFile) in uploads)
+            {
+                string uniqueFileName = $"{maMon}_{Guid.NewGuid().ToString("N")[..8]}{ext}";
                 string filePath = Path.Combine(uploadFolder, uniqueFileName);
+                // Lớp bảo vệ thứ hai: đường dẫn cuối cùng phải nằm trong thư mục upload.
+                if (!Path.GetFullPath(filePath).StartsWith(Path.GetFullPath(uploadFolder) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+                    return BadRequest(new { message = $"Mã môn học '{maMon}' không hợp lệ." });
 
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
@@ -89,7 +128,7 @@ public class GiaoTrinhController : ControllerBase
                 var entity = new GiaoTrinh
                 {
                     MaMonHoc = maMon,
-                    TenFile = file.FileName,
+                    TenFile = Path.GetFileName(file.FileName),
                     DuongDanFile = $"/uploads/giaotrinh/{uniqueFileName}",
                     LoaiFile = loaiFile,
                     NgayTao = DateTime.Now
@@ -104,7 +143,8 @@ public class GiaoTrinhController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { message = $"Lỗi hệ thống khi lưu file: {ex.Message}" });
+            _logger.LogError(ex, "Lỗi khi lưu giáo trình.");
+            return StatusCode(500, new { message = "Lỗi hệ thống khi lưu file giáo trình." });
         }
     }
 
@@ -125,7 +165,8 @@ public class GiaoTrinhController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { message = $"Lỗi lấy dữ liệu giáo trình: {ex.Message}" });
+            _logger.LogError(ex, "Lỗi khi lấy danh sách giáo trình.");
+            return StatusCode(500, new { message = "Lỗi lấy dữ liệu giáo trình." });
         }
     }
 
@@ -152,7 +193,8 @@ public class GiaoTrinhController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { message = $"Lỗi xóa giáo trình: {ex.Message}" });
+            _logger.LogError(ex, "Lỗi khi xóa giáo trình.");
+            return StatusCode(500, new { message = "Lỗi xóa giáo trình." });
         }
     }
 }

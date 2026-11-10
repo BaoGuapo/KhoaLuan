@@ -97,13 +97,16 @@ public class NganhDaoTaoController : ControllerBase
             using (var cmd = conn.CreateCommand())
             {
                 // 1. Kiểm tra trùng Mã ngành
-                cmd.CommandText = $"SELECT COUNT(1) FROM {tableName} WHERE LOWER(MaNganh) = LOWER('{maNganhTrim}')";
+                // tableName lấy từ GetTableNameAsync (giá trị cố định), giá trị người dùng nhập đi qua tham số.
+                cmd.AddParameter("@ma", maNganhTrim);
+                cmd.AddParameter("@ten", tenNganhTrim);
+                cmd.CommandText = $"SELECT COUNT(1) FROM {tableName} WHERE LOWER(MaNganh) = LOWER(@ma)";
                 int countMa = Convert.ToInt32(await cmd.ExecuteScalarAsync());
                 if (countMa > 0)
                     return BadRequest(new { message = $"Mã ngành '{maNganhTrim}' đã tồn tại trong hệ thống!" });
                 
                 // 2. Kiểm tra trùng Tên ngành
-                cmd.CommandText = $"SELECT COUNT(1) FROM {tableName} WHERE LOWER(TenNganh) = LOWER(N'{tenNganhTrim}')";
+                cmd.CommandText = $"SELECT COUNT(1) FROM {tableName} WHERE LOWER(TenNganh) = LOWER(@ten)";
                 int countTen = Convert.ToInt32(await cmd.ExecuteScalarAsync());
                 if (countTen > 0)
                     return BadRequest(new { message = $"Tên ngành '{tenNganhTrim}' đã tồn tại trong hệ thống!" });
@@ -138,12 +141,14 @@ public class NganhDaoTaoController : ControllerBase
             using (var cmd = conn.CreateCommand())
             {
                 // 1. Kiểm tra tồn tại ngành cần sửa
-                cmd.CommandText = $"SELECT COUNT(1) FROM {tableName} WHERE MaNganh = '{maNganh.Trim()}'";
+                cmd.AddParameter("@ma", maNganh.Trim());
+                cmd.AddParameter("@ten", tenNganhTrim);
+                cmd.CommandText = $"SELECT COUNT(1) FROM {tableName} WHERE MaNganh = @ma";
                 int exists = Convert.ToInt32(await cmd.ExecuteScalarAsync());
                 if (exists == 0) return NotFound(new { message = "Không tìm thấy ngành cần sửa!" });
 
                 // 2. Kiểm tra trùng Tên ngành với ngành khác
-                cmd.CommandText = $"SELECT COUNT(1) FROM {tableName} WHERE LOWER(TenNganh) = LOWER(N'{tenNganhTrim}') AND MaNganh != '{maNganh.Trim()}'";
+                cmd.CommandText = $"SELECT COUNT(1) FROM {tableName} WHERE LOWER(TenNganh) = LOWER(@ten) AND MaNganh != @ma";
                 int countTen = Convert.ToInt32(await cmd.ExecuteScalarAsync());
                 if (countTen > 0)
                     return BadRequest(new { message = $"Tên ngành '{tenNganhTrim}' đã được sử dụng cho ngành khác!" });

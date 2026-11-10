@@ -32,11 +32,28 @@ public sealed class DaoTaoController(AppDbContext db, TrainingEnrollmentService 
     [Authorize]
     public async Task<ActionResult<object>> GetLopHocPhan(string maLopHocPhan, CancellationToken ct)
     {
+        // Trả về DTO thay vì entity: mọi tài khoản đăng nhập đều gọi được API này,
+        // nên chỉ lộ mã và họ tên giảng viên, không lộ CCCD, ngày sinh, địa chỉ, số điện thoại.
         var lop = await db.LopHocPhans
             .AsNoTracking()
-            .Include(x => x.MonHoc)
-            .Include(x => x.GiangVien)
-            .SingleOrDefaultAsync(x => x.MaLopHocPhan == maLopHocPhan, ct);
+            .Where(x => x.MaLopHocPhan == maLopHocPhan)
+            .Select(x => new
+            {
+                x.MaLopHocPhan,
+                x.MaMonHoc,
+                x.MaGiangVien,
+                x.SiSoToiDa,
+                x.TrangThai,
+                x.MaHocKy,
+                x.LoaiPhong,
+                x.SoBuoi,
+                x.NgayBatDau,
+                x.NgayKetThuc,
+                x.LichHoc,
+                MonHoc = x.MonHoc,
+                GiangVien = x.GiangVien == null ? null : new { x.GiangVien.MaGiangVien, x.GiangVien.HoTen }
+            })
+            .SingleOrDefaultAsync(ct);
 
         return lop is null ? NotFound() : Ok(lop);
     }

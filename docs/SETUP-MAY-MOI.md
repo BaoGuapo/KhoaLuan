@@ -98,21 +98,11 @@ sqlpackage /Action:Import /SourceFile:"C:\Tai\HKH-sql2022.bacpac" /TargetServerN
 
 Kiểm tra bằng đúng câu lệnh ở mục 2, cũng phải thấy **32 bảng** và **11 migration**.
 
-Nếu không có cả hai file thì vẫn dựng được từ đầu, chỉ là không có dữ liệu mẫu của người bàn
-giao. Tạo database rỗng rồi để migration dựng toàn bộ schema:
-
-```powershell
-dotnet ef database update --project backend/QuanLySinhVien.Api
-```
-
-Lần đầu chạy API sẽ tự tạo bốn tài khoản dev ở mục 6. Muốn có thêm lớp học phần và sinh viên
-mẫu thì chạy:
-
-```powershell
-dotnet run --project backend/QuanLySinhVien.Checks -- --demo-seed
-```
-
-Cách này thiếu bộ tài khoản `HKH-*`, nhưng đủ để chạy và trình diễn mọi chức năng.
+**Không dựng được từ database rỗng.** Migration chỉ tạo các bảng thêm sau; các bảng gốc như
+`SinhVien`, `GiangVien`, `MonHoc`, `LopHocPhan`, `BuoiHoc` có sẵn từ database ban đầu, nên
+`dotnet ef database update` trên database rỗng sẽ báo lỗi ở migration thứ hai. Luôn bắt đầu từ
+một file sao lưu: `.bak`, `.bacpac` ở trên, hoặc bộ `QuanLySinhVien.bacpac` nộp kèm đồ án (xem
+`docs/DATABASE.md`).
 
 ---
 
